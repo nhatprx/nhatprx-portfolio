@@ -5,6 +5,8 @@ import Ec2Terminal from './components/Ec2Terminal'
 import { TRANSLATIONS, type SupportedLang } from './data/translations'
 import BlogPostModal from './components/BlogPostModal'
 import CustomCursor from './components/CustomCursor'
+import AdminPortal from './components/Admin/AdminPortal'
+import { getStoredTranslations } from './services/contentStorage'
 
 const CURRENT_YEAR = new Date().getFullYear()
 
@@ -221,14 +223,40 @@ export default function App() {
   const langMenuRef = useRef<HTMLDivElement>(null)
   const lenisRef = useRef<Lenis | null>(null)
 
+  const [allTranslations, setAllTranslations] = useState(() => getStoredTranslations())
+  const [isAdminOpen, setIsAdminOpen] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.location.hash === '#admin' || window.location.pathname === '/admin'
+  })
+
   const [lang, setLang] = useState<SupportedLang>(() => {
     const saved = localStorage.getItem('nhatprx_lang') as SupportedLang
     if (saved && ['en', 'vi', 'fr', 'ja'].includes(saved)) return saved
     return 'en'
   })
 
-  const t = TRANSLATIONS[lang]
+  const t = allTranslations[lang] || TRANSLATIONS[lang]
   const selectedPost = t.blog.posts.find((p) => p.slug === selectedPostSlug)
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setIsAdminOpen(window.location.hash === '#admin' || window.location.pathname === '/admin')
+    }
+    const handleKeyNav = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
+        e.preventDefault()
+        window.location.hash = '#admin'
+      }
+    }
+    window.addEventListener('hashchange', handleLocationChange)
+    window.addEventListener('popstate', handleLocationChange)
+    window.addEventListener('keydown', handleKeyNav)
+    return () => {
+      window.removeEventListener('hashchange', handleLocationChange)
+      window.removeEventListener('popstate', handleLocationChange)
+      window.removeEventListener('keydown', handleKeyNav)
+    }
+  }, [])
 
   // Initialize Lenis smooth scrolling
   useEffect(() => {
@@ -269,15 +297,15 @@ export default function App() {
     }
   }
 
-  // Pause Lenis smooth scrolling on main page while modal is open
+  // Pause Lenis smooth scrolling on main page while modal or admin is open
   useEffect(() => {
-    if (selectedPost) {
+    if (selectedPost || isAdminOpen) {
       lenisRef.current?.stop()
       return () => {
         lenisRef.current?.start()
       }
     }
-  }, [selectedPost])
+  }, [selectedPost, isAdminOpen])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -831,6 +859,19 @@ export default function App() {
         >
           <ArrowUpIcon className="w-4 h-4" />
         </button>
+      )}
+
+      {/* Hidden Admin Portal */}
+      {isAdminOpen && (
+        <AdminPortal
+          onClose={() => {
+            setIsAdminOpen(false)
+            if (window.location.hash === '#admin') {
+              window.history.replaceState(null, '', window.location.pathname)
+            }
+          }}
+          onUpdateTranslations={(updated) => setAllTranslations(updated)}
+        />
       )}
     </div>
   )

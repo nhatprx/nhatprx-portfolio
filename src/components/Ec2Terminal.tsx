@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { getStoredTerminalCommands } from '../services/contentStorage'
 
 interface HistoryEntry {
   type: 'input' | 'output' | 'error' | 'system'
@@ -62,6 +63,16 @@ export default function Ec2Terminal() {
     const arg = tokens[1]?.toLowerCase()
 
     const newEntries: HistoryEntry[] = [{ type: 'input', text: `ubuntu@nhatprx-server:~$ ${raw}` }]
+
+    const customCommands = getStoredTerminalCommands()
+    if (customCommands[cmd]) {
+      newEntries.push({
+        type: 'output',
+        text: customCommands[cmd],
+      })
+      setHistory((prev) => [...prev, ...newEntries])
+      return
+    }
 
     switch (cmd) {
       case 'help':
