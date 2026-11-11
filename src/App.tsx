@@ -442,7 +442,19 @@ export default function App() {
                 <article className="border border-white/10 p-6 hover:border-white/30 transition-colors">
                   <div className="flex items-baseline justify-between gap-4 mb-2">
                     <h3 className="text-lg font-bold">LordNine Bot · Automation Framework</h3>
-                    <span className="font-mono text-[10px] text-white/30 shrink-0">MAR — APR 2026</span>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <a
+                        href="https://github.com/nhatprx"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="View source code on GitHub"
+                        title="View source on GitHub"
+                        className="text-white/40 hover:text-white transition-colors"
+                      >
+                        <GithubIcon className="w-4 h-4" />
+                      </a>
+                      <span className="font-mono text-[10px] text-white/30">MAR — APR 2026</span>
+                    </div>
                   </div>
                   <p className="text-xs font-mono text-white/30 mb-4">PERSONAL PROJECT · SAAS PRODUCT</p>
                   <p className="text-sm text-white/50 leading-relaxed mb-4">
@@ -467,7 +479,19 @@ export default function App() {
                 <article className="border border-white/10 p-6 hover:border-white/30 transition-colors">
                   <div className="flex items-baseline justify-between gap-4 mb-2">
                     <h3 className="text-lg font-bold">Attenda · Smart Attendance System</h3>
-                    <span className="font-mono text-[10px] text-white/30 shrink-0">MAR — AUG 2025</span>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <a
+                        href="https://github.com/nhatprx"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="View source code on GitHub"
+                        title="View source on GitHub"
+                        className="text-white/40 hover:text-white transition-colors"
+                      >
+                        <GithubIcon className="w-4 h-4" />
+                      </a>
+                      <span className="font-mono text-[10px] text-white/30 shrink-0">MAR — AUG 2025</span>
+                    </div>
                   </div>
                   <p className="text-xs font-mono text-white/30 mb-4">TEAM LEAD · 4 PERSON TEAM</p>
                   <p className="text-sm text-white/50 leading-relaxed mb-4">
