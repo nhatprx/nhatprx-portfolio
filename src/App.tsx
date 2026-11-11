@@ -566,29 +566,29 @@ export default function App() {
       </header>
 
       <main className="relative z-10 pt-24">
-        {/* ========== HERO & TERMINAL LAB (COMBINED 2/8 RATIO) ========== */}
-        <section id="hero" className="min-h-screen flex items-center p-6 sm:p-10 lg:p-14">
-          <div className="w-full grid grid-cols-1 lg:grid-cols-10 gap-8 lg:gap-10 items-center my-auto">
-            {/* Left Column: Hero Content (2 / 10 = 20%) */}
-            <div className="lg:col-span-2 text-left flex flex-col justify-center">
+        {/* ========== HERO & TERMINAL LAB (COMBINED 3/7 RATIO) ========== */}
+        <section id="hero" className="min-h-[calc(100vh-6rem)] flex items-center px-6 sm:px-10 lg:px-14 py-4 sm:py-6">
+          <div className="w-full grid grid-cols-1 lg:grid-cols-10 gap-8 lg:gap-12 items-center">
+            {/* Left Column: Hero Content (3 / 10 = 30%) */}
+            <div className="lg:col-span-3 text-left flex flex-col justify-center">
               <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-3">{t.hero.role}</p>
-              <h1 className="text-3xl sm:text-4xl xl:text-5xl font-bold tracking-tight leading-[0.95]">
+              <h1 className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-bold tracking-tight leading-[0.95]">
                 Minh Nhat
                 <br />
                 <span className="text-white/20">Pham.</span>
               </h1>
-              <p className="mt-4 text-xs sm:text-sm text-white/50 leading-relaxed">
+              <p className="mt-4 text-xs sm:text-sm text-white/50 leading-relaxed max-w-md">
                 {t.hero.desc}
               </p>
 
-              <div className="mt-6 flex flex-col sm:flex-row lg:flex-col gap-2.5">
+              <div className="mt-6 flex flex-wrap items-center gap-3">
                 <a
                   href="#contact"
                   onClick={(e) => {
                     e.preventDefault()
                     scrollTo('#contact')
                   }}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors cursor-pointer"
                 >
                   {t.hero.getInTouch}
                   <span aria-hidden="true">→</span>
@@ -596,7 +596,7 @@ export default function App() {
                 <a
                   href={t.hero.resumeUrl || '/%5Bnhatprx%5D%20PERSONAL%20RESUME.pdf'}
                   download={t.hero.resumeFileName || '[nhatprx] PERSONAL RESUME.pdf'}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-white/20 text-white font-mono text-xs font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-white/20 text-white font-mono text-xs font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-colors"
                 >
                   <DownloadIcon className="w-3.5 h-3.5 text-white/60" />
                   {t.hero.resume}
@@ -604,8 +604,8 @@ export default function App() {
               </div>
             </div>
 
-            {/* Right Column: Terminal (8 / 10 = 80%) */}
-            <div id="terminal" className="lg:col-span-8 w-full flex flex-col justify-center">
+            {/* Right Column: Terminal (7 / 10 = 70%) */}
+            <div id="terminal" className="lg:col-span-7 w-full flex flex-col justify-center">
               <div className="flex items-center justify-between gap-4 mb-2.5">
                 <p className="font-mono text-[10px] tracking-[0.4em] text-emerald-400/90 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block shrink-0" />
@@ -615,7 +615,7 @@ export default function App() {
                   LIVE CLOUD NODE // AP-SOUTHEAST-1
                 </span>
               </div>
-              <div className="h-[480px] sm:h-[540px] lg:h-[580px] w-full">
+              <div className="h-[400px] sm:h-[450px] lg:h-[480px] w-full">
                 <Ec2Terminal />
               </div>
             </div>
