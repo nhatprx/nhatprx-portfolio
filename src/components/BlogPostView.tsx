@@ -19,7 +19,7 @@ export default function BlogPostView({
   const otherPosts = allPosts.filter((p) => p.slug !== post.slug)
 
   return (
-    <article className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">
+    <article className="relative z-10 min-h-screen py-24 p-6 sm:p-10 lg:p-14">
       <div className="w-full max-w-2xl mx-auto text-left">
         {/* Navigation & Breadcrumbs */}
         <div className="mb-10">
@@ -130,3 +130,4 @@ export default function BlogPostView({
     </article>
   )
 }
+

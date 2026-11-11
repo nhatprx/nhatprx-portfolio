@@ -3,6 +3,7 @@ import Ec2Terminal from './components/Ec2Terminal'
 import { TRANSLATIONS, type SupportedLang } from './data/translations'
 import { BLOG_POSTS } from './data/blogData'
 import BlogPostView from './components/BlogPostView'
+import CustomCursor from './components/CustomCursor'
 
 const CURRENT_YEAR = new Date().getFullYear()
 
@@ -272,7 +273,14 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black">
+    <div className="relative min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black">
+      {/* Animated faint grey grid background */}
+      <div className="pointer-events-none fixed inset-0 z-0 bg-grid-animated opacity-60" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_20%,transparent_0%,rgba(0,0,0,0.85)_100%)]" />
+
+      {/* Interactive Custom Cursor with Spotlight */}
+      <CustomCursor />
+
       {/* Top Header */}
       <header className="fixed top-0 left-0 right-0 z-50 p-4 sm:p-6 lg:px-14 backdrop-blur-md bg-black/60 border-b border-white/5">
         <div className="w-full max-w-5xl mx-auto flex items-center justify-between gap-4">
@@ -401,7 +409,7 @@ export default function App() {
           allPosts={BLOG_POSTS}
         />
       ) : (
-        <main className="relative pt-24">
+        <main className="relative z-10 pt-24">
           {/* ========== HERO ========== */}
           <section className="min-h-screen flex items-center p-6 sm:p-10 lg:p-14">
             <div className="w-full max-w-2xl mx-auto text-left my-auto">

@@ -393,3 +393,4 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
     },
   },
 }
+
