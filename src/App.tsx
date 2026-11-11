@@ -302,7 +302,7 @@ export default function App() {
             </h2>
             <p className="text-sm text-white/60 leading-relaxed mb-6">
               Yes, you are inspecting the actual live Linux machine hosting this portfolio.
-              Feel free to poke around and verify what's running under the hood — don't worry, you can't break it.
+              Feel free to poke around and verify what's running under the hood - don't worry, you can't break it.
             </p>
 
             <div className="h-[480px] w-full">
@@ -311,10 +311,10 @@ export default function App() {
           </div>
         </section>
 
-        {/* ========== 01 — ABOUT ========== */}
+        {/* ========== 01 - ABOUT ========== */}
         <section id="about" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
           <div className="w-full max-w-2xl mx-auto text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">01 — ABOUT</p>
+            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">01 - ABOUT</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
               Building systems
               <br />
@@ -322,7 +322,7 @@ export default function App() {
             </h2>
             <div className="space-y-4 text-sm text-white/60 leading-relaxed">
               <p>
-                Software Engineer comfortable owning a feature end-to-end — from system design
+                Software Engineer comfortable owning a feature end-to-end - from system design
                 to deployment. Production experience across backend systems, cloud infrastructure,
                 and full-stack delivery. Built and shipped real systems at Grevo Solutions and
                 contributed to AWS infrastructure design during an internship at Amazon.
@@ -338,13 +338,13 @@ export default function App() {
               <div className="border border-white/10 p-5">
                 <div className="text-xl font-bold">FPT University</div>
                 <div className="font-mono text-[10px] text-white/30 mt-1">BACHELOR OF ENGINEERING</div>
-                <div className="text-xs text-white/50 mt-2">Computer Science · Sep 2022 – Present</div>
+                <div className="text-xs text-white/50 mt-2">Computer Science · Sep 2022 - Present</div>
                 <div className="text-[11px] text-white/30 mt-1">Ho Chi Minh City, VN</div>
               </div>
               <div className="border border-white/10 p-5">
                 <div className="text-xl font-bold">Multimedia University</div>
                 <div className="font-mono text-[10px] text-white/30 mt-1">STUDENT EXCHANGE PROGRAM</div>
-                <div className="text-xs text-white/50 mt-2">Interpersonal Communication · Jan – Apr 2023</div>
+                <div className="text-xs text-white/50 mt-2">Interpersonal Communication · Jan - Apr 2023</div>
                 <div className="text-[11px] text-white/30 mt-1">Malaysia</div>
               </div>
             </div>
@@ -359,10 +359,10 @@ export default function App() {
           </div>
         </section>
 
-        {/* ========== 02 — EXPERIENCE ========== */}
+        {/* ========== 02 - EXPERIENCE ========== */}
         <section id="experience" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
           <div className="w-full max-w-2xl mx-auto text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">02 — EXPERIENCE</p>
+            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">02 - EXPERIENCE</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
               Where I've
               <br />
@@ -370,11 +370,11 @@ export default function App() {
             </h2>
 
             <div className="space-y-12">
-              {/* Amazon Web Services (AWS) — Cloud Infrastructure Intern */}
+              {/* Amazon Web Services (AWS) - Cloud Infrastructure Intern */}
               <article className="border-l border-white/10 pl-6">
                 <div className="flex items-baseline justify-between gap-4 mb-3">
                   <h3 className="text-lg font-bold">Cloud Infrastructure Intern</h3>
-                  <span className="font-mono text-[10px] text-white/30 shrink-0">JAN — AUG 2026</span>
+                  <span className="font-mono text-[10px] text-white/30 shrink-0">JAN - AUG 2026</span>
                 </div>
                 <p className="text-xs font-mono text-white/40 mb-3">AMAZON WEB SERVICES (AWS) · Ho Chi Minh City · On-site</p>
                 <p className="text-sm text-white/50 leading-relaxed mb-3">
@@ -394,11 +394,11 @@ export default function App() {
                 </div>
               </article>
 
-              {/* Grevo Solutions — Founding Engineer */}
+              {/* Grevo Solutions - Founding Engineer */}
               <article className="border-l border-white/10 pl-6">
                 <div className="flex items-baseline justify-between gap-4 mb-3">
                   <h3 className="text-lg font-bold">Founding Engineer & Project Lead</h3>
-                  <span className="font-mono text-[10px] text-white/30 shrink-0">MAR 2025 — JAN 2026</span>
+                  <span className="font-mono text-[10px] text-white/30 shrink-0">MAR 2025 - JAN 2026</span>
                 </div>
                 <p className="text-xs font-mono text-white/40 mb-3">GREVO SOLUTIONS · Ho Chi Minh City · On-site</p>
                 <p className="text-sm text-white/50 leading-relaxed mb-3">
@@ -420,11 +420,11 @@ export default function App() {
                 </div>
               </article>
 
-              {/* FPT Education — Technical Staff */}
+              {/* FPT Education - Technical Staff */}
               <article className="border-l border-white/10 pl-6">
                 <div className="flex items-baseline justify-between gap-4 mb-3">
                   <h3 className="text-lg font-bold">Technical Staff</h3>
-                  <span className="font-mono text-[10px] text-white/30 shrink-0">JAN 2023 — AUG 2024</span>
+                  <span className="font-mono text-[10px] text-white/30 shrink-0">JAN 2023 - AUG 2024</span>
                 </div>
                 <p className="text-xs font-mono text-white/40 mb-3">FPT EDUCATION · Ho Chi Minh City · On-site</p>
                 <p className="text-sm text-white/50 leading-relaxed mb-3">
@@ -433,17 +433,17 @@ export default function App() {
                 <ul className="space-y-2 text-sm text-white/50 leading-relaxed">
                   <li>• Built and maintained internal student management web applications serving the FPT Education division, handling user account management and reporting workflows</li>
                   <li>• Managed and maintained computer equipment and technical facilities to ensure system availability</li>
-                  <li>• Coordinated major events including F-Camp 2023 — recognized as one of the top 20 outstanding contributors in the organization</li>
+                  <li>• Coordinated major events including F-Camp 2023 - recognized as one of the top 20 outstanding contributors in the organization</li>
                 </ul>
               </article>
             </div>
           </div>
         </section>
 
-        {/* ========== 03 — PROJECTS ========== */}
+        {/* ========== 03 - PROJECTS ========== */}
         <section id="projects" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
           <div className="w-full max-w-2xl mx-auto text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">03 — PROJECTS</p>
+            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">03 - PROJECTS</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
               Personal &
               <br />
@@ -451,7 +451,7 @@ export default function App() {
             </h2>
 
             <div className="space-y-10">
-              {/* LordNine Bot — MMORPG Automation Framework */}
+              {/* LordNine Bot - MMORPG Automation Framework */}
               <article className="border border-white/10 p-6 hover:border-white/30 transition-colors">
                 <div className="flex items-baseline justify-between gap-4 mb-2">
                   <h3 className="text-lg font-bold">LordNine Bot · Automation Framework</h3>
@@ -466,7 +466,7 @@ export default function App() {
                     >
                       <GithubIcon className="w-4 h-4" />
                     </a>
-                    <span className="font-mono text-[10px] text-white/30">MAR — APR 2026</span>
+                    <span className="font-mono text-[10px] text-white/30">MAR - APR 2026</span>
                   </div>
                 </div>
                 <p className="text-xs font-mono text-white/30 mb-4">PERSONAL PROJECT · SAAS PRODUCT</p>
@@ -477,9 +477,9 @@ export default function App() {
                 <ul className="space-y-2 text-sm text-white/40">
                   <li>• Built a production-grade NPC automation engine controlling 100+ concurrent instances with sessions up to 36 hours</li>
                   <li>• Designed a no-code visual flowchart engine achieving ~85% task completion rate and 99.99% visual state detection accuracy via OpenCV template matching</li>
-                  <li>• Replaced Playwright with a custom CDP client, reducing per-instance memory from ~100MB to ~1KB — enabling 100+ concurrency on consumer hardware</li>
-                  <li>• Implemented AIMD adaptive screenshot scheduling (150ms–800ms) and GUI queue coalescing, achieving ~90% reduction in UI update overhead</li>
-                  <li>• Shipped a complete SaaS pipeline: HWID-bound license system, SHA256-verified auto-update, and Windows installer — iterated to v3.24+ across 34 releases in 2 months</li>
+                  <li>• Replaced Playwright with a custom CDP client, reducing per-instance memory from ~100MB to ~1KB - enabling 100+ concurrency on consumer hardware</li>
+                  <li>• Implemented AIMD adaptive screenshot scheduling (150ms-800ms) and GUI queue coalescing, achieving ~90% reduction in UI update overhead</li>
+                  <li>• Shipped a complete SaaS pipeline: HWID-bound license system, SHA256-verified auto-update, and Windows installer - iterated to v3.24+ across 34 releases in 2 months</li>
                 </ul>
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {['Python 3.13', 'OpenCV', 'Chrome DevTools Protocol', 'CustomTkinter', 'SQLite', 'Vercel', 'PyInstaller', 'Inno Setup'].map(t => (
@@ -488,7 +488,7 @@ export default function App() {
                 </div>
               </article>
 
-              {/* Attenda — Smart Attendance System */}
+              {/* Attenda - Smart Attendance System */}
               <article className="border border-white/10 p-6 hover:border-white/30 transition-colors">
                 <div className="flex items-baseline justify-between gap-4 mb-2">
                   <h3 className="text-lg font-bold">Attenda · Smart Attendance System</h3>
@@ -503,7 +503,7 @@ export default function App() {
                     >
                       <GithubIcon className="w-4 h-4" />
                     </a>
-                    <span className="font-mono text-[10px] text-white/30 shrink-0">MAR — AUG 2025</span>
+                    <span className="font-mono text-[10px] text-white/30 shrink-0">MAR - AUG 2025</span>
                   </div>
                 </div>
                 <p className="text-xs font-mono text-white/30 mb-4">TEAM LEAD · 4 PERSON TEAM</p>
@@ -525,10 +525,10 @@ export default function App() {
           </div>
         </section>
 
-        {/* ========== 04 — SKILLS ========== */}
+        {/* ========== 04 - SKILLS ========== */}
         <section id="skills" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
           <div className="w-full max-w-2xl mx-auto text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">04 — SKILLS</p>
+            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">04 - SKILLS</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
               Technical
               <br />
@@ -557,10 +557,10 @@ export default function App() {
           </div>
         </section>
 
-        {/* ========== 05 — CONTACT ========== */}
+        {/* ========== 05 - CONTACT ========== */}
         <section id="contact" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
           <div className="w-full max-w-2xl mx-auto text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">05 — CONTACT</p>
+            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">05 - CONTACT</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
               Let's build
               <br />

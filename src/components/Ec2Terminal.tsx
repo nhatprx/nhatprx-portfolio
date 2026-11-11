@@ -60,7 +60,7 @@ export default function Ec2Terminal() {
       case 'help':
         newEntries.push({
           type: 'output',
-          text: `Production Node Guest Terminal — Available Read-Only Commands:
+          text: `Production Node Guest Terminal - Available Read-Only Commands:
   • uname -a           - Print Linux kernel & AWS architecture
   • docker ps          - List running production containers
   • top / htop         - Inspect CPU, memory & process table
@@ -170,7 +170,7 @@ drwxr-xr-x 7 ubuntu ubuntu 4096 Nov 08 11:20 lordnine-automation
           newEntries.push({
             type: 'output',
             text: `===========================================================
-PHAM MINH NHAT (nhatprx) — Software Engineer
+PHAM MINH NHAT (nhatprx) - Software Engineer
 Location: Ho Chi Minh City, Vietnam
 GitHub: https://github.com/nhatprx
 LinkedIn: https://linkedin.com/in/nhatprx/
@@ -216,7 +216,7 @@ Server: nginx/1.26.0 (Ubuntu)
 Date: ${new Date().toUTCString()}
 Content-Type: application/json; charset=utf-8
 X-Powered-By: Spring Boot & React
-Status: 200 OK — Health check passed (Latency: 1.2ms)`,
+Status: 200 OK - Health check passed (Latency: 1.2ms)`,
         })
         break
 
