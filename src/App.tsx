@@ -568,8 +568,8 @@ export default function App() {
 
       <main className="relative z-10 pt-16 sm:pt-20">
         {/* ========== HERO & TERMINAL (STACKED: HERO CONTENT ON TOP OF TERMINAL) ========== */}
-        <section id="hero" className="flex flex-col justify-between px-6 sm:px-10 lg:px-14 pt-2 sm:pt-4 pb-8 sm:pb-12 min-h-[calc(100vh-4rem)] sm:min-h-[calc(100vh-5rem)]">
-          <div className="w-full flex flex-col space-y-3 sm:space-y-4">
+        <section id="hero" className="flex flex-col justify-center px-6 sm:px-10 lg:px-14 py-3 sm:py-4 min-h-[calc(100vh-4rem)] sm:min-h-[calc(100vh-5rem)]">
+          <div className="w-full flex flex-col space-y-3 sm:space-y-4 my-auto">
             {/* Top: Hero Content */}
             <div className="w-full text-left">
               <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 uppercase mb-1.5">{t.hero.role}</p>
@@ -608,7 +608,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Terminal & Live Server Telemetry (7/3 Split) */}
+            {/* Terminal & Live Server Telemetry (6/4 Split) */}
             <div id="terminal" className="w-full flex flex-col justify-center">
               <div className="flex items-center justify-between gap-4 mb-2">
                 <p className="font-mono text-[10px] tracking-[0.4em] text-emerald-400/90 flex items-center gap-2">
@@ -620,10 +620,10 @@ export default function App() {
                 </span>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 sm:gap-5 h-auto lg:h-[420px] xl:h-[460px] 2xl:h-[500px] w-full">
-                <div className="lg:col-span-7 h-[380px] sm:h-[420px] lg:h-full min-h-0">
+                <div className="lg:col-span-6 h-[380px] sm:h-[420px] lg:h-full min-h-0">
                   <Ec2Terminal />
                 </div>
-                <div className="lg:col-span-3 h-[340px] sm:h-[380px] lg:h-full min-h-0">
+                <div className="lg:col-span-4 h-[340px] sm:h-[380px] lg:h-full min-h-0">
                   <ServerTelemetry />
                 </div>
               </div>
