@@ -247,8 +247,6 @@ export default function App() {
   const [activeExp, setActiveExp] = useState(0)
   const [windowWidth, setWindowWidth] = useState(() => (typeof window !== 'undefined' ? window.innerWidth : 1000))
   const [touchStartX, setTouchStartX] = useState<number | null>(null)
-  const horizontalTrackRef = useRef<HTMLDivElement>(null)
-  const [, setHorizontalProgress] = useState(0)
 
   const [lang, setLang] = useState<SupportedLang>(() => {
     const saved = localStorage.getItem('nhatprx_lang') as SupportedLang
@@ -307,27 +305,6 @@ export default function App() {
   }, [])
 
   const scrollTo = (target: string | number) => {
-    if (typeof target === 'string' && ['#about', '#experience', '#projects', '#skills'].includes(target)) {
-      if (horizontalTrackRef.current) {
-        const rect = horizontalTrackRef.current.getBoundingClientRect()
-        const trackTop = window.scrollY + rect.top
-        const total = horizontalTrackRef.current.offsetHeight - window.innerHeight
-        const stepMap: Record<string, number> = {
-          '#about': 0,
-          '#experience': 1 / 3,
-          '#projects': 2 / 3,
-          '#skills': 1,
-        }
-        const targetY = trackTop + (stepMap[target] ?? 0) * total
-        if (lenisRef.current) {
-          lenisRef.current.scrollTo(targetY, { duration: 1.1 })
-        } else {
-          window.scrollTo({ top: targetY, behavior: 'smooth' })
-        }
-        return
-      }
-    }
-
     if (lenisRef.current) {
       lenisRef.current.scrollTo(target, { duration: 1.1 })
     } else {
@@ -338,22 +315,6 @@ export default function App() {
       }
     }
   }
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!horizontalTrackRef.current) return
-      const rect = horizontalTrackRef.current.getBoundingClientRect()
-      const total = horizontalTrackRef.current.offsetHeight - window.innerHeight
-      if (total <= 0) return
-      const current = -rect.top
-      const p = Math.max(0, Math.min(1, current / total))
-      setHorizontalProgress(p)
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll()
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth)
@@ -646,9 +607,9 @@ export default function App() {
               </div>
             </div>
 
-            {/* Bottom: Terminal */}
-            <div id="terminal" className="w-full flex flex-col">
-              <div className="flex items-center justify-between gap-4 mb-2">
+            {/* Terminal */}
+            <div id="terminal" className="w-full flex flex-col justify-center">
+              <div className="flex items-center justify-between gap-4 mb-2.5">
                 <p className="font-mono text-[10px] tracking-[0.4em] text-emerald-400/90 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block shrink-0" />
                   {t.server.tag}
@@ -657,7 +618,7 @@ export default function App() {
                   LIVE CLOUD NODE // AP-SOUTHEAST-1
                 </span>
               </div>
-              <div className="h-[400px] sm:h-[440px] lg:h-[460px] w-full">
+              <div className="h-[480px] sm:h-[540px] lg:h-[620px] xl:h-[680px] 2xl:h-[720px] w-full">
                 <Ec2Terminal />
               </div>
             </div>
@@ -777,8 +738,8 @@ export default function App() {
                       type="button"
                       onClick={() => jumpToChapter(idx)}
                       className={`font-mono text-[10px] tracking-wider px-3 py-1.5 border transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${realIndex === idx
-                          ? 'border-white bg-white text-black font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)]'
-                          : 'border-white/10 text-white/40 hover:text-white/70 hover:border-white/30 bg-white/[0.02]'
+                        ? 'border-white bg-white text-black font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)]'
+                        : 'border-white/10 text-white/40 hover:text-white/70 hover:border-white/30 bg-white/[0.02]'
                         }`}
                     >
                       <span>0{idx + 1}</span>
@@ -839,8 +800,8 @@ export default function App() {
                       >
                         <article
                           className={`h-full flex flex-col justify-between p-6 sm:p-8 border transition-all duration-300 ${isCenter
-                              ? 'border-white/30 bg-white/[0.04] shadow-[0_0_50px_rgba(255,255,255,0.06)]'
-                              : 'border-white/10 bg-white/[0.01]'
+                            ? 'border-white/30 bg-white/[0.04] shadow-[0_0_50px_rgba(255,255,255,0.06)]'
+                            : 'border-white/10 bg-white/[0.01]'
                             }`}
                         >
                           <div>
