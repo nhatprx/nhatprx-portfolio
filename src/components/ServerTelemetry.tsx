@@ -124,14 +124,14 @@ export default function ServerTelemetry() {
       </div>
 
       {/* Main Telemetry Body */}
-      <div className="flex-1 p-3.5 sm:p-4 overflow-y-auto space-y-4 text-xs leading-relaxed scrollbar-none">
+      <div className="flex-1 p-3 sm:p-3.5 overflow-y-auto space-y-3 text-xs leading-relaxed scrollbar-none">
         {/* Metric 1: CPU Load */}
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <div className="flex items-center justify-between text-[11px]">
             <span className="text-white/60 uppercase tracking-wider">CPU UTILIZATION</span>
             <span className="text-emerald-400 font-bold">{cpu}%</span>
           </div>
-          <div className="w-full h-1.5 bg-white/10 overflow-hidden">
+          <div className="w-full h-1 bg-white/10 overflow-hidden">
             <div
               className="h-full bg-emerald-400 transition-all duration-700 ease-out"
               style={{ width: `${cpu}%` }}
@@ -144,12 +144,12 @@ export default function ServerTelemetry() {
         </div>
 
         {/* Metric 2: Memory (RAM) */}
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <div className="flex items-center justify-between text-[11px]">
             <span className="text-white/60 uppercase tracking-wider">MEMORY (RAM)</span>
             <span className="text-white/90 font-bold">{ram} / 2048 MB</span>
           </div>
-          <div className="w-full h-1.5 bg-white/10 overflow-hidden">
+          <div className="w-full h-1 bg-white/10 overflow-hidden">
             <div
               className="h-full bg-white/80 transition-all duration-700 ease-out"
               style={{ width: `${ramPct}%` }}
@@ -260,3 +260,4 @@ export default function ServerTelemetry() {
     </div>
   )
 }
+
