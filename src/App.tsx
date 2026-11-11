@@ -1,37 +1,10 @@
 import { useState, useEffect } from 'react'
 import Ec2Terminal from './components/Ec2Terminal'
+import { TRANSLATIONS, type SupportedLang } from './data/translations'
+import { BLOG_POSTS } from './data/blogData'
+import BlogPostView from './components/BlogPostView'
 
 const CURRENT_YEAR = new Date().getFullYear()
-
-const BLOG_POSTS = [
-  {
-    title: 'Reverse-Engineering MMORPG Automation: Why CDP Beat Playwright by 10,000%',
-    date: 'APR 2026',
-    readTime: '6 MIN READ',
-    summary:
-      'How dissecting headless browser internals and swapping heavy WebDriver abstraction for lightweight raw Chrome DevTools Protocol sockets reduced per-instance memory from ~100MB to ~1KB, enabling 100+ concurrent worker instances on commodity hardware.',
-    tags: ['Python', 'CDP', 'Reverse Engineering', 'Performance'],
-    slug: 'cdp-vs-playwright-automation',
-  },
-  {
-    title: 'Designing an Edge-Cloud Biometric System with ESP32-S3 and TensorFlow',
-    date: 'AUG 2025',
-    readTime: '5 MIN READ',
-    summary:
-      'Architectural trade-offs of running on-device facial recognition on microcontrollers versus offloading to cloud workers: latency, privacy constraints, and resilient offline queueing with PostgreSQL synchronization.',
-    tags: ['IoT', 'ESP32-S3', 'TensorFlow', 'PostgreSQL'],
-    slug: 'edge-cloud-biometric-esp32',
-  },
-  {
-    title: 'Lessons from AWS Multi-Tenant Microservice Deployments and Docker Isolation',
-    date: 'JAN 2026',
-    readTime: '7 MIN READ',
-    summary:
-      'Key findings on VPC peering, container hardening, and egress optimization during cloud infrastructure design for production workloads.',
-    tags: ['AWS', 'Docker', 'DevOps', 'Architecture'],
-    slug: 'aws-microservice-docker-isolation',
-  },
-]
 
 const SKILL_CATEGORIES = [
   {
@@ -122,7 +95,11 @@ function ArrowUpIcon({ className = 'w-4 h-4' }: { className?: string }) {
   )
 }
 
-function ContactForm() {
+function ContactForm({
+  t,
+}: {
+  t: (typeof TRANSLATIONS)['en']
+}) {
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
@@ -141,13 +118,13 @@ function ContactForm() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Accept: 'application/json'
+          Accept: 'application/json',
         },
         body: JSON.stringify({
           _subject: `Portfolio Inquiry from ${email}`,
           email,
-          message
-        })
+          message,
+        }),
       })
 
       if (res.ok) {
@@ -159,7 +136,7 @@ function ContactForm() {
       }
     } catch {
       setStatus('error')
-      setErrorMessage('Could not deliver directly. Please email me directly at nhatprx@gmail.com')
+      setErrorMessage(t.contact.errorMsg)
     }
   }
 
@@ -167,7 +144,7 @@ function ContactForm() {
     <form onSubmit={handleSubmit} className="mb-10 space-y-4">
       <div>
         <label htmlFor="contact-email" className="block font-mono text-[10px] tracking-widest text-white/40 mb-2">
-          YOUR EMAIL
+          {t.contact.emailLabel}
         </label>
         <input
           id="contact-email"
@@ -182,7 +159,7 @@ function ContactForm() {
 
       <div>
         <label htmlFor="contact-message" className="block font-mono text-[10px] tracking-widest text-white/40 mb-2">
-          MESSAGE
+          {t.contact.msgLabel}
         </label>
         <textarea
           id="contact-message"
@@ -190,14 +167,14 @@ function ContactForm() {
           rows={4}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Tell me about your project, team, or opportunity..."
+          placeholder={t.contact.desc}
           className="w-full bg-white/5 border border-white/10 px-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-white/40 transition-colors resize-none"
         />
       </div>
 
       {status === 'success' && (
         <div className="p-3 bg-white/10 border border-white/20 text-xs font-mono text-white/90">
-          ✓ Message sent! Thank you, I will reply to your email soon.
+          {t.contact.successMsg}
         </div>
       )}
 
@@ -211,9 +188,9 @@ function ContactForm() {
         <button
           type="submit"
           disabled={status === 'sending'}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors disabled:opacity-50 cursor-pointer"
         >
-          {status === 'sending' ? 'SENDING...' : 'SEND MESSAGE →'}
+          {status === 'sending' ? t.contact.sendingBtn : t.contact.sendBtn}
         </button>
 
         <div className="flex items-center gap-2">
@@ -261,6 +238,15 @@ function ContactForm() {
 
 export default function App() {
   const [showTopBtn, setShowTopBtn] = useState(false)
+  const [activePostSlug, setActivePostSlug] = useState<string | null>(null)
+  const [lang, setLang] = useState<SupportedLang>(() => {
+    const saved = localStorage.getItem('nhatprx_lang') as SupportedLang
+    if (saved && ['en', 'vi', 'fr', 'ja'].includes(saved)) return saved
+    return 'en'
+  })
+
+  const t = TRANSLATIONS[lang]
+  const activePost = BLOG_POSTS.find((p) => p.slug === activePostSlug)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -270,408 +256,521 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  const handleLangChange = (newLang: SupportedLang) => {
+    setLang(newLang)
+    localStorage.setItem('nhatprx_lang', newLang)
+  }
+
+  const navigateToSection = (sectionId: string) => {
+    if (activePostSlug) {
+      setActivePostSlug(null)
+      setTimeout(() => {
+        const el = document.getElementById(sectionId)
+        el?.scrollIntoView({ behavior: 'smooth' })
+      }, 50)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black">
       {/* Top Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 p-6 sm:p-10 lg:px-14 backdrop-blur-md bg-black/40 border-b border-white/5">
-        <div className="w-full max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-xs tracking-[0.3em] text-white/80">NHATPRX</span>
+      <header className="fixed top-0 left-0 right-0 z-50 p-4 sm:p-6 lg:px-14 backdrop-blur-md bg-black/60 border-b border-white/5">
+        <div className="w-full max-w-5xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              onClick={() => {
+                setActivePostSlug(null)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+              className="font-mono text-xs tracking-[0.3em] text-white/80 hover:text-white transition-colors cursor-pointer"
+            >
+              NHATPRX
+            </button>
             <span className="w-1.5 h-1.5 rounded-full bg-white" />
             <span className="font-mono text-xs text-white/40">2026</span>
           </div>
-          <nav className="hidden md:flex items-center gap-8 text-xs font-mono tracking-wider text-white/40">
-            <a href="#terminal" className="hover:text-white transition-colors">LIVE LAB</a>
-            <a href="#about" className="hover:text-white transition-colors">ABOUT</a>
-            <a href="#experience" className="hover:text-white transition-colors">EXPERIENCE</a>
-            <a href="#projects" className="hover:text-white transition-colors">PROJECTS</a>
-            <a href="#skills" className="hover:text-white transition-colors">SKILLS</a>
-            <a href="#blog" className="hover:text-white transition-colors">BLOG</a>
-            <a href="#contact" className="hover:text-white transition-colors">CONTACT</a>
+
+          <nav className="hidden lg:flex items-center gap-6 text-xs font-mono tracking-wider text-white/40">
+            <a
+              href="#terminal"
+              onClick={() => navigateToSection('terminal')}
+              className="hover:text-white transition-colors"
+            >
+              {t.nav.liveLab}
+            </a>
+            <a
+              href="#about"
+              onClick={() => navigateToSection('about')}
+              className="hover:text-white transition-colors"
+            >
+              {t.nav.about}
+            </a>
+            <a
+              href="#experience"
+              onClick={() => navigateToSection('experience')}
+              className="hover:text-white transition-colors"
+            >
+              {t.nav.experience}
+            </a>
+            <a
+              href="#projects"
+              onClick={() => navigateToSection('projects')}
+              className="hover:text-white transition-colors"
+            >
+              {t.nav.projects}
+            </a>
+            <a
+              href="#skills"
+              onClick={() => navigateToSection('skills')}
+              className="hover:text-white transition-colors"
+            >
+              {t.nav.skills}
+            </a>
+            <a
+              href="#blog"
+              onClick={() => navigateToSection('blog')}
+              className="hover:text-white transition-colors"
+            >
+              {t.nav.blog}
+            </a>
+            <a
+              href="#contact"
+              onClick={() => navigateToSection('contact')}
+              className="hover:text-white transition-colors"
+            >
+              {t.nav.contact}
+            </a>
           </nav>
-          <div className="flex items-center gap-3">
-            <a href="https://github.com/nhatprx" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-white/40 hover:text-white transition-colors">
+
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Language Switcher */}
+            <div className="flex items-center border border-white/15 bg-white/[0.02]">
+              {(['en', 'vi', 'fr', 'ja'] as const).map((l) => (
+                <button
+                  key={l}
+                  onClick={() => handleLangChange(l)}
+                  aria-label={`Switch to ${l.toUpperCase()}`}
+                  className={`px-2 py-0.5 font-mono text-[10px] uppercase transition-colors cursor-pointer ${
+                    lang === l
+                      ? 'bg-white text-black font-semibold'
+                      : 'text-white/40 hover:text-white'
+                  }`}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+
+            <a
+              href="https://github.com/nhatprx"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="GitHub"
+              className="text-white/40 hover:text-white transition-colors"
+            >
               <GithubIcon className="w-4 h-4" />
             </a>
-            <a href="https://www.linkedin.com/in/nhatprx/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-white/40 hover:text-white transition-colors">
+            <a
+              href="https://www.linkedin.com/in/nhatprx/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="LinkedIn"
+              className="text-white/40 hover:text-white transition-colors"
+            >
               <LinkedinIcon className="w-4 h-4" />
             </a>
           </div>
         </div>
       </header>
 
-      {/* Main Content Area: Centered Layout */}
-      <main className="relative pt-24">
-        {/* ========== HERO ========== */}
-        <section className="min-h-screen flex items-center p-6 sm:p-10 lg:p-14">
-          <div className="w-full max-w-2xl mx-auto text-left my-auto">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-4">SOFTWARE ENGINEER</p>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[0.95]">
-              Minh Nhat
-              <br />
-              <span className="text-white/20">Pham.</span>
-            </h1>
-            <p className="mt-6 text-sm text-white/50 leading-relaxed max-w-md">
-              Software Engineer with production experience across backend systems,
-              cloud infrastructure, and full-stack delivery. Built and shipped real systems
-              at Grevo Solutions and contributed to AWS infrastructure design during an internship at Amazon.
-            </p>
-
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <a
-                href="#contact"
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors"
-              >
-                GET IN TOUCH
-                <span aria-hidden="true">→</span>
-              </a>
-              <a
-                href="/%5Bnhatprx%5D%20PERSONAL%20RESUME.pdf"
-                download="[nhatprx] PERSONAL RESUME.pdf"
-                className="inline-flex items-center gap-2 px-5 py-2.5 border border-white/20 text-white font-mono text-xs font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-colors"
-              >
-                <DownloadIcon className="w-3.5 h-3.5 text-white/60" />
-                RESUME
-              </a>
-            </div>
-          </div>
-        </section>
-
-        {/* ========== LIVE CLOUD LAB ========== */}
-        <section id="terminal" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
-          <div className="w-full max-w-2xl mx-auto text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-emerald-400/90 mb-4 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-emerald-400 animate-pulse" />
-              LIVE TELEMETRY
-            </p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-              This is the real server.
-              <br />
-              <span className="text-white/30">Try it out.</span>
-            </h2>
-            <p className="text-sm text-white/60 leading-relaxed mb-6">
-              Yes, you are inspecting the actual live Linux machine hosting this portfolio.
-              Feel free to poke around and verify what's running under the hood - don't worry, you can't break it.
-            </p>
-
-            <div className="h-[480px] w-full">
-              <Ec2Terminal />
-            </div>
-          </div>
-        </section>
-
-        {/* ========== 01 - ABOUT ========== */}
-        <section id="about" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
-          <div className="w-full max-w-2xl mx-auto text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">01 - ABOUT</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
-              Building systems
-              <br />
-              <span className="text-white/30">that scale.</span>
-            </h2>
-            <div className="space-y-4 text-sm text-white/60 leading-relaxed">
-              <p>
-                Software Engineer comfortable owning a feature end-to-end - from system design
-                to deployment. Production experience across backend systems, cloud infrastructure,
-                and full-stack delivery. Built and shipped real systems at Grevo Solutions and
-                contributed to AWS infrastructure design during an internship at Amazon.
+      {/* View Switch: Article View vs Main Portfolio */}
+      {activePost ? (
+        <BlogPostView
+          post={activePost}
+          t={t}
+          onBack={() => {
+            setActivePostSlug(null)
+            setTimeout(() => {
+              const el = document.getElementById('blog')
+              el?.scrollIntoView({ behavior: 'smooth' })
+            }, 50)
+          }}
+          onSelectPost={(slug) => {
+            setActivePostSlug(slug)
+          }}
+          allPosts={BLOG_POSTS}
+        />
+      ) : (
+        <main className="relative pt-24">
+          {/* ========== HERO ========== */}
+          <section className="min-h-screen flex items-center p-6 sm:p-10 lg:p-14">
+            <div className="w-full max-w-2xl mx-auto text-left my-auto">
+              <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-4">{t.hero.role}</p>
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[0.95]">
+                Minh Nhat
+                <br />
+                <span className="text-white/20">Pham.</span>
+              </h1>
+              <p className="mt-6 text-sm text-white/50 leading-relaxed max-w-md">
+                {t.hero.desc}
               </p>
-              <p>
-                Strong understanding of OOP, SOLID principles, and RESTful API design. Hands-on experience
-                with CI/CD pipelines (Jenkins) and containerized deployments (Docker, Google Cloud Run).
-                Familiar with AWS Well-Architected Framework across security, reliability, and performance pillars.
-              </p>
-            </div>
 
-            <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="border border-white/10 p-5">
-                <div className="text-xl font-bold">FPT University</div>
-                <div className="font-mono text-[10px] text-white/30 mt-1">BACHELOR OF ENGINEERING</div>
-                <div className="text-xs text-white/50 mt-2">Computer Science · Sep 2022 - Present</div>
-                <div className="text-[11px] text-white/30 mt-1">Ho Chi Minh City, VN</div>
-              </div>
-              <div className="border border-white/10 p-5">
-                <div className="text-xl font-bold">Multimedia University</div>
-                <div className="font-mono text-[10px] text-white/30 mt-1">STUDENT EXCHANGE PROGRAM</div>
-                <div className="text-xs text-white/50 mt-2">Interpersonal Communication · Jan - Apr 2023</div>
-                <div className="text-[11px] text-white/30 mt-1">Malaysia</div>
-              </div>
-            </div>
-
-            <div className="mt-8 flex flex-wrap gap-2">
-              {['English', 'Vietnamese (Native)', 'Japanese (Basic)'].map(lang => (
-                <span key={lang} className="font-mono text-[10px] px-3 py-1.5 border border-white/10 text-white/40">
-                  {lang}
-                </span>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ========== 02 - EXPERIENCE ========== */}
-        <section id="experience" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
-          <div className="w-full max-w-2xl mx-auto text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">02 - EXPERIENCE</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
-              Where I've
-              <br />
-              <span className="text-white/30">shipped code.</span>
-            </h2>
-
-            <div className="space-y-12">
-              {/* Amazon Web Services (AWS) - Cloud Infrastructure Intern */}
-              <article className="border-l border-white/10 pl-6">
-                <div className="flex items-baseline justify-between gap-4 mb-3">
-                  <h3 className="text-lg font-bold">Cloud Infrastructure Intern</h3>
-                  <span className="font-mono text-[10px] text-white/30 shrink-0">JAN - AUG 2026</span>
-                </div>
-                <p className="text-xs font-mono text-white/40 mb-3">AMAZON WEB SERVICES (AWS) · Ho Chi Minh City · On-site</p>
-                <p className="text-sm text-white/50 leading-relaxed mb-3">
-                  Contributed to designing and optimizing cloud infrastructure for a subscription-based web application on AWS,
-                  from architecture evaluation through hands-on implementation and cost optimization.
-                </p>
-                <ul className="space-y-2 text-sm text-white/50 leading-relaxed">
-                  <li>• Researched and recommended AWS architecture patterns tailored to workload profiles of thousands to tens of thousands of daily requests</li>
-                  <li>• Participated in architectural decisions and hands-on implementation of a subscription-based web application</li>
-                  <li>• Implemented monitoring and observability using CloudWatch for faster detection of performance bottlenecks</li>
-                  <li>• Optimized EC2 sizing, caching strategy, and storage configuration, contributing to ~17% cloud cost reduction</li>
-                </ul>
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {['EC2', 'S3', 'CloudFront', 'RDS', 'Lambda', 'API Gateway', 'ElastiCache (Redis)', 'ALB', 'CloudWatch'].map(t => (
-                    <span key={t} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">{t}</span>
-                  ))}
-                </div>
-              </article>
-
-              {/* Grevo Solutions - Founding Engineer */}
-              <article className="border-l border-white/10 pl-6">
-                <div className="flex items-baseline justify-between gap-4 mb-3">
-                  <h3 className="text-lg font-bold">Founding Engineer & Project Lead</h3>
-                  <span className="font-mono text-[10px] text-white/30 shrink-0">MAR 2025 - JAN 2026</span>
-                </div>
-                <p className="text-xs font-mono text-white/40 mb-3">GREVO SOLUTIONS · Ho Chi Minh City · On-site</p>
-                <p className="text-sm text-white/50 leading-relaxed mb-3">
-                  Led end-to-end technical ownership of a production-grade urban waste management platform,
-                  driving architecture decisions and team delivery from system design through cloud deployment.
-                </p>
-                <ul className="space-y-2 text-sm text-white/50 leading-relaxed">
-                  <li>• Led a team of 4 engineers across backend, frontend, and cloud infrastructure, owning architecture, code quality, and end-to-end delivery</li>
-                  <li>• Designed and implemented a Spring Boot backend with 91 REST APIs supporting citizen, collector, enterprise, and admin workflows</li>
-                  <li>• Built a Grab-inspired intelligent dispatch engine with GPS-based collector matching, coordinate smoothing, and dynamic order batching/splitting, reducing manual coordination by ~40%</li>
-                  <li>• Built a WebSocket-based real-time communication layer for task assignment, status updates, and live tracking</li>
-                  <li>• Implemented production-grade security and quality standards with JWT, OAuth2, RBAC, and over 81% unit/integration test coverage</li>
-                  <li>• Managed CI/CD via Jenkins, containerized deployments on Google Cloud Run, and migrated media storage to Amazon S3 for improved reliability and maintainability</li>
-                </ul>
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {['Java', 'Spring Boot', 'PostgreSQL', 'Redis', 'WebSocket', 'Docker', 'Jenkins', 'Google Cloud Run', 'AWS S3', 'VietMap API'].map(t => (
-                    <span key={t} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">{t}</span>
-                  ))}
-                </div>
-              </article>
-
-              {/* FPT Education - Technical Staff */}
-              <article className="border-l border-white/10 pl-6">
-                <div className="flex items-baseline justify-between gap-4 mb-3">
-                  <h3 className="text-lg font-bold">Technical Staff</h3>
-                  <span className="font-mono text-[10px] text-white/30 shrink-0">JAN 2023 - AUG 2024</span>
-                </div>
-                <p className="text-xs font-mono text-white/40 mb-3">FPT EDUCATION · Ho Chi Minh City · On-site</p>
-                <p className="text-sm text-white/50 leading-relaxed mb-3">
-                  Supported technical operations and internal software development at FPT Education, while contributing to organizational events and student-facing initiatives.
-                </p>
-                <ul className="space-y-2 text-sm text-white/50 leading-relaxed">
-                  <li>• Built and maintained internal student management web applications serving the FPT Education division, handling user account management and reporting workflows</li>
-                  <li>• Managed and maintained computer equipment and technical facilities to ensure system availability</li>
-                  <li>• Coordinated major events including F-Camp 2023 - recognized as one of the top 20 outstanding contributors in the organization</li>
-                </ul>
-              </article>
-            </div>
-          </div>
-        </section>
-
-        {/* ========== 03 - PROJECTS ========== */}
-        <section id="projects" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
-          <div className="w-full max-w-2xl mx-auto text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">03 - PROJECTS</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
-              Personal &
-              <br />
-              <span className="text-white/30">featured projects.</span>
-            </h2>
-
-            <div className="space-y-10">
-              {/* LordNine Bot - MMORPG Automation Framework */}
-              <article className="border border-white/10 p-6 hover:border-white/30 transition-colors">
-                <div className="flex items-baseline justify-between gap-4 mb-2">
-                  <h3 className="text-lg font-bold">LordNine Bot · Automation Framework</h3>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <a
-                      href="https://github.com/nhatprx"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label="View source code on GitHub"
-                      title="View source on GitHub"
-                      className="text-white/40 hover:text-white transition-colors"
-                    >
-                      <GithubIcon className="w-4 h-4" />
-                    </a>
-                    <span className="font-mono text-[10px] text-white/30">MAR - APR 2026</span>
-                  </div>
-                </div>
-                <p className="text-xs font-mono text-white/30 mb-4">PERSONAL PROJECT · SAAS PRODUCT</p>
-                <p className="text-sm text-white/50 leading-relaxed mb-4">
-                  Built and shipped a production-grade MMORPG automation framework as a SaaS product, handling
-                  100+ concurrent instances with a full distribution pipeline iterated across 34 releases in 2 months.
-                </p>
-                <ul className="space-y-2 text-sm text-white/40">
-                  <li>• Built a production-grade NPC automation engine controlling 100+ concurrent instances with sessions up to 36 hours</li>
-                  <li>• Designed a no-code visual flowchart engine achieving ~85% task completion rate and 99.99% visual state detection accuracy via OpenCV template matching</li>
-                  <li>• Replaced Playwright with a custom CDP client, reducing per-instance memory from ~100MB to ~1KB - enabling 100+ concurrency on consumer hardware</li>
-                  <li>• Implemented AIMD adaptive screenshot scheduling (150ms-800ms) and GUI queue coalescing, achieving ~90% reduction in UI update overhead</li>
-                  <li>• Shipped a complete SaaS pipeline: HWID-bound license system, SHA256-verified auto-update, and Windows installer - iterated to v3.24+ across 34 releases in 2 months</li>
-                </ul>
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {['Python 3.13', 'OpenCV', 'Chrome DevTools Protocol', 'CustomTkinter', 'SQLite', 'Vercel', 'PyInstaller', 'Inno Setup'].map(t => (
-                    <span key={t} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">{t}</span>
-                  ))}
-                </div>
-              </article>
-
-              {/* Attenda - Smart Attendance System */}
-              <article className="border border-white/10 p-6 hover:border-white/30 transition-colors">
-                <div className="flex items-baseline justify-between gap-4 mb-2">
-                  <h3 className="text-lg font-bold">Attenda · Smart Attendance System</h3>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <a
-                      href="https://github.com/nhatprx"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label="View source code on GitHub"
-                      title="View source on GitHub"
-                      className="text-white/40 hover:text-white transition-colors"
-                    >
-                      <GithubIcon className="w-4 h-4" />
-                    </a>
-                    <span className="font-mono text-[10px] text-white/30 shrink-0">MAR - AUG 2025</span>
-                  </div>
-                </div>
-                <p className="text-xs font-mono text-white/30 mb-4">TEAM LEAD · 4 PERSON TEAM</p>
-                <p className="text-sm text-white/50 leading-relaxed mb-4">
-                  Led a 4-person team to build a cost-optimized smart attendance system for university use,
-                  combining ESP32-S3 edge hardware with a cloud-connected web dashboard.
-                </p>
-                <ul className="space-y-2 text-sm text-white/40">
-                  <li>• Engineered edge-based attendance hardware using ESP32-S3 with fingerprint sensor, minimizing cloud overhead through local processing; implemented TensorFlow face recognition achieving ~95% accuracy with &lt;1.5s latency</li>
-                  <li>• Built a React + TypeScript dashboard managing 1,000+ student records with real-time monitoring; designed Python/PostgreSQL backend handling 500+ daily attendance events</li>
-                </ul>
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {['ESP32-S3', 'TensorFlow', 'React', 'TypeScript', 'Python', 'Gunicorn', 'PostgreSQL'].map(t => (
-                    <span key={t} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">{t}</span>
-                  ))}
-                </div>
-              </article>
-            </div>
-          </div>
-        </section>
-
-        {/* ========== 04 - SKILLS ========== */}
-        <section id="skills" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
-          <div className="w-full max-w-2xl mx-auto text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">04 - SKILLS</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
-              Technical
-              <br />
-              <span className="text-white/30">stack.</span>
-            </h2>
-
-            <div className="divide-y divide-white/10 border-t border-b border-white/10">
-              {SKILL_CATEGORIES.map(group => (
-                <div key={group.title} className="py-5 sm:grid sm:grid-cols-12 sm:gap-4 items-start">
-                  <h3 className="sm:col-span-4 font-mono text-[10px] tracking-[0.25em] text-white/30 mb-2 sm:mb-0 pt-2">
-                    {group.title}
-                  </h3>
-                  <div className={`sm:col-span-8 ${group.gridClass}`}>
-                    {group.skills.map(s => (
-                      <span
-                        key={s}
-                        className="flex items-center justify-start text-left font-mono text-xs px-3 h-9 bg-white/[0.03] border border-white/10 text-white/80 hover:text-white hover:border-white/30 transition-colors w-full whitespace-nowrap"
-                      >
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ========== 05 - BLOG ========== */}
-        <section id="blog" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
-          <div className="w-full max-w-2xl mx-auto text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">05 - BLOG</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
-              Engineering
-              <br />
-              <span className="text-white/30">notes.</span>
-            </h2>
-
-            <div className="space-y-6">
-              {BLOG_POSTS.map(post => (
-                <article
-                  key={post.slug}
-                  className="border border-white/10 p-6 hover:border-white/30 transition-colors"
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <a
+                  href="#contact"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors"
                 >
-                  <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
-                    <span className="font-mono text-[10px] text-white/40 tracking-wider">
-                      {post.date} · {post.readTime}
-                    </span>
+                  {t.hero.getInTouch}
+                  <span aria-hidden="true">→</span>
+                </a>
+                <a
+                  href="/%5Bnhatprx%5D%20PERSONAL%20RESUME.pdf"
+                  download="[nhatprx] PERSONAL RESUME.pdf"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 border border-white/20 text-white font-mono text-xs font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-colors"
+                >
+                  <DownloadIcon className="w-3.5 h-3.5 text-white/60" />
+                  {t.hero.resume}
+                </a>
+              </div>
+            </div>
+          </section>
+
+          {/* ========== LIVE CLOUD LAB ========== */}
+          <section id="terminal" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
+            <div className="w-full max-w-2xl mx-auto text-left">
+              <p className="font-mono text-[10px] tracking-[0.4em] text-emerald-400/90 mb-4 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 bg-emerald-400 animate-pulse" />
+                {t.server.tag}
+              </p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+                {t.server.title}
+                <br />
+                <span className="text-white/30">{t.server.titleSub}</span>
+              </h2>
+              <p className="text-sm text-white/60 leading-relaxed mb-6">
+                {t.server.desc}
+              </p>
+
+              <div className="h-[480px] w-full">
+                <Ec2Terminal />
+              </div>
+            </div>
+          </section>
+
+          {/* ========== 01 - ABOUT ========== */}
+          <section id="about" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
+            <div className="w-full max-w-2xl mx-auto text-left">
+              <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.about.tag}</p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
+                {t.about.title}
+                <br />
+                <span className="text-white/30">{t.about.titleSub}</span>
+              </h2>
+              <div className="space-y-4 text-sm text-white/60 leading-relaxed">
+                <p>{t.about.p1}</p>
+                <p>{t.about.p2}</p>
+              </div>
+
+              <div className="mt-10">
+                <h3 className="font-mono text-[10px] tracking-[0.25em] text-white/30 mb-4 uppercase">
+                  {t.about.educationTitle}
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="border border-white/10 p-5">
+                    <div className="text-lg font-bold">{t.about.edu1School}</div>
+                    <div className="font-mono text-[10px] text-white/30 mt-1">BACHELOR OF ENGINEERING</div>
+                    <div className="text-xs text-white/50 mt-2">{t.about.edu1Major}</div>
+                    <div className="text-[11px] text-white/30 mt-1">{t.about.edu1Dates}</div>
                   </div>
-                  <h3 className="text-lg font-bold tracking-tight mb-3 text-white">
-                    {post.title}
-                  </h3>
-                  <p className="text-sm text-white/50 leading-relaxed mb-4">
-                    {post.summary}
+                  <div className="border border-white/10 p-5">
+                    <div className="text-lg font-bold">{t.about.edu2School}</div>
+                    <div className="font-mono text-[10px] text-white/30 mt-1">STUDENT EXCHANGE PROGRAM</div>
+                    <div className="text-xs text-white/50 mt-2">{t.about.edu2Major}</div>
+                    <div className="text-[11px] text-white/30 mt-1">{t.about.edu2Dates}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 flex flex-wrap gap-2">
+                {['English (Fluent)', 'Vietnamese (Native)', 'Japanese (Basic)', 'French (Familiar)'].map(langItem => (
+                  <span key={langItem} className="font-mono text-[10px] px-3 py-1.5 border border-white/10 text-white/40">
+                    {langItem}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ========== 02 - EXPERIENCE ========== */}
+          <section id="experience" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
+            <div className="w-full max-w-2xl mx-auto text-left">
+              <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.experience.tag}</p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
+                {t.experience.title}
+                <br />
+                <span className="text-white/30">{t.experience.titleSub}</span>
+              </h2>
+
+              <div className="space-y-12">
+                {/* Amazon Web Services (AWS) - Cloud Infrastructure Intern */}
+                <article className="border-l border-white/10 pl-6">
+                  <div className="flex items-baseline justify-between gap-4 mb-3">
+                    <h3 className="text-lg font-bold">Cloud Infrastructure Intern</h3>
+                    <span className="font-mono text-[10px] text-white/30 shrink-0">JAN - AUG 2026</span>
+                  </div>
+                  <p className="text-xs font-mono text-white/40 mb-3">AMAZON WEB SERVICES (AWS) · Ho Chi Minh City · On-site</p>
+                  <p className="text-sm text-white/50 leading-relaxed mb-3">
+                    Contributed to designing and optimizing cloud infrastructure for a subscription-based web application on AWS,
+                    from architecture evaluation through hands-on implementation and cost optimization.
                   </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {post.tags.map(t => (
-                      <span key={t} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">
-                        {t}
-                      </span>
+                  <ul className="space-y-2 text-sm text-white/50 leading-relaxed">
+                    <li>• Researched and recommended AWS architecture patterns tailored to workload profiles of thousands to tens of thousands of daily requests</li>
+                    <li>• Participated in architectural decisions and hands-on implementation of a subscription-based web application</li>
+                    <li>• Implemented monitoring and observability using CloudWatch for faster detection of performance bottlenecks</li>
+                    <li>• Optimized EC2 sizing, caching strategy, and storage configuration, contributing to ~17% cloud cost reduction</li>
+                  </ul>
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {['EC2', 'S3', 'CloudFront', 'RDS', 'Lambda', 'API Gateway', 'ElastiCache (Redis)', 'ALB', 'CloudWatch'].map(tech => (
+                      <span key={tech} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">{tech}</span>
                     ))}
                   </div>
                 </article>
-              ))}
+
+                {/* Grevo Solutions - Founding Engineer */}
+                <article className="border-l border-white/10 pl-6">
+                  <div className="flex items-baseline justify-between gap-4 mb-3">
+                    <h3 className="text-lg font-bold">Founding Engineer & Project Lead</h3>
+                    <span className="font-mono text-[10px] text-white/30 shrink-0">MAR 2025 - JAN 2026</span>
+                  </div>
+                  <p className="text-xs font-mono text-white/40 mb-3">GREVO SOLUTIONS · Ho Chi Minh City · On-site</p>
+                  <p className="text-sm text-white/50 leading-relaxed mb-3">
+                    Led the end-to-end design and delivery of an intelligent waste management platform,
+                    serving as lead engineer across system architecture, edge integration, and cross-functional coordination.
+                  </p>
+                  <ul className="space-y-2 text-sm text-white/50 leading-relaxed">
+                    <li>• Designed end-to-end architecture connecting edge hardware, cloud backends, and multi-tenant management dashboards</li>
+                    <li>• Shipped an end-to-end platform for a multi-tenant client in Malaysia on AWS, integrating IoT edge devices with a Spring Boot and React stack</li>
+                    <li>• Built high-performance RESTful APIs with Spring Boot, optimizing database schemas across PostgreSQL and Redis</li>
+                    <li>• Owned production deployment pipelines using Docker, Jenkins CI/CD, and Google Cloud Run</li>
+                  </ul>
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {['Spring Boot', 'Java 21', 'ReactJS', 'PostgreSQL', 'Redis', 'Docker', 'Google Cloud Run', 'Jenkins', 'IoT'].map(tech => (
+                      <span key={tech} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">{tech}</span>
+                    ))}
+                  </div>
+                </article>
+
+                {/* FPT Education - Technical Staff */}
+                <article className="border-l border-white/10 pl-6">
+                  <div className="flex items-baseline justify-between gap-4 mb-3">
+                    <h3 className="text-lg font-bold">Technical Staff · Event Operations</h3>
+                    <span className="font-mono text-[10px] text-white/30 shrink-0">JAN 2023 - AUG 2024</span>
+                  </div>
+                  <p className="text-xs font-mono text-white/40 mb-3">FPT EDUCATION · Ho Chi Minh City · On-site</p>
+                  <p className="text-sm text-white/50 leading-relaxed mb-3">
+                    Provided technical and operational support for large-scale university events, workshops, and student programs.
+                  </p>
+                  <ul className="space-y-2 text-sm text-white/50 leading-relaxed">
+                    <li>• Managed technical infrastructure (networking, sound, visual systems, livestreaming) for campus-wide events with 1,000+ attendees</li>
+                    <li>• Coordinated major events including F-Camp 2023 - recognized as one of the top 20 outstanding contributors in the organization</li>
+                  </ul>
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {['Event Operations', 'Technical Infrastructure', 'Team Leadership'].map(tech => (
+                      <span key={tech} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">{tech}</span>
+                    ))}
+                  </div>
+                </article>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* ========== 06 - CONTACT ========== */}
-        <section id="contact" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
-          <div className="w-full max-w-2xl mx-auto text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">06 - CONTACT</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
-              Let's build
-              <br />
-              <span className="text-white/30">together.</span>
-            </h2>
-            <p className="text-sm text-white/50 leading-relaxed mb-10">
-              Available for full-time engineering roles, freelance opportunities,
-              and collaborative projects. Currently based in Ho Chi Minh City, Vietnam.
-            </p>
+          {/* ========== 03 - PROJECTS ========== */}
+          <section id="projects" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
+            <div className="w-full max-w-2xl mx-auto text-left">
+              <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.projects.tag}</p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
+                {t.projects.title}
+                <br />
+                <span className="text-white/30">{t.projects.titleSub}</span>
+              </h2>
 
-            <ContactForm />
-          </div>
-        </section>
+              <div className="space-y-8">
+                {/* LordNine Bot */}
+                <article className="border border-white/10 p-6 hover:border-white/30 transition-colors">
+                  <div className="flex items-baseline justify-between gap-4 mb-2">
+                    <h3 className="text-lg font-bold">LordNine Bot · Automation Framework</h3>
+                    <div className="flex items-center gap-3">
+                      <a
+                        href="https://github.com/nhatprx"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="View source code on GitHub"
+                        title="View source on GitHub"
+                        className="text-white/40 hover:text-white transition-colors"
+                      >
+                        <GithubIcon className="w-4 h-4" />
+                      </a>
+                      <span className="font-mono text-[10px] text-white/30">MAR - APR 2026</span>
+                    </div>
+                  </div>
+                  <p className="text-xs font-mono text-white/30 mb-4">SOLO DEVELOPER · 34 PRODUCTION RELEASES</p>
+                  <p className="text-sm text-white/50 leading-relaxed mb-4">
+                    High-performance MMORPG automation framework reverse-engineered and built for extreme concurrency on consumer hardware.
+                  </p>
+                  <ul className="space-y-2 text-sm text-white/40">
+                    <li>• Replaced Playwright with a custom CDP client, reducing per-instance memory from ~100MB to ~1KB - enabling 100+ concurrency on consumer hardware</li>
+                    <li>• Implemented AIMD adaptive screenshot scheduling (150ms-800ms) and GUI queue coalescing, achieving ~90% reduction in UI update overhead</li>
+                    <li>• Shipped a complete SaaS pipeline: HWID-bound license system, SHA256-verified auto-update, and Windows installer - iterated to v3.24+ across 34 releases in 2 months</li>
+                  </ul>
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {['Python 3.13', 'OpenCV', 'Chrome DevTools Protocol', 'CustomTkinter', 'SQLite', 'Vercel', 'PyInstaller', 'Inno Setup'].map(tech => (
+                      <span key={tech} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">{tech}</span>
+                    ))}
+                  </div>
+                </article>
 
-        {/* ========== FOOTER ========== */}
-        <footer className="border-t border-white/5 py-8 p-6 sm:p-10 lg:p-14">
-          <div className="w-full max-w-2xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono text-white/20">
-            <span>&copy; {CURRENT_YEAR} Minh Nhat Pham. All rights reserved.</span>
-            <span>Minimal Monochrome Edition</span>
-          </div>
-        </footer>
-      </main>
+                {/* Attenda */}
+                <article className="border border-white/10 p-6 hover:border-white/30 transition-colors">
+                  <div className="flex items-baseline justify-between gap-4 mb-2">
+                    <h3 className="text-lg font-bold">Attenda · Smart Attendance System</h3>
+                    <div className="flex items-center gap-3">
+                      <a
+                        href="https://github.com/nhatprx"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="View source code on GitHub"
+                        title="View source on GitHub"
+                        className="text-white/40 hover:text-white transition-colors"
+                      >
+                        <GithubIcon className="w-4 h-4" />
+                      </a>
+                      <span className="font-mono text-[10px] text-white/30 shrink-0">MAR - AUG 2025</span>
+                    </div>
+                  </div>
+                  <p className="text-xs font-mono text-white/30 mb-4">TEAM LEAD · 4 PERSON TEAM</p>
+                  <p className="text-sm text-white/50 leading-relaxed mb-4">
+                    Led a 4-person team to build a cost-optimized smart attendance system for university use,
+                    combining ESP32-S3 edge hardware with a cloud-connected web dashboard.
+                  </p>
+                  <ul className="space-y-2 text-sm text-white/40">
+                    <li>• Engineered edge-based attendance hardware using ESP32-S3 with fingerprint sensor, minimizing cloud overhead through local processing; implemented TensorFlow face recognition achieving ~95% accuracy with &lt;1.5s latency</li>
+                    <li>• Built a React + TypeScript dashboard managing 1,000+ student records with real-time monitoring; designed Python/PostgreSQL backend handling 500+ daily attendance events</li>
+                  </ul>
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {['ESP32-S3', 'TensorFlow', 'React', 'TypeScript', 'Python', 'Gunicorn', 'PostgreSQL'].map(tech => (
+                      <span key={tech} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">{tech}</span>
+                    ))}
+                  </div>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          {/* ========== 04 - SKILLS ========== */}
+          <section id="skills" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
+            <div className="w-full max-w-2xl mx-auto text-left">
+              <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.skills.tag}</p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
+                {t.skills.title}
+                <br />
+                <span className="text-white/30">{t.skills.titleSub}</span>
+              </h2>
+
+              <div className="divide-y divide-white/10 border-t border-b border-white/10">
+                {SKILL_CATEGORIES.map(group => (
+                  <div key={group.title} className="py-5 sm:grid sm:grid-cols-12 sm:gap-4 items-start">
+                    <h3 className="sm:col-span-4 font-mono text-[10px] tracking-[0.25em] text-white/30 mb-2 sm:mb-0 pt-2">
+                      {group.title}
+                    </h3>
+                    <div className={`sm:col-span-8 ${group.gridClass}`}>
+                      {group.skills.map(s => (
+                        <span
+                          key={s}
+                          className="flex items-center justify-start text-left font-mono text-xs px-3 h-9 bg-white/[0.03] border border-white/10 text-white/80 hover:text-white hover:border-white/30 transition-colors w-full whitespace-nowrap"
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ========== 05 - BLOG ========== */}
+          <section id="blog" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
+            <div className="w-full max-w-2xl mx-auto text-left">
+              <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.blog.tag}</p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
+                {t.blog.title}
+                <br />
+                <span className="text-white/30">{t.blog.titleSub}</span>
+              </h2>
+
+              <div className="space-y-6">
+                {BLOG_POSTS.map(post => (
+                  <article
+                    key={post.slug}
+                    onClick={() => {
+                      setActivePostSlug(post.slug)
+                      window.scrollTo({ top: 0, behavior: 'smooth' })
+                    }}
+                    className="border border-white/10 p-6 hover:border-white/30 transition-all cursor-pointer group bg-white/[0.01]"
+                  >
+                    <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+                      <span className="font-mono text-[10px] text-white/40 tracking-wider">
+                        {post.date} · {post.readTime}
+                      </span>
+                      <span className="font-mono text-[10px] text-white/40 group-hover:text-white transition-colors">
+                        {t.blog.readNote}
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-bold tracking-tight mb-3 text-white group-hover:text-white/90">
+                      {post.title}
+                    </h3>
+                    <p className="text-sm text-white/50 leading-relaxed mb-4">
+                      {post.summary}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {post.tags.map(tag => (
+                        <span key={tag} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ========== 06 - CONTACT ========== */}
+          <section id="contact" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
+            <div className="w-full max-w-2xl mx-auto text-left">
+              <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.contact.tag}</p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
+                {t.contact.title}
+                <br />
+                <span className="text-white/30">{t.contact.titleSub}</span>
+              </h2>
+              <p className="text-sm text-white/50 leading-relaxed mb-10">
+                {t.contact.desc}
+              </p>
+
+              <ContactForm t={t} />
+            </div>
+          </section>
+
+          {/* ========== FOOTER ========== */}
+          <footer className="border-t border-white/5 py-8 p-6 sm:p-10 lg:p-14">
+            <div className="w-full max-w-2xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono text-white/20">
+              <span>&copy; {CURRENT_YEAR} Minh Nhat Pham. {t.footer.rights}</span>
+              <span>{t.footer.edition}</span>
+            </div>
+          </footer>
+        </main>
+      )}
 
       {/* Back to top button */}
       {showTopBtn && (
