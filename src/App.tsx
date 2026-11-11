@@ -3,16 +3,6 @@ import { useState } from 'react'
 const CURRENT_YEAR = new Date().getFullYear()
 
 // Inline SVG icons (zero dep)
-function GlobeIcon({ className = 'w-5 h-5' }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-      <path d="M2 12h20" />
-    </svg>
-  )
-}
-
 function GithubIcon({ className = 'w-5 h-5' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -526,50 +516,47 @@ export default function App() {
 
               <ContactForm />
 
-              <div className="pt-4 border-t border-white/5">
+              <div className="pt-6 border-t border-white/5">
                 <p className="font-mono text-[10px] tracking-widest text-white/30 mb-4">DIRECT CHANNELS</p>
-                <div className="space-y-4">
-                <a href="https://nhatprx.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 border border-white/10 hover:border-white/30 transition-colors group">
-                  <GlobeIcon className="w-5 h-5 text-white/30 group-hover:text-white transition-colors" />
-                  <div>
-                    <div className="text-sm font-bold">nhatprx.com</div>
-                    <div className="text-xs text-white/30">Website</div>
-                  </div>
-                </a>
-
-                <a href="mailto:nhatprx@gmail.com" className="flex items-center gap-4 p-4 border border-white/10 hover:border-white/30 transition-colors group">
-                  <MailIcon className="w-5 h-5 text-white/30 group-hover:text-white transition-colors" />
-                  <div>
-                    <div className="text-sm font-bold">nhatprx@gmail.com</div>
-                    <div className="text-xs text-white/30">Email</div>
-                  </div>
-                </a>
-
-                <a href="tel:+84879888965" className="flex items-center gap-4 p-4 border border-white/10 hover:border-white/30 transition-colors group">
-                  <PhoneIcon className="w-5 h-5 text-white/30 group-hover:text-white transition-colors" />
-                  <div>
-                    <div className="text-sm font-bold">+84 879 888 965</div>
-                    <div className="text-xs text-white/30">Phone</div>
-                  </div>
-                </a>
-
-                <a href="https://github.com/nhatprx" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 border border-white/10 hover:border-white/30 transition-colors group">
-                  <GithubIcon className="w-5 h-5 text-white/30 group-hover:text-white transition-colors" />
-                  <div>
-                    <div className="text-sm font-bold">github.com/nhatprx</div>
-                    <div className="text-xs text-white/30">GitHub</div>
-                  </div>
-                </a>
-
-                <a href="https://www.linkedin.com/in/nhatprx/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 border border-white/10 hover:border-white/30 transition-colors group">
-                  <LinkedinIcon className="w-5 h-5 text-white/30 group-hover:text-white transition-colors" />
-                  <div>
-                    <div className="text-sm font-bold">linkedin.com/in/nhatprx</div>
-                    <div className="text-xs text-white/30">LinkedIn</div>
-                  </div>
-                </a>
+                <div className="flex items-center gap-3">
+                  <a
+                    href="mailto:nhatprx@gmail.com"
+                    aria-label="Email: nhatprx@gmail.com"
+                    title="nhatprx@gmail.com"
+                    className="p-3 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
+                  >
+                    <MailIcon className="w-5 h-5" />
+                  </a>
+                  <a
+                    href="tel:+84879888965"
+                    aria-label="Phone: +84 879 888 965"
+                    title="+84 879 888 965"
+                    className="p-3 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
+                  >
+                    <PhoneIcon className="w-5 h-5" />
+                  </a>
+                  <a
+                    href="https://github.com/nhatprx"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="GitHub: nhatprx"
+                    title="github.com/nhatprx"
+                    className="p-3 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
+                  >
+                    <GithubIcon className="w-5 h-5" />
+                  </a>
+                  <a
+                    href="https://www.linkedin.com/in/nhatprx/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="LinkedIn: nhatprx"
+                    title="linkedin.com/in/nhatprx"
+                    className="p-3 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
+                  >
+                    <LinkedinIcon className="w-5 h-5" />
+                  </a>
+                </div>
               </div>
-            </div>
           </div>
         </div>
       </section>
