@@ -604,10 +604,10 @@ export default function App() {
         </div>
       </header>
 
-      <main className="relative z-10 pt-24">
+      <main className="relative z-10 pt-16 sm:pt-20">
         {/* ========== HERO & TERMINAL (STACKED: HERO CONTENT ON TOP OF TERMINAL) ========== */}
-        <section id="hero" className="min-h-screen flex flex-col justify-center px-6 sm:p-10 lg:p-14 py-8 sm:py-12">
-          <div className="w-full flex flex-col space-y-6 sm:space-y-8 my-auto">
+        <section id="hero" className="flex flex-col justify-start px-6 sm:px-10 lg:px-14 pt-4 sm:pt-6 pb-16">
+          <div className="w-full flex flex-col space-y-5 sm:space-y-6">
             {/* Top: Hero Content */}
             <div className="w-full text-left">
               <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 uppercase mb-2">{t.hero.role}</p>
@@ -657,7 +657,7 @@ export default function App() {
                   LIVE CLOUD NODE // AP-SOUTHEAST-1
                 </span>
               </div>
-              <div className="h-[420px] sm:h-[460px] lg:h-[480px] w-full">
+              <div className="h-[400px] sm:h-[440px] lg:h-[460px] w-full">
                 <Ec2Terminal />
               </div>
             </div>
