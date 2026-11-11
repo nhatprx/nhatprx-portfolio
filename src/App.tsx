@@ -1,3 +1,5 @@
+const CURRENT_YEAR = new Date().getFullYear()
+
 // Inline SVG icons (zero dep)
 function GithubIcon({ className = 'w-5 h-5' }: { className?: string }) {
   return (
@@ -422,7 +424,7 @@ export default function App() {
           <div className="grid grid-cols-1 lg:grid-cols-12 w-full">
             <div className="hidden lg:block lg:col-span-6" />
             <div className="lg:col-span-6 max-w-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono text-white/20 lg:pl-8">
-              <span>&copy; {new Date().getFullYear()} Minh Nhat Pham. All rights reserved.</span>
+              <span>&copy; {CURRENT_YEAR} Minh Nhat Pham. All rights reserved.</span>
               <span>Minimal Monochrome Edition</span>
             </div>
           </div>
