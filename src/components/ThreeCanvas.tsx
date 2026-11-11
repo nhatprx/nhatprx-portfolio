@@ -4,11 +4,11 @@ import { OrbitControls } from '@react-three/drei'
 import BitexcoTower, { type TowerMaterialMode } from './BitexcoTower'
 import { RotateCcw, Circle, Square, Grid } from 'lucide-react'
 
-// Camera focused on the crown & helipad, shifted to the left half of the screen
+// Camera focused on the crown & helipad with headroom so the tip is never cut off
 const DEFAULT_CAMERA = {
-  position: [1.1, 1.5, 5.2] as [number, number, number],
-  target: [1.1, 2.2, 0] as [number, number, number],
-  fov: 36,
+  position: [0.96, 1.95, 5.2] as [number, number, number],
+  target: [0.96, 2.78, 0] as [number, number, number],
+  fov: 37,
 }
 
 export default function ThreeCanvas() {
