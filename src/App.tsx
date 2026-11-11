@@ -269,6 +269,16 @@ export default function App() {
     }
   }
 
+  // Pause Lenis smooth scrolling on main page while modal is open
+  useEffect(() => {
+    if (selectedPost) {
+      lenisRef.current?.stop()
+      return () => {
+        lenisRef.current?.start()
+      }
+    }
+  }, [selectedPost])
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsInitialLoading(false)

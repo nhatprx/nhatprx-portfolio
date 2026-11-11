@@ -35,13 +35,23 @@ export default function BlogPostModal({
     }
   }, [post.slug])
 
+  // Prevent background body scroll while modal is active
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prevOverflow
+    }
+  }, [])
+
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-post-title"
+      data-lenis-prevent
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 md:p-12 bg-black/55 backdrop-blur-[2px]"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 md:p-12 bg-black/55 backdrop-blur-[2px] overscroll-contain"
     >
       {/* Floating Modal Window Card Overlay */}
       <div
@@ -76,7 +86,7 @@ export default function BlogPostModal({
         <div
           ref={contentRef}
           data-lenis-prevent
-          className="flex-1 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-6 sm:p-10 space-y-8 select-text font-sans"
+          className="flex-1 overflow-y-auto overscroll-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-6 sm:p-10 space-y-8 select-text font-sans"
         >
           {/* Post Header */}
           <header className="border-b border-white/10 pb-6">
