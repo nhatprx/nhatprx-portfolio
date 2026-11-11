@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 const CURRENT_YEAR = new Date().getFullYear()
 
 // Inline SVG icons (zero dep)
@@ -55,6 +57,102 @@ function ArrowDown({ className = 'w-5 h-5' }: { className?: string }) {
   )
 }
 
+function ContactForm() {
+  const [email, setEmail] = useState('')
+  const [message, setMessage] = useState('')
+  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
+  const [errorMessage, setErrorMessage] = useState('')
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email || !message) return
+
+    setStatus('sending')
+    setErrorMessage('')
+
+    try {
+      // shortcut: FormSubmit.co forwards messages to email without a backend; upgrade to custom domain API/Resend when custom domain email is live
+      const res = await fetch('https://formsubmit.co/ajax/nhatprx@gmail.com', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify({
+          _subject: `Portfolio Inquiry from ${email}`,
+          email,
+          message
+        })
+      })
+
+      if (res.ok) {
+        setStatus('success')
+        setEmail('')
+        setMessage('')
+      } else {
+        throw new Error('Failed to send message')
+      }
+    } catch {
+      setStatus('error')
+      setErrorMessage('Could not deliver directly. Please email me directly at nhatprx@gmail.com')
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mb-10 space-y-4">
+      <div>
+        <label htmlFor="contact-email" className="block font-mono text-[10px] tracking-widest text-white/40 mb-2">
+          YOUR EMAIL
+        </label>
+        <input
+          id="contact-email"
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="name@example.com"
+          className="w-full bg-white/5 border border-white/10 px-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-white/40 transition-colors"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="contact-message" className="block font-mono text-[10px] tracking-widest text-white/40 mb-2">
+          MESSAGE
+        </label>
+        <textarea
+          id="contact-message"
+          required
+          rows={4}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Tell me about your project, team, or opportunity..."
+          className="w-full bg-white/5 border border-white/10 px-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-white/40 transition-colors resize-none"
+        />
+      </div>
+
+      {status === 'success' && (
+        <div className="p-3 bg-white/10 border border-white/20 text-xs font-mono text-white/90">
+          ✓ Message sent! Thank you, I will reply to your email soon.
+        </div>
+      )}
+
+      {status === 'error' && (
+        <div className="p-3 bg-red-950/30 border border-red-500/30 text-xs font-mono text-red-300">
+          {errorMessage}
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={status === 'sending'}
+        className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors disabled:opacity-50"
+      >
+        {status === 'sending' ? 'SENDING...' : 'SEND MESSAGE →'}
+      </button>
+    </form>
+  )
+}
+
 export default function App() {
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black">
@@ -73,9 +171,6 @@ export default function App() {
           <a href="#contact" className="hover:text-white transition-colors">CONTACT</a>
         </nav>
         <div className="flex items-center gap-3">
-          <a href="https://nhatprx.com" target="_blank" rel="noopener noreferrer" aria-label="Website" className="text-white/40 hover:text-white transition-colors">
-            <GlobeIcon className="w-4 h-4" />
-          </a>
           <a href="https://github.com/nhatprx" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-white/40 hover:text-white transition-colors">
             <GithubIcon className="w-4 h-4" />
           </a>
@@ -419,7 +514,11 @@ export default function App() {
                 and collaborative projects. Currently based in Ho Chi Minh City, Vietnam.
               </p>
 
-              <div className="space-y-4">
+              <ContactForm />
+
+              <div className="pt-4 border-t border-white/5">
+                <p className="font-mono text-[10px] tracking-widest text-white/30 mb-4">DIRECT CHANNELS</p>
+                <div className="space-y-4">
                 <a href="https://nhatprx.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 border border-white/10 hover:border-white/30 transition-colors group">
                   <GlobeIcon className="w-5 h-5 text-white/30 group-hover:text-white transition-colors" />
                   <div>
@@ -462,7 +561,8 @@ export default function App() {
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
         {/* ========== FOOTER ========== */}
         <footer className="border-t border-white/5 py-8 p-6 sm:p-10 lg:p-14">
