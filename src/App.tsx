@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Esp32Simulator from './components/Esp32Simulator'
+import Ec2Terminal from './components/Ec2Terminal'
 
 const CURRENT_YEAR = new Date().getFullYear()
 
@@ -248,9 +248,9 @@ export default function App() {
         </div>
       </header>
 
-      {/* Fixed Left Half: Interactive ESP32-S3 Hardware Lab (Desktop only) */}
-      <aside aria-label="Interactive ESP32 Lab" className="hidden lg:block fixed left-0 top-24 w-1/2 h-[calc(100vh-6rem)] p-8 lg:pl-14 lg:pr-8 z-30 pointer-events-auto">
-        <Esp32Simulator />
+      {/* Fixed Left Half: Live AWS EC2 Linux Terminal (Desktop only) */}
+      <aside aria-label="AWS EC2 Terminal" className="hidden lg:block fixed left-0 top-24 w-1/2 h-[calc(100vh-8rem)] p-6 lg:pl-14 lg:pr-8 z-30 pointer-events-auto">
+        <Ec2Terminal />
       </aside>
 
       {/* Main Content Area: Split 50/50 Desktop Layout (Left empty, text on right) */}
