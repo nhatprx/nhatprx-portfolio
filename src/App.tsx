@@ -62,14 +62,6 @@ function PhoneIcon({ className = 'w-5 h-5' }: { className?: string }) {
   )
 }
 
-function ArrowDown({ className = 'w-5 h-5' }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M12 5v14" /><path d="m19 12-7 7-7-7" />
-    </svg>
-  )
-}
-
 function DownloadIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -247,7 +239,7 @@ export default function App() {
       {/* Main Content Area: Split 50/50 Desktop Layout (Left empty, text on right) */}
       <main className="relative pt-24">
         {/* ========== HERO ========== */}
-        <section className="min-h-screen flex flex-col justify-between p-6 sm:p-10 lg:p-14">
+        <section className="min-h-screen flex items-center p-6 sm:p-10 lg:p-14">
           <div className="grid grid-cols-1 lg:grid-cols-12 w-full my-auto">
             {/* Left Column Spacer */}
             <div className="hidden lg:block lg:col-span-6" />
@@ -285,20 +277,6 @@ export default function App() {
               </div>
             </div>
           </div>
-
-          <footer className="flex items-center justify-between pt-8">
-            <button
-              onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
-              className="flex items-center gap-2 text-white/30 hover:text-white transition-colors"
-              aria-label="Scroll down"
-            >
-              <ArrowDown className="w-4 h-4 animate-bounce" />
-              <span className="font-mono text-[10px] tracking-widest">SCROLL</span>
-            </button>
-            <span className="font-mono text-[10px] text-white/20 tracking-wider">
-              10.7719° N, 106.7044° E
-            </span>
-          </footer>
         </section>
 
         {/* ========== 01 — ABOUT ========== */}
