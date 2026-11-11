@@ -794,9 +794,8 @@ export default function App() {
 
         {/* ========== FOOTER ========== */}
         <footer className="py-8 p-6 sm:p-10 lg:p-14">
-          <div className="w-full max-w-2xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono text-white/20">
+          <div className="w-full max-w-2xl mx-auto text-xs font-mono text-white/20">
             <span>&copy; {CURRENT_YEAR} Minh Nhat Pham. {t.footer.rights}</span>
-            <span>{t.footer.edition}</span>
           </div>
         </footer>
       </main>
