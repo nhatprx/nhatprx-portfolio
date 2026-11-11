@@ -5,23 +5,34 @@ const CURRENT_YEAR = new Date().getFullYear()
 const SKILL_CATEGORIES = [
   {
     title: 'LANGUAGES',
+    gridClass: 'grid grid-cols-3 gap-2',
     skills: ['JavaScript', 'Java', 'Python'],
   },
   {
     title: 'FRAMEWORKS',
+    gridClass: 'grid grid-cols-2 sm:grid-cols-4 gap-2',
     skills: ['Spring Boot', 'ReactJS', 'NodeJS', 'ThreeJS'],
   },
   {
     title: 'DATABASES',
+    gridClass: 'grid grid-cols-3 gap-2',
     skills: ['PostgreSQL', 'MySQL', 'Redis'],
   },
   {
     title: 'DEVOPS & CLOUD',
-    skills: ['AWS (EC2, S3, Lambda)', 'Docker', 'Google Cloud Run', 'Jenkins', 'Vercel', 'Render', 'Railway', 'Git'],
+    gridClass: 'grid grid-cols-1 sm:grid-cols-2 gap-2',
+    skills: ['AWS (EC2, S3, Lambda)', 'Google Cloud Run', 'Docker', 'Jenkins', 'Vercel', 'Render', 'Railway', 'Git'],
   },
   {
     title: 'ARCHITECTURE',
-    skills: ['OOP & SOLID Principles', 'RESTful API Design', 'CI/CD Pipelines (Jenkins)', 'Containerized Deployments', 'AWS Well-Architected Framework'],
+    gridClass: 'grid grid-cols-1 gap-2',
+    skills: [
+      'OOP & SOLID Principles',
+      'RESTful API Design',
+      'CI/CD Pipelines (Jenkins)',
+      'Containerized Deployments (Docker, Cloud Run)',
+      'AWS Well-Architected Framework',
+    ],
   },
 ]
 
@@ -493,14 +504,14 @@ export default function App() {
               <div className="divide-y divide-white/10 border-t border-b border-white/10">
                 {SKILL_CATEGORIES.map(group => (
                   <div key={group.title} className="py-5 sm:grid sm:grid-cols-12 sm:gap-4 items-start">
-                    <h3 className="sm:col-span-4 font-mono text-[10px] tracking-[0.25em] text-white/30 mb-2 sm:mb-0 pt-1">
+                    <h3 className="sm:col-span-4 font-mono text-[10px] tracking-[0.25em] text-white/30 mb-2 sm:mb-0 pt-2">
                       {group.title}
                     </h3>
-                    <div className="sm:col-span-8 flex flex-wrap gap-2">
+                    <div className={`sm:col-span-8 ${group.gridClass}`}>
                       {group.skills.map(s => (
                         <span
                           key={s}
-                          className="font-mono text-xs px-2.5 py-1 bg-white/[0.03] border border-white/10 text-white/80 hover:text-white hover:border-white/30 transition-colors"
+                          className="flex items-center justify-center text-center font-mono text-xs px-2 py-2 bg-white/[0.03] border border-white/10 text-white/80 hover:text-white hover:border-white/30 transition-colors w-full"
                         >
                           {s}
                         </span>
