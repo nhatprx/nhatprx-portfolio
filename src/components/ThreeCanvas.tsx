@@ -2,20 +2,27 @@ import { useState, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import BitexcoTower, { type TowerMaterialMode } from './BitexcoTower'
-import { RotateCw, Circle, Square, Grid } from 'lucide-react'
+import { RotateCcw, Circle, Square, Grid } from 'lucide-react'
+
+// Camera focused on the crown & helipad, shifted to the left half of the screen
+const DEFAULT_CAMERA = {
+  position: [1.1, 1.5, 5.2] as [number, number, number],
+  target: [1.1, 2.2, 0] as [number, number, number],
+  fov: 36,
+}
 
 export default function ThreeCanvas() {
   const [mode, setMode] = useState<TowerMaterialMode>('dark')
-  const [autoRotate, setAutoRotate] = useState(true)
+  const [autoRotate, setAutoRotate] = useState(false)
 
   return (
-    <div className="fixed inset-0 w-screen h-screen bg-black select-none overflow-hidden">
-      {/* Minimal Floating Monochromatic Mode Switcher */}
-      <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 bg-neutral-950/90 backdrop-blur-md p-1.5 rounded-xl border border-neutral-800">
+    <div className="absolute inset-0 w-full h-full bg-black select-none overflow-hidden">
+      {/* Floating Monochromatic Material & View Controls */}
+      <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 bg-neutral-950/85 backdrop-blur-md p-1.5 rounded-xl border border-neutral-800 pointer-events-auto">
         <button
           type="button"
           onClick={() => setMode('dark')}
-          title="Chế độ Đen Obsidian (Dark)"
+          title="Chế độ Đen (Obsidian Dark)"
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
             mode === 'dark'
               ? 'bg-neutral-800 text-white font-bold border border-neutral-700'
@@ -29,7 +36,7 @@ export default function ThreeCanvas() {
         <button
           type="button"
           onClick={() => setMode('white')}
-          title="Chế độ Trắng Titanium (White)"
+          title="Chế độ Trắng (Titanium White)"
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
             mode === 'white'
               ? 'bg-neutral-100 text-neutral-950 font-bold border border-white'
@@ -64,49 +71,52 @@ export default function ThreeCanvas() {
             autoRotate ? 'bg-neutral-800 text-white' : 'text-neutral-500 hover:text-white'
           }`}
         >
-          <RotateCw className={`w-3.5 h-3.5 ${autoRotate ? 'animate-spin-slow' : ''}`} />
+          <RotateCcw className={`w-3.5 h-3.5 ${autoRotate ? 'animate-spin-slow' : ''}`} />
         </button>
       </div>
 
       {/* 3D WebGL Canvas */}
       <Canvas
-        camera={{ position: [0, 0, 8.8], fov: 40 }}
+        camera={{
+          position: DEFAULT_CAMERA.position,
+          fov: DEFAULT_CAMERA.fov,
+        }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
         dpr={[1, 2]}
       >
         <color attach="background" args={['#000000']} />
 
         <Suspense fallback={null}>
-          {/* Studio Pure Monochromatic Lighting */}
-          <ambientLight intensity={mode === 'white' ? 0.7 : 0.45} color="#ffffff" />
+          {/* Monochromatic Studio Lights for crisp architectural contrast */}
+          <ambientLight intensity={mode === 'white' ? 0.65 : 0.4} color="#ffffff" />
 
-          {/* Key Light */}
+          {/* Key Light from front-right catching helipad and scoop */}
           <directionalLight
-            position={[10, 15, 10]}
-            intensity={mode === 'white' ? 2.0 : 2.5}
+            position={[8, 12, 8]}
+            intensity={mode === 'white' ? 2.0 : 2.6}
             color="#ffffff"
           />
 
-          {/* Rim Light */}
+          {/* Rim Light from back-left highlighting the curved spine */}
           <directionalLight
-            position={[-10, 10, -10]}
-            intensity={mode === 'white' ? 1.0 : 1.8}
+            position={[-8, 10, -6]}
+            intensity={mode === 'white' ? 1.0 : 2.0}
             color="#ffffff"
           />
 
-          {/* Subtle Fill Light from bottom */}
+          {/* Bottom fill light for the helipad saucer underbelly */}
           <directionalLight
-            position={[0, -10, 5]}
-            intensity={0.5}
+            position={[0, -6, 4]}
+            intensity={0.6}
             color="#ffffff"
           />
 
           {/* Bitexco STL Model */}
           <BitexcoTower mode={mode} />
 
-          {/* 360-degree Orbit Controls */}
+          {/* Orbit Controls (Drag to rotate, scroll to zoom) */}
           <OrbitControls
-            target={[0, 0, 0]}
+            target={DEFAULT_CAMERA.target}
             enablePan={true}
             enableZoom={true}
             enableRotate={true}
@@ -115,7 +125,7 @@ export default function ThreeCanvas() {
             enableDamping={true}
             dampingFactor={0.05}
             minDistance={2}
-            maxDistance={20}
+            maxDistance={15}
           />
         </Suspense>
       </Canvas>
