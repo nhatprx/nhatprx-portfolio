@@ -22,7 +22,16 @@ interface AdminPortalProps {
   onUpdateTranslations: (data: Record<SupportedLang, TranslationDict>) => void
 }
 
-type TabType = 'sections' | 'experience' | 'projects' | 'blog' | 'terminal' | 'system'
+type TabType =
+  | 'hero'
+  | 'about'
+  | 'skills'
+  | 'experience'
+  | 'projects'
+  | 'blog'
+  | 'contact'
+  | 'terminal'
+  | 'system'
 
 export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPortalProps) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => isAdminAuthenticated())
@@ -33,7 +42,7 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
   const [translations, setTranslations] = useState<Record<SupportedLang, TranslationDict>>(() => getStoredTranslations())
   const [terminalCommands, setTerminalCommands] = useState<CustomTerminalCommands>(() => getStoredTerminalCommands())
   const [selectedLang, setSelectedLang] = useState<SupportedLang>('en')
-  const [activeTab, setActiveTab] = useState<TabType>('sections')
+  const [activeTab, setActiveTab] = useState<TabType>('hero')
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   // Experience form modal / state
@@ -207,175 +216,260 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
         </div>
       </header>
 
-      {/* Tabs Bar */}
-      <nav className="border-b border-white/10 bg-white/[0.01] px-4 sm:px-8 flex items-center gap-1 sm:gap-2 overflow-x-auto text-xs shrink-0 [scrollbar-width:none]">
-        {(
-          [
-            { id: 'sections', label: '1. SECTIONS & BIO' },
-            { id: 'experience', label: '2. EXPERIENCE' },
-            { id: 'projects', label: '3. PROJECTS' },
-            { id: 'blog', label: '4. BLOG / NOTES' },
-            { id: 'terminal', label: '5. TERMINAL' },
-            { id: 'system', label: '6. BACKUP & PASSKEY' },
-          ] as { id: TabType; label: string }[]
-        ).map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`py-3 px-3 text-xs tracking-wider transition-colors border-b-2 whitespace-nowrap cursor-pointer ${
-              activeTab === tab.id
-                ? 'border-white text-white font-bold bg-white/[0.04]'
-                : 'border-transparent text-white/40 hover:text-white/80'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </nav>
-
-      {/* Content Area */}
-      <main
-        data-lenis-prevent
-        className="flex-1 min-h-0 overflow-y-auto overscroll-contain admin-scroll p-4 sm:p-8 max-w-5xl mx-auto w-full space-y-6"
-      >
-        {/* TAB 1: SECTIONS & BIO */}
-        {activeTab === 'sections' && (
-          <div className="space-y-6">
-            <div className="border border-white/10 bg-white/[0.01] p-5 space-y-4">
-              <h2 className="text-xs font-bold text-white/80 uppercase tracking-widest border-b border-white/10 pb-2">
-                Hero Section ({selectedLang.toUpperCase()})
-              </h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="block text-[10px] text-white/40 uppercase mb-1">Role Subtitle</label>
-                  <input
-                    type="text"
-                    value={currentDict.hero.role}
-                    onChange={(e) =>
-                      updateCurrentDict((d) => ({ ...d, hero: { ...d.hero, role: e.target.value } }))
-                    }
-                    className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] text-white/40 uppercase mb-1">Get In Touch CTA</label>
-                  <input
-                    type="text"
-                    value={currentDict.hero.getInTouch}
-                    onChange={(e) =>
-                      updateCurrentDict((d) => ({ ...d, hero: { ...d.hero, getInTouch: e.target.value } }))
-                    }
-                    className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-[10px] text-white/40 uppercase mb-1">Hero Lead Description</label>
-                <textarea
-                  rows={3}
-                  value={currentDict.hero.desc}
-                  onChange={(e) =>
-                    updateCurrentDict((d) => ({ ...d, hero: { ...d.hero, desc: e.target.value } }))
-                  }
-                  className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="border border-white/10 bg-white/[0.01] p-5 space-y-4">
-              <h2 className="text-xs font-bold text-white/80 uppercase tracking-widest border-b border-white/10 pb-2">
-                About Section ({selectedLang.toUpperCase()})
-              </h2>
-              <div>
-                <label className="block text-[10px] text-white/40 uppercase mb-1">About Paragraph 1</label>
-                <textarea
-                  rows={3}
-                  value={currentDict.about.p1}
-                  onChange={(e) =>
-                    updateCurrentDict((d) => ({ ...d, about: { ...d.about, p1: e.target.value } }))
-                  }
-                  className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] text-white/40 uppercase mb-1">About Paragraph 2</label>
-                <textarea
-                  rows={3}
-                  value={currentDict.about.p2}
-                  onChange={(e) =>
-                    updateCurrentDict((d) => ({ ...d, about: { ...d.about, p2: e.target.value } }))
-                  }
-                  className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
-                />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="block text-[10px] text-white/40 uppercase mb-1">Title</label>
-                  <input
-                    type="text"
-                    value={currentDict.about.title}
-                    onChange={(e) =>
-                      updateCurrentDict((d) => ({ ...d, about: { ...d.about, title: e.target.value } }))
-                    }
-                    className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] text-white/40 uppercase mb-1">Subtitle</label>
-                  <input
-                    type="text"
-                    value={currentDict.about.titleSub}
-                    onChange={(e) =>
-                      updateCurrentDict((d) => ({ ...d, about: { ...d.about, titleSub: e.target.value } }))
-                    }
-                    className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="border border-white/10 bg-white/[0.01] p-5 space-y-4">
-              <h2 className="text-xs font-bold text-white/80 uppercase tracking-widest border-b border-white/10 pb-2">
-                Contact Section ({selectedLang.toUpperCase()})
-              </h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="block text-[10px] text-white/40 uppercase mb-1">Title</label>
-                  <input
-                    type="text"
-                    value={currentDict.contact.title}
-                    onChange={(e) =>
-                      updateCurrentDict((d) => ({ ...d, contact: { ...d.contact, title: e.target.value } }))
-                    }
-                    className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] text-white/40 uppercase mb-1">Subtitle</label>
-                  <input
-                    type="text"
-                    value={currentDict.contact.titleSub}
-                    onChange={(e) =>
-                      updateCurrentDict((d) => ({ ...d, contact: { ...d.contact, titleSub: e.target.value } }))
-                    }
-                    className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-[10px] text-white/40 uppercase mb-1">Description</label>
-                <textarea
-                  rows={2}
-                  value={currentDict.contact.desc}
-                  onChange={(e) =>
-                    updateCurrentDict((d) => ({ ...d, contact: { ...d.contact, desc: e.target.value } }))
-                  }
-                  className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
-                />
-              </div>
-            </div>
+      {/* Body with Left Sidebar */}
+      <div className="flex-1 min-h-0 flex overflow-hidden">
+        {/* Left Sidebar Navigation */}
+        <aside
+          data-lenis-prevent
+          className="w-56 sm:w-64 border-r border-white/10 bg-black/60 flex flex-col shrink-0 overflow-y-auto overscroll-contain admin-scroll p-3 space-y-1 select-none"
+        >
+          <div className="px-3 py-2 text-[10px] font-mono tracking-widest text-white/30 uppercase border-b border-white/5 mb-1 flex items-center justify-between">
+            <span>SECTIONS</span>
+            <span className="text-[9px] text-emerald-400 font-bold">{selectedLang.toUpperCase()}</span>
           </div>
-        )}
+
+          {(
+            [
+              { id: 'hero', num: '01', label: 'HERO' },
+              { id: 'about', num: '02', label: 'ABOUT ME' },
+              { id: 'skills', num: '03', label: 'SKILLS', count: currentDict.skills.categories.length },
+              { id: 'experience', num: '04', label: 'EXPERIENCE', count: currentDict.experience.items.length },
+              { id: 'projects', num: '05', label: 'PROJECTS', count: currentDict.projects.items.length },
+              { id: 'blog', num: '06', label: 'BLOG / NOTES', count: currentDict.blog.posts.length },
+              { id: 'contact', num: '07', label: 'CONTACT' },
+              { id: 'terminal', num: '08', label: 'TERMINAL', count: Object.keys(terminalCommands).length },
+              { id: 'system', num: '09', label: 'BACKUP & PASSKEY' },
+            ] as { id: TabType; num: string; label: string; count?: number }[]
+          ).map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`w-full text-left px-3 py-2.5 text-xs font-mono tracking-wider flex items-center justify-between transition-colors border-l-2 cursor-pointer ${
+                activeTab === tab.id
+                  ? 'border-white text-white font-bold bg-white/10'
+                  : 'border-transparent text-white/50 hover:text-white hover:bg-white/[0.04]'
+              }`}
+            >
+              <div className="flex items-center gap-2.5 truncate">
+                <span className="text-[10px] text-white/30">{tab.num}</span>
+                <span className="truncate">{tab.label}</span>
+              </div>
+              {tab.count !== undefined && (
+                <span className="text-[9px] text-white/40 px-1.5 py-0.2 border border-white/10 bg-white/5">
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </aside>
+
+        {/* Right Main Content Area */}
+        <main
+          data-lenis-prevent
+          className="flex-1 min-h-0 overflow-y-auto overscroll-contain admin-scroll p-4 sm:p-8 max-w-4xl w-full space-y-6"
+        >
+          {/* TAB 1: HERO */}
+          {activeTab === 'hero' && (
+            <div className="space-y-6">
+              <div className="border border-white/10 bg-white/[0.01] p-5 space-y-4">
+                <h2 className="text-xs font-bold text-white/80 uppercase tracking-widest border-b border-white/10 pb-2">
+                  Hero Section ({selectedLang.toUpperCase()})
+                </h2>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-[10px] text-white/40 uppercase mb-1">Role Subtitle</label>
+                    <input
+                      type="text"
+                      value={currentDict.hero.role}
+                      onChange={(e) =>
+                        updateCurrentDict((d) => ({ ...d, hero: { ...d.hero, role: e.target.value } }))
+                      }
+                      className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-white/40 uppercase mb-1">Get In Touch CTA</label>
+                    <input
+                      type="text"
+                      value={currentDict.hero.getInTouch}
+                      onChange={(e) =>
+                        updateCurrentDict((d) => ({ ...d, hero: { ...d.hero, getInTouch: e.target.value } }))
+                      }
+                      className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-[10px] text-white/40 uppercase mb-1">Resume Download Label</label>
+                    <input
+                      type="text"
+                      value={currentDict.hero.resume}
+                      onChange={(e) =>
+                        updateCurrentDict((d) => ({ ...d, hero: { ...d.hero, resume: e.target.value } }))
+                      }
+                      className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[10px] text-white/40 uppercase mb-1">Hero Lead Description</label>
+                  <textarea
+                    rows={3}
+                    value={currentDict.hero.desc}
+                    onChange={(e) =>
+                      updateCurrentDict((d) => ({ ...d, hero: { ...d.hero, desc: e.target.value } }))
+                    }
+                    className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: ABOUT */}
+          {activeTab === 'about' && (
+            <div className="space-y-6">
+              <div className="border border-white/10 bg-white/[0.01] p-5 space-y-4">
+                <h2 className="text-xs font-bold text-white/80 uppercase tracking-widest border-b border-white/10 pb-2">
+                  About Section ({selectedLang.toUpperCase()})
+                </h2>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-[10px] text-white/40 uppercase mb-1">Section Title</label>
+                    <input
+                      type="text"
+                      value={currentDict.about.title}
+                      onChange={(e) =>
+                        updateCurrentDict((d) => ({ ...d, about: { ...d.about, title: e.target.value } }))
+                      }
+                      className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-white/40 uppercase mb-1">Subtitle</label>
+                    <input
+                      type="text"
+                      value={currentDict.about.titleSub}
+                      onChange={(e) =>
+                        updateCurrentDict((d) => ({ ...d, about: { ...d.about, titleSub: e.target.value } }))
+                      }
+                      className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[10px] text-white/40 uppercase mb-1">About Paragraph 1</label>
+                  <textarea
+                    rows={3}
+                    value={currentDict.about.p1}
+                    onChange={(e) =>
+                      updateCurrentDict((d) => ({ ...d, about: { ...d.about, p1: e.target.value } }))
+                    }
+                    className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-white/40 uppercase mb-1">About Paragraph 2</label>
+                  <textarea
+                    rows={3}
+                    value={currentDict.about.p2}
+                    onChange={(e) =>
+                      updateCurrentDict((d) => ({ ...d, about: { ...d.about, p2: e.target.value } }))
+                    }
+                    className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-white/40 uppercase mb-1">Education Title</label>
+                  <input
+                    type="text"
+                    value={currentDict.about.educationTitle}
+                    onChange={(e) =>
+                      updateCurrentDict((d) => ({ ...d, about: { ...d.about, educationTitle: e.target.value } }))
+                    }
+                    className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: SKILLS */}
+          {activeTab === 'skills' && (
+            <div className="space-y-6">
+              <div className="border border-white/10 bg-white/[0.01] p-5 space-y-4">
+                <h2 className="text-xs font-bold text-white/80 uppercase tracking-widest border-b border-white/10 pb-2">
+                  Skills Section ({selectedLang.toUpperCase()})
+                </h2>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-[10px] text-white/40 uppercase mb-1">Title</label>
+                    <input
+                      type="text"
+                      value={currentDict.skills.title}
+                      onChange={(e) =>
+                        updateCurrentDict((d) => ({ ...d, skills: { ...d.skills, title: e.target.value } }))
+                      }
+                      className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-white/40 uppercase mb-1">Subtitle</label>
+                    <input
+                      type="text"
+                      value={currentDict.skills.titleSub}
+                      onChange={(e) =>
+                        updateCurrentDict((d) => ({ ...d, skills: { ...d.skills, titleSub: e.target.value } }))
+                      }
+                      className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-2">
+                  <h3 className="text-xs font-bold text-white/60 uppercase tracking-wider">
+                    Skill Groups ({currentDict.skills.categories.length})
+                  </h3>
+                  {currentDict.skills.categories.map((cat, cIdx) => (
+                    <div key={cIdx} className="border border-white/10 p-4 bg-black/40 space-y-2">
+                      <label className="block text-[10px] text-white/40 uppercase">Group {cIdx + 1} Title</label>
+                      <input
+                        type="text"
+                        value={cat.title}
+                        onChange={(e) => {
+                          updateCurrentDict((d) => {
+                            const cats = [...d.skills.categories]
+                            cats[cIdx] = { ...cats[cIdx], title: e.target.value }
+                            return { ...d, skills: { ...d.skills, categories: cats } }
+                          })
+                        }}
+                        className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
+                      />
+                      <label className="block text-[10px] text-white/40 uppercase pt-1">
+                        Skills (comma separated)
+                      </label>
+                      <input
+                        type="text"
+                        value={cat.skills.join(', ')}
+                        onChange={(e) => {
+                          updateCurrentDict((d) => {
+                            const cats = [...d.skills.categories]
+                            cats[cIdx] = {
+                              ...cats[cIdx],
+                              skills: e.target.value.split(',').map((s) => s.trim()).filter(Boolean),
+                            }
+                            return { ...d, skills: { ...d.skills, categories: cats } }
+                          })
+                        }}
+                        className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
         {/* TAB 2: EXPERIENCE */}
         {activeTab === 'experience' && (
@@ -1115,6 +1209,52 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
           </div>
         )}
 
+        {/* TAB 7: CONTACT */}
+        {activeTab === 'contact' && (
+          <div className="space-y-6">
+            <div className="border border-white/10 bg-white/[0.01] p-5 space-y-4">
+              <h2 className="text-xs font-bold text-white/80 uppercase tracking-widest border-b border-white/10 pb-2">
+                Contact Section ({selectedLang.toUpperCase()})
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-[10px] text-white/40 uppercase mb-1">Title</label>
+                  <input
+                    type="text"
+                    value={currentDict.contact.title}
+                    onChange={(e) =>
+                      updateCurrentDict((d) => ({ ...d, contact: { ...d.contact, title: e.target.value } }))
+                    }
+                    className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-white/40 uppercase mb-1">Subtitle</label>
+                  <input
+                    type="text"
+                    value={currentDict.contact.titleSub}
+                    onChange={(e) =>
+                      updateCurrentDict((d) => ({ ...d, contact: { ...d.contact, titleSub: e.target.value } }))
+                    }
+                    className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] text-white/40 uppercase mb-1">Description</label>
+                <textarea
+                  rows={2}
+                  value={currentDict.contact.desc}
+                  onChange={(e) =>
+                    updateCurrentDict((d) => ({ ...d, contact: { ...d.contact, desc: e.target.value } }))
+                  }
+                  className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* TAB 5: TERMINAL */}
         {activeTab === 'terminal' && (
           <div className="space-y-6">
@@ -1273,6 +1413,7 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
           </div>
         )}
       </main>
+      </div>
     </div>
   )
 }
