@@ -77,7 +77,7 @@ export default function ServerTelemetry() {
       </div>
 
       {/* Main Telemetry Body */}
-      <div className="flex-1 p-4 sm:p-5 overflow-y-auto space-y-4 text-xs leading-relaxed scrollbar-none flex flex-col justify-between">
+      <div className="flex-1 p-3.5 sm:p-4 overflow-y-auto space-y-3.5 text-xs leading-relaxed scrollbar-none min-h-0">
         {/* Metric 1: CPU Load */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
@@ -115,15 +115,15 @@ export default function ServerTelemetry() {
         </div>
 
         {/* Metric 3: Network Throughput */}
-        <div className="grid grid-cols-2 gap-3 pt-1 border-t border-white/10">
-          <div className="p-3 border border-white/10 bg-white/[0.02]">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 pt-1 border-t border-white/10">
+          <div className="p-2.5 sm:p-3 border border-white/10 bg-white/[0.02]">
             <span className="text-[10px] text-white/50 block font-medium tracking-wider">NET RX (IN)</span>
             <span className="text-sm text-emerald-400 font-bold block mt-0.5">
               {(netRx / 1024).toFixed(2)} MB/s
             </span>
             <span className="text-[10px] text-white/40 block mt-0.5">14.8k pkts/s</span>
           </div>
-          <div className="p-3 border border-white/10 bg-white/[0.02]">
+          <div className="p-2.5 sm:p-3 border border-white/10 bg-white/[0.02]">
             <span className="text-[10px] text-white/50 block font-medium tracking-wider">NET TX (OUT)</span>
             <span className="text-sm text-white/90 font-bold block mt-0.5">
               {(netTx / 1024).toFixed(2)} MB/s
@@ -133,29 +133,39 @@ export default function ServerTelemetry() {
         </div>
 
         {/* Metric 4: Microservices Health (Service Daemons) */}
-        <div className="space-y-2 pt-1 border-t border-white/10">
-          <span className="text-xs text-white/60 uppercase tracking-wider font-medium block">
-            SERVICE DAEMONS
-          </span>
-          <div className="space-y-1.5 text-xs">
+        <div className="space-y-2 pt-1 border-t border-white/10 min-w-0">
+          <div className="flex items-center justify-between text-xs text-white/60">
+            <span className="uppercase tracking-wider font-medium">SERVICE DAEMONS</span>
+            <span className="text-[10px] text-white/40 font-mono">STATUS / PING</span>
+          </div>
+          <div className="space-y-1.5 text-xs min-w-0">
             {INITIAL_SERVICES.map((srv) => (
               <div
                 key={srv.name}
-                className="flex items-center justify-between py-1.5 px-3 bg-white/[0.02] border border-white/5"
+                className="flex items-center justify-between gap-2 py-1.5 px-2.5 sm:px-3 bg-white/[0.02] border border-white/5 min-w-0"
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
                   <span
-                    className={`w-1.5 h-1.5 rounded-full ${
+                    className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                       srv.status === 'UP' ? 'bg-emerald-400' : 'bg-amber-400'
                     }`}
                   />
-                  <span className="text-white/85 font-medium">{srv.name}</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <span className="text-white/40 text-[11px]">{srv.latency}</span>
                   <span
-                    className={`text-[11px] font-bold tracking-wide ${
-                      srv.status === 'UP' ? 'text-emerald-400' : 'text-amber-400'
+                    title={srv.name}
+                    className="text-white/85 font-medium truncate text-xs"
+                  >
+                    {srv.name}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 whitespace-nowrap text-right">
+                  <span className="text-white/40 text-[10px] sm:text-[11px] font-mono">
+                    {srv.latency}
+                  </span>
+                  <span
+                    className={`text-[10px] sm:text-[11px] font-bold tracking-wider px-1.5 py-0.5 border ${
+                      srv.status === 'UP'
+                        ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10'
+                        : 'text-amber-400 border-amber-500/20 bg-amber-500/10'
                     }`}
                   >
                     {srv.status}
