@@ -2,197 +2,219 @@ import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
-export type TowerViewMode = 'night' | 'day' | 'wireframe'
-
 interface BitexcoTowerProps {
   scale?: number
-  mode?: TowerViewMode
 }
 
-export default function BitexcoTower({ scale = 1, mode = 'night' }: BitexcoTowerProps) {
+export default function BitexcoTower({ scale = 1 }: BitexcoTowerProps) {
   const groupRef = useRef<THREE.Group>(null!)
   const beaconLightRef = useRef<THREE.PointLight>(null!)
   const beaconMeshRef = useRef<THREE.Mesh>(null!)
 
-  // Total floor count of Bitexco: 68 floors
   const totalFloors = 68
-  const baseHeight = 5.2
-  const crownAngle = 0.62 // Characteristic slanted cut angle
+  const baseHeight = 5.6
+  const crownSlant = 0.72
 
-  // Procedural Bitexco Parametric Curves & Geometries
+  // Procedural geometries for the detailed double-petal tower
   const {
-    towerGeo,
-    capGeo,
-    verticalMullionsGeo,
+    frontPetalGeo,
+    rearPetalGeo,
+    slantedRoofGeo,
+    verticalFinsGeo,
     floorSlabsGeo,
-    contourLinesGeo,
+    revealSeamGeo,
+    mechanicalFloorsGeo,
   } = useMemo(() => {
-    const radialSegments = 64
-    const heightSegments = 50
+    const radialSegments = 72
+    const heightSegments = 60
 
-    // Lotus bud profile function (Carlos Zapata architectural form)
-    // Starts at base, expands gently around 25-30% height (bulge), then gracefully tapers to the neck
+    // Characteristic Carlos Zapata lotus-bud profile
     const getProfile = (v: number) => {
-      // Gentle lotus bud belly
-      const bulge = Math.sin(v * Math.PI) * 0.22
-      const taper = 1.0 - v * 0.52
-      const rx = (0.92 + bulge) * taper
-      const rz = (0.68 + bulge * 0.78) * taper
+      // Aerodynamic bulge around 28% height
+      const bulge = Math.sin(v * Math.PI) * 0.24
+      const taper = 1.0 - v * 0.54
+      const rx = (0.94 + bulge) * taper
+      const rz = (0.7 + bulge * 0.8) * taper
       return { rx, rz }
     }
 
-    // Top slanted roofline curve (sliced diagonally towards the river)
+    // Slanted crown roofline (slanted diagonally towards east/river)
     const getTopHeight = (phi: number) => {
-      return baseHeight + Math.sin(phi - 0.28) * crownAngle
+      return baseHeight + Math.sin(phi - 0.3) * crownSlant
     }
 
-    // --- 1. Main Curtain Wall Facade Geometry ---
-    const positions: number[] = []
-    const normals: number[] = []
-    const uvs: number[] = []
-    const indices: number[] = []
-    const grid: number[][] = []
+    // --- 1. FRONT PETAL (Holding the helipad side, phi: -PI/2 to PI/2) ---
+    const fPositions: number[] = []
+    const fNormals: number[] = []
+    const fUvs: number[] = []
+    const fIndices: number[] = []
+    const fGrid: number[][] = []
+
+    const halfRad = Math.floor(radialSegments / 2)
+    for (let iy = 0; iy <= heightSegments; iy++) {
+      const v = iy / heightSegments
+      const row: number[] = []
+
+      for (let ix = 0; ix <= halfRad; ix++) {
+        // Angles from -PI/2 to PI/2 (front face)
+        const phi = -Math.PI / 2 + (ix / halfRad) * Math.PI
+        const maxHeight = getTopHeight(phi)
+        const y = v * maxHeight
+        const { rx, rz } = getProfile(v)
+
+        const shapeMod = 1.0 + Math.cos(phi) * 0.12 - Math.cos(2 * phi) * 0.05
+        const x = Math.cos(phi) * rx * shapeMod * 1.01
+        const z = Math.sin(phi) * rz * 1.01
+
+        fPositions.push(x, y, z)
+        fUvs.push(ix / halfRad, v)
+        fNormals.push(Math.cos(phi), 0.08, Math.sin(phi))
+        row.push(fPositions.length / 3 - 1)
+      }
+      fGrid.push(row)
+    }
+
+    for (let iy = 0; iy < heightSegments; iy++) {
+      for (let ix = 0; ix < halfRad; ix++) {
+        const a = fGrid[iy][ix]
+        const b = fGrid[iy + 1][ix]
+        const c = fGrid[iy + 1][ix + 1]
+        const d = fGrid[iy][ix + 1]
+        fIndices.push(a, b, d)
+        fIndices.push(b, c, d)
+      }
+    }
+
+    const fpGeo = new THREE.BufferGeometry()
+    fpGeo.setAttribute('position', new THREE.Float32BufferAttribute(fPositions, 3))
+    fpGeo.setAttribute('normal', new THREE.Float32BufferAttribute(fNormals, 3))
+    fpGeo.setAttribute('uv', new THREE.Float32BufferAttribute(fUvs, 2))
+    fpGeo.setIndex(fIndices)
+    fpGeo.computeVertexNormals()
+
+    // --- 2. REAR PETAL (Higher crest at top, phi: PI/2 to 3PI/2) ---
+    const rPositions: number[] = []
+    const rNormals: number[] = []
+    const rUvs: number[] = []
+    const rIndices: number[] = []
+    const rGrid: number[][] = []
 
     for (let iy = 0; iy <= heightSegments; iy++) {
       const v = iy / heightSegments
       const row: number[] = []
 
-      for (let ix = 0; ix <= radialSegments; ix++) {
-        const u = ix / radialSegments
-        const phi = u * Math.PI * 2
-
-        const maxHeight = getTopHeight(phi)
+      for (let ix = 0; ix <= halfRad; ix++) {
+        const phi = Math.PI / 2 + (ix / halfRad) * Math.PI
+        // Rear petal extends higher at the crown crest
+        const maxHeight = getTopHeight(phi) + (v > 0.8 ? (v - 0.8) * 0.45 : 0)
         const y = v * maxHeight
-
         const { rx, rz } = getProfile(v)
 
-        // Asymmetric petal / teardrop cross-section
-        const petalMod = 1.0 + Math.cos(phi) * 0.1 - Math.cos(2 * phi) * 0.06
-        const x = Math.cos(phi) * rx * petalMod
+        const shapeMod = 1.0 + Math.cos(phi) * 0.12 - Math.cos(2 * phi) * 0.05
+        const x = Math.cos(phi) * rx * shapeMod
         const z = Math.sin(phi) * rz
 
-        positions.push(x, y, z)
-        uvs.push(u, v)
-
-        // Outward surface normal
-        const nx = Math.cos(phi)
-        const nz = Math.sin(phi)
-        normals.push(nx, 0.08, nz)
-
-        row.push(positions.length / 3 - 1)
+        rPositions.push(x, y, z)
+        rUvs.push(ix / halfRad, v)
+        rNormals.push(Math.cos(phi), 0.08, Math.sin(phi))
+        row.push(rPositions.length / 3 - 1)
       }
-      grid.push(row)
+      rGrid.push(row)
     }
 
     for (let iy = 0; iy < heightSegments; iy++) {
-      for (let ix = 0; ix < radialSegments; ix++) {
-        const a = grid[iy][ix]
-        const b = grid[iy + 1][ix]
-        const c = grid[iy + 1][ix + 1]
-        const d = grid[iy][ix + 1]
-
-        indices.push(a, b, d)
-        indices.push(b, c, d)
+      for (let ix = 0; ix < halfRad; ix++) {
+        const a = rGrid[iy][ix]
+        const b = rGrid[iy + 1][ix]
+        const c = rGrid[iy + 1][ix + 1]
+        const d = rGrid[iy][ix + 1]
+        rIndices.push(a, b, d)
+        rIndices.push(b, c, d)
       }
     }
 
-    const tGeo = new THREE.BufferGeometry()
-    tGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
-    tGeo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3))
-    tGeo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2))
-    tGeo.setIndex(indices)
-    tGeo.computeVertexNormals()
+    const rpGeo = new THREE.BufferGeometry()
+    rpGeo.setAttribute('position', new THREE.Float32BufferAttribute(rPositions, 3))
+    rpGeo.setAttribute('normal', new THREE.Float32BufferAttribute(rNormals, 3))
+    rpGeo.setAttribute('uv', new THREE.Float32BufferAttribute(rUvs, 2))
+    rpGeo.setIndex(rIndices)
+    rpGeo.computeVertexNormals()
 
-    // --- 2. Slanted Crown Roof Cap ---
+    // --- 3. SLANTED ROOF ATRIUM CAP ---
     const capPositions: number[] = []
     const capIndices: number[] = []
-    capPositions.push(0, baseHeight, 0) // Center vertex
+    capPositions.push(0, baseHeight, 0) // Center
 
     for (let ix = 0; ix <= radialSegments; ix++) {
       const u = ix / radialSegments
       const phi = u * Math.PI * 2
       const maxHeight = getTopHeight(phi)
       const { rx, rz } = getProfile(1.0)
-      const petalMod = 1.0 + Math.cos(phi) * 0.1 - Math.cos(2 * phi) * 0.06
-      const x = Math.cos(phi) * rx * petalMod
+      const shapeMod = 1.0 + Math.cos(phi) * 0.12 - Math.cos(2 * phi) * 0.05
+      const x = Math.cos(phi) * rx * shapeMod
       const z = Math.sin(phi) * rz
       capPositions.push(x, maxHeight, z)
     }
-
     for (let ix = 1; ix <= radialSegments; ix++) {
       capIndices.push(0, ix, ix + 1)
     }
-
     const cGeo = new THREE.BufferGeometry()
     cGeo.setAttribute('position', new THREE.Float32BufferAttribute(capPositions, 3))
     cGeo.setIndex(capIndices)
     cGeo.computeVertexNormals()
 
-    // --- 3. 68 Floor Slab Rings ---
+    // --- 4. 68 INDIVIDUAL FLOOR SLABS (Visible through glass) ---
     const floorPositions: number[] = []
     for (let f = 1; f <= totalFloors; f++) {
       const v = f / totalFloors
       const { rx, rz } = getProfile(v)
-      const ringPoints = 48
-
-      for (let s = 0; s < ringPoints; s++) {
-        const phi1 = (s / ringPoints) * Math.PI * 2
-        const phi2 = ((s + 1) / ringPoints) * Math.PI * 2
-
+      const pts = 50
+      for (let s = 0; s < pts; s++) {
+        const phi1 = (s / pts) * Math.PI * 2
+        const phi2 = ((s + 1) / pts) * Math.PI * 2
         const y1 = v * getTopHeight(phi1)
         const y2 = v * getTopHeight(phi2)
-
-        const mod1 = 1.0 + Math.cos(phi1) * 0.1 - Math.cos(2 * phi1) * 0.06
-        const mod2 = 1.0 + Math.cos(phi2) * 0.1 - Math.cos(2 * phi2) * 0.06
+        const mod1 = 1.0 + Math.cos(phi1) * 0.12 - Math.cos(2 * phi1) * 0.05
+        const mod2 = 1.0 + Math.cos(phi2) * 0.12 - Math.cos(2 * phi2) * 0.05
 
         floorPositions.push(
-          Math.cos(phi1) * rx * 0.985 * mod1,
-          y1,
-          Math.sin(phi1) * rz * 0.985,
-          Math.cos(phi2) * rx * 0.985 * mod2,
-          y2,
-          Math.sin(phi2) * rz * 0.985
+          Math.cos(phi1) * rx * 0.98 * mod1, y1, Math.sin(phi1) * rz * 0.98,
+          Math.cos(phi2) * rx * 0.98 * mod2, y2, Math.sin(phi2) * rz * 0.98
         )
       }
     }
     const fsGeo = new THREE.BufferGeometry()
     fsGeo.setAttribute('position', new THREE.Float32BufferAttribute(floorPositions, 3))
 
-    // --- 4. Vertical Architectural Mullions (Vertical Ribs) ---
-    const mullionPositions: number[] = []
-    const mullionCount = 32
-    for (let m = 0; m < mullionCount; m++) {
-      const phi = (m / mullionCount) * Math.PI * 2
-      const petalMod = 1.0 + Math.cos(phi) * 0.1 - Math.cos(2 * phi) * 0.06
-      const steps = 30
-      for (let s = 0; s < steps; s++) {
-        const v1 = s / steps
-        const v2 = (s + 1) / steps
+    // --- 5. DOUBLE-HEIGHT MECHANICAL PLANT FLOORS (Levels 29-30 & 48) ---
+    const mechPositions: number[] = []
+    const mechFloors = [29 / 68, 30 / 68, 48 / 68]
+    for (const v of mechFloors) {
+      const { rx, rz } = getProfile(v)
+      const pts = 60
+      for (let s = 0; s < pts; s++) {
+        const phi1 = (s / pts) * Math.PI * 2
+        const phi2 = ((s + 1) / pts) * Math.PI * 2
+        const y1 = v * getTopHeight(phi1)
+        const y2 = v * getTopHeight(phi2)
+        const mod1 = 1.0 + Math.cos(phi1) * 0.12 - Math.cos(2 * phi1) * 0.05
+        const mod2 = 1.0 + Math.cos(phi2) * 0.12 - Math.cos(2 * phi2) * 0.05
 
-        const { rx: rx1, rz: rz1 } = getProfile(v1)
-        const { rx: rx2, rz: rz2 } = getProfile(v2)
-
-        const y1 = v1 * getTopHeight(phi)
-        const y2 = v2 * getTopHeight(phi)
-
-        mullionPositions.push(
-          Math.cos(phi) * rx1 * 1.006 * petalMod,
-          y1,
-          Math.sin(phi) * rz1 * 1.006,
-          Math.cos(phi) * rx2 * 1.006 * petalMod,
-          y2,
-          Math.sin(phi) * rz2 * 1.006
+        mechPositions.push(
+          Math.cos(phi1) * rx * 1.008 * mod1, y1, Math.sin(phi1) * rz * 1.008,
+          Math.cos(phi2) * rx * 1.008 * mod2, y2, Math.sin(phi2) * rz * 1.008
         )
       }
     }
-    const vmGeo = new THREE.BufferGeometry()
-    vmGeo.setAttribute('position', new THREE.Float32BufferAttribute(mullionPositions, 3))
+    const mfGeo = new THREE.BufferGeometry()
+    mfGeo.setAttribute('position', new THREE.Float32BufferAttribute(mechPositions, 3))
 
-    // --- 5. Illuminated Contour Ribs (The two main lotus petal seams) ---
-    const contourPositions: number[] = []
-    const seamAngles = [0, Math.PI, Math.PI * 0.5, Math.PI * 1.5]
-    for (const phi of seamAngles) {
-      const petalMod = 1.0 + Math.cos(phi) * 0.1 - Math.cos(2 * phi) * 0.06
+    // --- 6. HIGH-DENSITY VERTICAL ARCHITECTURAL MULLION FINS (44 vertical ribs) ---
+    const finPositions: number[] = []
+    const finCount = 44
+    for (let i = 0; i < finCount; i++) {
+      const phi = (i / finCount) * Math.PI * 2
+      const shapeMod = 1.0 + Math.cos(phi) * 0.12 - Math.cos(2 * phi) * 0.05
       const steps = 40
       for (let s = 0; s < steps; s++) {
         const v1 = s / steps
@@ -202,356 +224,400 @@ export default function BitexcoTower({ scale = 1, mode = 'night' }: BitexcoTower
         const y1 = v1 * getTopHeight(phi)
         const y2 = v2 * getTopHeight(phi)
 
-        contourPositions.push(
-          Math.cos(phi) * rx1 * 1.012 * petalMod,
-          y1,
-          Math.sin(phi) * rz1 * 1.012,
-          Math.cos(phi) * rx2 * 1.012 * petalMod,
-          y2,
-          Math.sin(phi) * rz2 * 1.012
+        finPositions.push(
+          Math.cos(phi) * rx1 * 1.01 * shapeMod, y1, Math.sin(phi) * rz1 * 1.01,
+          Math.cos(phi) * rx2 * 1.01 * shapeMod, y2, Math.sin(phi) * rz2 * 1.01
         )
       }
     }
-    const clGeo = new THREE.BufferGeometry()
-    clGeo.setAttribute('position', new THREE.Float32BufferAttribute(contourPositions, 3))
+    const vfGeo = new THREE.BufferGeometry()
+    vfGeo.setAttribute('position', new THREE.Float32BufferAttribute(finPositions, 3))
+
+    // --- 7. VERTICAL REVEAL SEAM (Gap between the two interlocking petals) ---
+    const seamPositions: number[] = []
+    const seams = [Math.PI / 2, -Math.PI / 2]
+    for (const phi of seams) {
+      const steps = 50
+      for (let s = 0; s < steps; s++) {
+        const v1 = s / steps
+        const v2 = (s + 1) / steps
+        const { rx: rx1, rz: rz1 } = getProfile(v1)
+        const { rx: rx2, rz: rz2 } = getProfile(v2)
+        const y1 = v1 * getTopHeight(phi)
+        const y2 = v2 * getTopHeight(phi)
+
+        seamPositions.push(
+          Math.cos(phi) * rx1 * 1.018, y1, Math.sin(phi) * rz1 * 1.018,
+          Math.cos(phi) * rx2 * 1.018, y2, Math.sin(phi) * rz2 * 1.018
+        )
+      }
+    }
+    const rsGeo = new THREE.BufferGeometry()
+    rsGeo.setAttribute('position', new THREE.Float32BufferAttribute(seamPositions, 3))
 
     return {
-      towerGeo: tGeo,
-      capGeo: cGeo,
+      frontPetalGeo: fpGeo,
+      rearPetalGeo: rpGeo,
+      slantedRoofGeo: cGeo,
       floorSlabsGeo: fsGeo,
-      verticalMullionsGeo: vmGeo,
-      contourLinesGeo: clGeo,
+      mechanicalFloorsGeo: mfGeo,
+      verticalFinsGeo: vfGeo,
+      revealSeamGeo: rsGeo,
     }
-  }, [baseHeight, crownAngle, totalFloors])
+  }, [baseHeight, crownSlant, totalFloors])
 
-  // Geometry cleanup on unmount (Ponytail memory requirement)
+  // Memory disposal (Ponytail guideline)
   useEffect(() => {
     return () => {
-      towerGeo.dispose()
-      capGeo.dispose()
+      frontPetalGeo.dispose()
+      rearPetalGeo.dispose()
+      slantedRoofGeo.dispose()
       floorSlabsGeo.dispose()
-      verticalMullionsGeo.dispose()
-      contourLinesGeo.dispose()
+      mechanicalFloorsGeo.dispose()
+      verticalFinsGeo.dispose()
+      revealSeamGeo.dispose()
     }
-  }, [towerGeo, capGeo, floorSlabsGeo, verticalMullionsGeo, contourLinesGeo])
+  }, [
+    frontPetalGeo,
+    rearPetalGeo,
+    slantedRoofGeo,
+    floorSlabsGeo,
+    mechanicalFloorsGeo,
+    verticalFinsGeo,
+    revealSeamGeo,
+  ])
 
-  // Helipad lights coordinates along circular rim
-  const helipadLights = useMemo(() => {
+  // Helipad perimeter lights and safety net stanchions (monochrome white)
+  const { helipadLights, stanchions } = useMemo(() => {
     const lights: [number, number, number][] = []
-    const count = 16
-    const radius = 0.52
+    const stanch: [number, number, number][] = []
+    const count = 20
+    const innerR = 0.54
+    const outerR = 0.62
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * Math.PI * 2
-      lights.push([Math.cos(angle) * radius, 0.035, Math.sin(angle) * radius])
+      lights.push([Math.cos(angle) * innerR, 0.04, Math.sin(angle) * innerR])
+      stanch.push([Math.cos(angle) * outerR, 0.02, Math.sin(angle) * outerR])
     }
-    return lights
+    return { helipadLights: lights, stanchions: stanch }
   }, [])
 
-  // Animation frame loop: Spire red aviation warning flash and subtle rotation
+  // Spire beacon flash (pure white strobe)
   useFrame((state) => {
-    if (groupRef.current) {
-      // Subtle float parallax
-      groupRef.current.position.y = -2.3 + Math.sin(state.clock.elapsedTime * 0.8) * 0.03
-    }
-
-    // Top beacon flash (aviation obstruction light)
     if (beaconLightRef.current && beaconMeshRef.current) {
-      const flash = Math.sin(state.clock.elapsedTime * 4.5) > 0.35
-      beaconLightRef.current.intensity = flash ? 3.0 : 0.1
+      const flash = Math.sin(state.clock.elapsedTime * 5.0) > 0.4
+      beaconLightRef.current.intensity = flash ? 3.5 : 0.2
       const mat = beaconMeshRef.current.material as THREE.MeshBasicMaterial
       if (mat) {
-        mat.color.set(flash ? '#ff2a5f' : '#450a1b')
+        mat.color.set(flash ? '#ffffff' : '#333333')
       }
     }
   })
 
-  // Geometric positions
-  // Helipad is at Floor 52 (~191m / 262.5m = 72% height)
+  // Exact vertical parameters
   const helipadFloorRatio = 52 / 68
   const helipadY = baseHeight * helipadFloorRatio
-  const helipadX = 1.28
+  const helipadX = 1.32
   const helipadZ = 0.06
 
-  // Skydeck observation deck is at Floor 49
   const skydeckFloorRatio = 49 / 68
   const skydeckY = baseHeight * skydeckFloorRatio
 
   return (
-    <group ref={groupRef} scale={scale} position={[0, -2.3, 0]}>
+    <group ref={groupRef} scale={scale} position={[0, -2.8, 0]}>
       {/* ============================================================ */}
-      {/* 1. CENTRAL REINFORCED CONCRETE CORE                         */}
+      {/* 1. CENTRAL ELEVATOR CORE COLUMN (Black concrete)             */}
       {/* ============================================================ */}
-      <mesh position={[0, baseHeight * 0.49, 0]}>
-        <cylinderGeometry args={[0.34, 0.42, baseHeight * 0.98, 24]} />
-        <meshStandardMaterial
-          color={mode === 'night' ? '#0f172a' : '#cbd5e1'}
-          roughness={0.8}
-          metalness={0.2}
+      <mesh position={[0, baseHeight * 0.48, 0]}>
+        <cylinderGeometry args={[0.35, 0.42, baseHeight * 0.96, 24]} />
+        <meshStandardMaterial color="#000000" roughness={0.9} metalness={0.1} />
+      </mesh>
+
+      {/* ============================================================ */}
+      {/* 2. DUAL INTERLOCKING LOTUS GLASS PETALS                      */}
+      {/* ============================================================ */}
+      {/* Front Petal (High-contrast dark tinted glass) */}
+      <mesh geometry={frontPetalGeo}>
+        <meshPhysicalMaterial
+          color="#050505"
+          emissive="#111111"
+          emissiveIntensity={0.2}
+          roughness={0.05}
+          metalness={0.95}
+          transmission={0.4}
+          transparent
+          opacity={0.9}
+          reflectivity={1.0}
+          clearcoat={1.0}
+          clearcoatRoughness={0.05}
+        />
+      </mesh>
+
+      {/* Rear Petal (Slightly deeper jet black with soar crest) */}
+      <mesh geometry={rearPetalGeo}>
+        <meshPhysicalMaterial
+          color="#080808"
+          emissive="#181818"
+          emissiveIntensity={0.25}
+          roughness={0.05}
+          metalness={0.95}
+          transmission={0.4}
+          transparent
+          opacity={0.92}
+          reflectivity={1.0}
+          clearcoat={1.0}
+          clearcoatRoughness={0.05}
         />
       </mesh>
 
       {/* ============================================================ */}
-      {/* 2. MAIN GLASS CURTAIN WALL (DOUBLE-CURVED ENVELOPE)         */}
-      {/* ============================================================ */}
-      {mode === 'wireframe' ? (
-        <mesh geometry={towerGeo}>
-          <meshBasicMaterial color="#38bdf8" wireframe />
-        </mesh>
-      ) : (
-        <mesh geometry={towerGeo}>
-          <meshPhysicalMaterial
-            color={mode === 'night' ? '#0284c7' : '#0369a1'}
-            emissive={mode === 'night' ? '#0369a1' : '#082f49'}
-            emissiveIntensity={mode === 'night' ? 0.35 : 0.05}
-            roughness={0.08}
-            metalness={0.92}
-            transmission={0.55}
-            transparent
-            opacity={mode === 'night' ? 0.88 : 0.92}
-            reflectivity={0.95}
-            clearcoat={1}
-            clearcoatRoughness={0.08}
-          />
-        </mesh>
-      )}
-
-      {/* ============================================================ */}
-      {/* 3. 68 FLOOR SLAB LINES (INTERIOR FLOORS VISIBLE VIA GLASS)   */}
+      {/* 3. 68 INDIVIDUAL HORIZONTAL FLOOR SLAB LINES (Pure White)    */}
       {/* ============================================================ */}
       <lineSegments geometry={floorSlabsGeo}>
-        <lineBasicMaterial
-          color={mode === 'night' ? '#67e8f9' : '#94a3b8'}
-          transparent
-          opacity={mode === 'night' ? 0.4 : 0.25}
-        />
+        <lineBasicMaterial color="#ffffff" transparent opacity={0.35} />
+      </lineSegments>
+
+      {/* Double-Height Mechanical Plant Floors (Louvers at levels 29-30 & 48) */}
+      <lineSegments geometry={mechanicalFloorsGeo}>
+        <lineBasicMaterial color="#ffffff" transparent opacity={0.85} linewidth={2} />
       </lineSegments>
 
       {/* ============================================================ */}
-      {/* 4. VERTICAL ARCHITECTURAL MULLIONS (CURTAIN WALL RIBS)      */}
+      {/* 4. HIGH-DENSITY VERTICAL STRUCTURAL MULLIONS (White/Silver)  */}
       {/* ============================================================ */}
-      <lineSegments geometry={verticalMullionsGeo}>
-        <lineBasicMaterial
-          color={mode === 'night' ? '#06b6d4' : '#64748b'}
-          transparent
-          opacity={mode === 'night' ? 0.5 : 0.3}
-        />
+      <lineSegments geometry={verticalFinsGeo}>
+        <lineBasicMaterial color="#ffffff" transparent opacity={0.45} />
+      </lineSegments>
+
+      {/* Vertical Reveal Seams between petals */}
+      <lineSegments geometry={revealSeamGeo}>
+        <lineBasicMaterial color="#ffffff" transparent opacity={0.9} linewidth={2} />
       </lineSegments>
 
       {/* ============================================================ */}
-      {/* 5. ILLUMINATED LOTUS CONTOUR SEAMS                          */}
-      {/* ============================================================ */}
-      {mode === 'night' && (
-        <lineSegments geometry={contourLinesGeo}>
-          <lineBasicMaterial color="#38bdf8" transparent opacity={0.85} linewidth={2} />
-        </lineSegments>
-      )}
-
-      {/* ============================================================ */}
-      {/* 6. FLOOR 49 SAIGON SKYDECK (PANORAMIC OBSERVATION DECK)     */}
+      {/* 5. SAIGON SKYDECK (FLOOR 49 PANORAMIC OBSERVATION DECK)     */}
       {/* ============================================================ */}
       <group position={[0, skydeckY, 0]}>
-        {/* Skydeck tinted glass band */}
+        {/* Recessed observation band */}
         <mesh>
-          <cylinderGeometry args={[0.56, 0.58, 0.12, 40]} />
+          <cylinderGeometry args={[0.55, 0.57, 0.14, 48]} />
           <meshStandardMaterial
-            color="#38bdf8"
-            emissive="#06b6d4"
-            emissiveIntensity={mode === 'night' ? 0.8 : 0.2}
+            color="#ffffff"
+            emissive="#ffffff"
+            emissiveIntensity={0.6}
             transparent
-            opacity={0.8}
+            opacity={0.9}
           />
+        </mesh>
+        {/* Skydeck mullion pillars */}
+        <mesh>
+          <cylinderGeometry args={[0.56, 0.58, 0.14, 24, 1, true]} />
+          <meshBasicMaterial color="#000000" wireframe />
         </mesh>
       </group>
 
       {/* ============================================================ */}
-      {/* 7. SLANTED CROWN ROOF & ATRIUM                              */}
+      {/* 6. SLANTED ATRIUM CROWN & STRUCTURAL TRUSSES                */}
       {/* ============================================================ */}
-      <mesh geometry={capGeo}>
-        <meshStandardMaterial
-          color={mode === 'night' ? '#090d16' : '#1e293b'}
-          metalness={0.9}
-          roughness={0.2}
-        />
+      <mesh geometry={slantedRoofGeo}>
+        <meshStandardMaterial color="#000000" metalness={0.95} roughness={0.1} />
       </mesh>
 
-      {/* Crown Architectural Fin Blades (Lotus petal tips) */}
-      <group position={[0.04, baseHeight + 0.18, 0]}>
-        <mesh rotation={[0, 0, 0.12]}>
-          <boxGeometry args={[0.06, 0.75, 0.45]} />
-          <meshStandardMaterial
-            color="#0284c7"
-            metalness={0.92}
-            roughness={0.15}
-            emissive="#0369a1"
-            emissiveIntensity={mode === 'night' ? 0.4 : 0.1}
-          />
+      {/* Exposed Internal Roof Truss Space Frame */}
+      <group position={[0, baseHeight + 0.1, 0]}>
+        <mesh rotation={[0, 0, 0.1]}>
+          <boxGeometry args={[0.08, 0.8, 0.5]} />
+          <meshStandardMaterial color="#ffffff" metalness={0.9} roughness={0.1} />
+        </mesh>
+        <mesh position={[-0.05, 0.15, 0]} rotation={[0, 0, -0.1]}>
+          <boxGeometry args={[0.06, 0.65, 0.45]} />
+          <meshStandardMaterial color="#555555" metalness={0.9} roughness={0.2} />
         </mesh>
       </group>
 
-      {/* Architectural Antenna / Spire */}
-      <mesh position={[-0.1, baseHeight + 0.65, 0]}>
-        <cylinderGeometry args={[0.012, 0.035, 1.1, 16]} />
-        <meshStandardMaterial color="#cbd5e1" metalness={0.95} roughness={0.1} />
+      {/* Stainless Steel Lattice Spire / Mast */}
+      <mesh position={[-0.1, baseHeight + 0.72, 0]}>
+        <cylinderGeometry args={[0.015, 0.04, 1.25, 16]} />
+        <meshStandardMaterial color="#ffffff" metalness={0.95} roughness={0.1} />
       </mesh>
 
-      {/* Spire Obstruction Warning Beacon Light (Red Flash) */}
-      <mesh ref={beaconMeshRef} position={[-0.1, baseHeight + 1.22, 0]}>
+      {/* Radar Communication Discs on Spire */}
+      <mesh position={[-0.1, baseHeight + 0.5, 0]}>
+        <cylinderGeometry args={[0.12, 0.12, 0.015, 24]} />
+        <meshStandardMaterial color="#ffffff" metalness={0.9} roughness={0.2} />
+      </mesh>
+      <mesh position={[-0.1, baseHeight + 0.85, 0]}>
+        <cylinderGeometry args={[0.08, 0.08, 0.012, 24]} />
+        <meshStandardMaterial color="#ffffff" metalness={0.9} roughness={0.2} />
+      </mesh>
+
+      {/* Spire Obstruction Warning Beacon (Pure White Xenon Strobe) */}
+      <mesh ref={beaconMeshRef} position={[-0.1, baseHeight + 1.35, 0]}>
         <sphereGeometry args={[0.045, 16, 16]} />
-        <meshBasicMaterial color="#ff2a5f" />
+        <meshBasicMaterial color="#ffffff" />
       </mesh>
       <pointLight
         ref={beaconLightRef}
-        position={[-0.1, baseHeight + 1.22, 0]}
-        color="#ff2a5f"
-        distance={4.5}
-        intensity={2.5}
+        position={[-0.1, baseHeight + 1.35, 0]}
+        color="#ffffff"
+        distance={6}
+        intensity={3.5}
       />
 
       {/* ============================================================ */}
-      {/* 8. ICONIC CANTILEVERED HELIPAD (FLOOR 52, ~191M LEVEL)      */}
+      {/* 7. HIGHLY DETAILED CANTILEVERED HELIPAD (FLOOR 52, ~191M)    */}
       {/* ============================================================ */}
       <group position={[helipadX, helipadY, helipadZ]}>
-        {/* Cantilever Skybridge Walkway connecting Floor 52 to Helipad */}
-        <group position={[-0.42, 0, 0]}>
-          <mesh position={[0.16, 0, 0]}>
-            <boxGeometry args={[0.42, 0.05, 0.22]} />
-            <meshStandardMaterial color="#334155" metalness={0.8} roughness={0.3} />
+        {/* Enclosed Passenger Skybridge connecting Floor 52 to Helipad */}
+        <group position={[-0.45, 0, 0]}>
+          <mesh position={[0.18, 0, 0]}>
+            <boxGeometry args={[0.46, 0.05, 0.22]} />
+            <meshStandardMaterial color="#111111" metalness={0.9} roughness={0.2} />
           </mesh>
-          {/* Skybridge Safety Glass Railings */}
-          <mesh position={[0.16, 0.06, 0.11]}>
-            <boxGeometry args={[0.42, 0.07, 0.01]} />
-            <meshPhysicalMaterial color="#38bdf8" transmission={0.7} transparent opacity={0.6} />
+          {/* Skybridge Glass Balustrades */}
+          <mesh position={[0.18, 0.07, 0.11]}>
+            <boxGeometry args={[0.46, 0.09, 0.01]} />
+            <meshPhysicalMaterial color="#ffffff" transmission={0.8} transparent opacity={0.7} />
           </mesh>
-          <mesh position={[0.16, 0.06, -0.11]}>
-            <boxGeometry args={[0.42, 0.07, 0.01]} />
-            <meshPhysicalMaterial color="#38bdf8" transmission={0.7} transparent opacity={0.6} />
+          <mesh position={[0.18, 0.07, -0.11]}>
+            <boxGeometry args={[0.46, 0.09, 0.01]} />
+            <meshPhysicalMaterial color="#ffffff" transmission={0.8} transparent opacity={0.7} />
+          </mesh>
+          {/* Handrails (White chrome) */}
+          <mesh position={[0.18, 0.12, 0.11]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.008, 0.008, 0.46, 8]} />
+            <meshStandardMaterial color="#ffffff" metalness={0.95} roughness={0.1} />
+          </mesh>
+          <mesh position={[0.18, 0.12, -0.11]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.008, 0.008, 0.46, 8]} />
+            <meshStandardMaterial color="#ffffff" metalness={0.95} roughness={0.1} />
           </mesh>
         </group>
 
-        {/* Helipad Circular Platform */}
+        {/* Circular Tarmac Platform */}
         <mesh>
-          <cylinderGeometry args={[0.56, 0.5, 0.07, 36]} />
-          <meshStandardMaterial
-            color="#1e293b"
-            metalness={0.85}
-            roughness={0.3}
-          />
+          <cylinderGeometry args={[0.56, 0.48, 0.08, 48]} />
+          <meshStandardMaterial color="#000000" metalness={0.9} roughness={0.3} />
         </mesh>
 
-        {/* Safety Catch Net Outer Ring (Angled slightly upward) */}
+        {/* Angled Safety Catch-Netting Ring */}
         <mesh position={[0, 0.015, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[0.56, 0.62, 36]} />
-          <meshBasicMaterial
-            color="#475569"
-            wireframe
-            side={THREE.DoubleSide}
-          />
+          <ringGeometry args={[0.56, 0.64, 48]} />
+          <meshBasicMaterial color="#ffffff" wireframe side={THREE.DoubleSide} />
         </mesh>
 
-        {/* Helipad Landing Deck Markings */}
-        {/* 1. Outer Guidance Ring */}
-        <mesh position={[0, 0.038, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[0.38, 0.52, 36]} />
-          <meshBasicMaterial
-            color={mode === 'night' ? '#38bdf8' : '#e2e8f0'}
-            side={THREE.DoubleSide}
-          />
+        {/* Safety Net Stanchions (Posts around perimeter) */}
+        {stanchions.map(([sx, sy, sz], idx) => (
+          <mesh key={`stanch-${idx}`} position={[sx, sy + 0.03, sz]}>
+            <cylinderGeometry args={[0.005, 0.005, 0.06, 6]} />
+            <meshStandardMaterial color="#ffffff" metalness={0.95} roughness={0.1} />
+          </mesh>
+        ))}
+
+        {/* --- High-Contrast Helipad Landing Deck Markings --- */}
+        {/* 1. Outer White Boundary Guide Ring */}
+        <mesh position={[0, 0.042, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.42, 0.52, 48]} />
+          <meshBasicMaterial color="#ffffff" side={THREE.DoubleSide} />
         </mesh>
 
-        {/* 2. Inner Aiming Circle */}
-        <mesh position={[0, 0.039, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[0.22, 0.26, 36]} />
-          <meshBasicMaterial color="#f8fafc" side={THREE.DoubleSide} />
+        {/* 2. Inner Touchdown Aiming Circle */}
+        <mesh position={[0, 0.043, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.24, 0.28, 48]} />
+          <meshBasicMaterial color="#ffffff" side={THREE.DoubleSide} />
         </mesh>
 
-        {/* 3. The Big "H" Landing Symbol */}
-        <group position={[0, 0.04, 0]}>
+        {/* 3. Bold White "H" Landing Symbol */}
+        <group position={[0, 0.044, 0]}>
           {/* Left Vertical Bar */}
-          <mesh position={[-0.08, 0, 0]}>
-            <boxGeometry args={[0.028, 0.002, 0.16]} />
+          <mesh position={[-0.09, 0, 0]}>
+            <boxGeometry args={[0.032, 0.002, 0.18]} />
             <meshBasicMaterial color="#ffffff" />
           </mesh>
           {/* Right Vertical Bar */}
-          <mesh position={[0.08, 0, 0]}>
-            <boxGeometry args={[0.028, 0.002, 0.16]} />
+          <mesh position={[0.09, 0, 0]}>
+            <boxGeometry args={[0.032, 0.002, 0.18]} />
             <meshBasicMaterial color="#ffffff" />
           </mesh>
           {/* Center Crossbar */}
           <mesh position={[0, 0, 0]}>
-            <boxGeometry args={[0.132, 0.002, 0.028]} />
+            <boxGeometry args={[0.15, 0.002, 0.032]} />
             <meshBasicMaterial color="#ffffff" />
           </mesh>
         </group>
 
-        {/* Perimeter Aviation Lights (Alternating Cyan & Emerald green) */}
+        {/* Perimeter Elevated Aviation Lights (Crisp White & Silver dots) */}
         {helipadLights.map(([lx, ly, lz], idx) => (
-          <mesh key={idx} position={[lx, ly, lz]}>
-            <sphereGeometry args={[0.016, 8, 8]} />
-            <meshBasicMaterial
-              color={
-                mode === 'night'
-                  ? idx % 4 === 0
-                    ? '#fbbf24' // amber
-                    : idx % 2 === 0
-                    ? '#38bdf8' // cyan
-                    : '#10b981' // green
-                  : '#cbd5e1'
-              }
-            />
-          </mesh>
+          <group key={`light-${idx}`} position={[lx, ly, lz]}>
+            {/* Small light post */}
+            <mesh position={[0, -0.015, 0]}>
+              <cylinderGeometry args={[0.004, 0.004, 0.03, 6]} />
+              <meshStandardMaterial color="#222222" />
+            </mesh>
+            {/* Glowing bulb */}
+            <mesh>
+              <sphereGeometry args={[0.014, 8, 8]} />
+              <meshBasicMaterial color="#ffffff" />
+            </mesh>
+          </group>
         ))}
 
-        {/* Structural Cantilever Inverted V-Truss Support Struts (Anchored into tower core) */}
-        <group position={[-0.55, -0.32, 0]}>
-          {/* Central primary heavy steel strut */}
-          <mesh position={[0.26, 0.15, 0]} rotation={[0, 0, 0.66]}>
-            <cylinderGeometry args={[0.032, 0.032, 0.72, 12]} />
-            <meshStandardMaterial color="#475569" metalness={0.9} roughness={0.25} />
+        {/* Inverted V-Truss Heavy Tubular Steel Struts (Anchored to core column) */}
+        <group position={[-0.58, -0.34, 0]}>
+          {/* Primary central steel tube */}
+          <mesh position={[0.28, 0.16, 0]} rotation={[0, 0, 0.68]}>
+            <cylinderGeometry args={[0.036, 0.036, 0.78, 16]} />
+            <meshStandardMaterial color="#222222" metalness={0.95} roughness={0.15} />
           </mesh>
-          {/* Left lateral diagonal brace */}
-          <mesh position={[0.26, 0.15, 0.18]} rotation={[0.34, 0, 0.66]}>
-            <cylinderGeometry args={[0.024, 0.024, 0.76, 10]} />
-            <meshStandardMaterial color="#475569" metalness={0.9} roughness={0.25} />
+          {/* Left lateral diagonal truss */}
+          <mesh position={[0.28, 0.16, 0.19]} rotation={[0.36, 0, 0.68]}>
+            <cylinderGeometry args={[0.026, 0.026, 0.82, 12]} />
+            <meshStandardMaterial color="#222222" metalness={0.95} roughness={0.15} />
           </mesh>
-          {/* Right lateral diagonal brace */}
-          <mesh position={[0.26, 0.15, -0.18]} rotation={[-0.34, 0, 0.66]}>
-            <cylinderGeometry args={[0.024, 0.024, 0.76, 10]} />
-            <meshStandardMaterial color="#475569" metalness={0.9} roughness={0.25} />
+          {/* Right lateral diagonal truss */}
+          <mesh position={[0.28, 0.16, -0.19]} rotation={[-0.36, 0, 0.68]}>
+            <cylinderGeometry args={[0.026, 0.026, 0.82, 12]} />
+            <meshStandardMaterial color="#222222" metalness={0.95} roughness={0.15} />
+          </mesh>
+
+          {/* Cross-bracing steel links (X-braces) */}
+          <mesh position={[0.28, 0.12, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.012, 0.012, 0.38, 8]} />
+            <meshStandardMaterial color="#ffffff" metalness={0.95} roughness={0.1} />
           </mesh>
         </group>
       </group>
 
       {/* ============================================================ */}
-      {/* 9. TIERED 5-STORY RETAIL PODIUM (ICON68 SHOPPING PLAZA)     */}
+      {/* 8. 5-STORY TIERED PODIUM (Icon68 Commercial Base)           */}
       {/* ============================================================ */}
-      <group position={[0, 0.22, 0]}>
-        {/* Tier 1 Podium Body */}
+      <group position={[0, 0.24, 0]}>
+        {/* Tier 1 - Main Podium Structure (Onyx black) */}
         <mesh>
-          <cylinderGeometry args={[1.18, 1.34, 0.44, 40]} />
-          <meshStandardMaterial
-            color={mode === 'night' ? '#0f172a' : '#334155'}
-            metalness={0.85}
-            roughness={0.35}
-          />
+          <cylinderGeometry args={[1.2, 1.36, 0.48, 48]} />
+          <meshStandardMaterial color="#050505" metalness={0.9} roughness={0.2} />
         </mesh>
-        {/* Podium Glass Entrance Band */}
-        <mesh position={[0, 0, 0]}>
-          <cylinderGeometry args={[1.2, 1.32, 0.26, 40]} />
+        {/* Tier 2 - Curved Glass Ribbon Entrance */}
+        <mesh position={[0, 0.02, 0]}>
+          <cylinderGeometry args={[1.22, 1.34, 0.28, 48]} />
           <meshPhysicalMaterial
-            color="#38bdf8"
-            emissive="#0284c7"
-            emissiveIntensity={mode === 'night' ? 0.3 : 0.05}
-            roughness={0.1}
-            metalness={0.9}
-            transmission={0.4}
+            color="#000000"
+            roughness={0.05}
+            metalness={0.95}
+            transmission={0.5}
             transparent
-            opacity={0.8}
+            opacity={0.85}
           />
         </mesh>
-        {/* Entrance Curved Canopy Overhang */}
-        <mesh position={[0.9, -0.1, 0.5]} rotation={[0, 0.4, 0]}>
-          <boxGeometry args={[0.4, 0.04, 0.6]} />
-          <meshStandardMaterial color="#0284c7" metalness={0.9} roughness={0.2} />
+        {/* White Architectural Columns on Podium Facade */}
+        <mesh>
+          <cylinderGeometry args={[1.225, 1.345, 0.28, 24, 1, true]} />
+          <meshBasicMaterial color="#ffffff" wireframe />
+        </mesh>
+        {/* Cantilever Entrance Canopy Overhang */}
+        <mesh position={[0.92, -0.12, 0.52]} rotation={[0, 0.42, 0]}>
+          <boxGeometry args={[0.42, 0.04, 0.64]} />
+          <meshStandardMaterial color="#ffffff" metalness={0.9} roughness={0.1} />
         </mesh>
       </group>
     </group>

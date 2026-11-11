@@ -5,47 +5,47 @@ import BitexcoTower from './BitexcoTower'
 
 export default function ThreeCanvas() {
   return (
-    <div className="fixed inset-0 w-screen h-screen bg-slate-950 select-none overflow-hidden">
+    <div className="fixed inset-0 w-screen h-screen bg-black select-none overflow-hidden">
       <Canvas
-        camera={{ position: [0, 1.0, 9.5], fov: 40 }}
+        camera={{ position: [0, 0, 9.2], fov: 38 }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
         dpr={[1, 2]}
       >
-        <color attach="background" args={['#020617']} />
+        <color attach="background" args={['#000000']} />
 
         <Suspense fallback={null}>
-          {/* Studio Architectural Lighting */}
-          <ambientLight intensity={0.7} />
+          {/* Monochromatic Studio Architectural Lighting (Pure White / Black) */}
+          <ambientLight intensity={0.55} color="#ffffff" />
 
           <directionalLight
-            position={[10, 15, 10]}
-            intensity={2.2}
-            color="#38bdf8"
+            position={[10, 16, 10]}
+            intensity={2.4}
+            color="#ffffff"
           />
 
           <directionalLight
-            position={[-10, 8, -8]}
-            intensity={1.4}
-            color="#c084fc"
-          />
-
-          <pointLight
-            position={[4, 2, 4]}
+            position={[-10, 8, -10]}
             intensity={1.2}
-            color="#06b6d4"
-            distance={10}
+            color="#ffffff"
           />
 
-          {/* Pure Bitexco Tower */}
-          <BitexcoTower scale={1.05} mode="night" />
+          <directionalLight
+            position={[0, -10, 5]}
+            intensity={0.6}
+            color="#ffffff"
+          />
+
+          {/* High-Detail Monochromatic Bitexco Tower */}
+          <BitexcoTower scale={1.05} />
 
           {/* Smooth 360-degree Orbit Controls */}
           <OrbitControls
+            target={[0, 0, 0]}
             enablePan={true}
             enableZoom={true}
             enableRotate={true}
             autoRotate={true}
-            autoRotateSpeed={1.0}
+            autoRotateSpeed={0.8}
             enableDamping={true}
             dampingFactor={0.05}
             minDistance={2.5}
