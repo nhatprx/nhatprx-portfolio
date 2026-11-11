@@ -302,7 +302,7 @@ export default function App() {
             </h2>
             <p className="text-sm text-white/60 leading-relaxed mb-6">
               Yes, you are inspecting the actual live Linux machine hosting this portfolio.
-              Run <code className="px-1.5 py-0.5 border border-white/10 text-white font-mono text-xs bg-white/5">docker ps</code>, <code className="px-1.5 py-0.5 border border-white/10 text-white font-mono text-xs bg-white/5">top</code>, or <code className="px-1.5 py-0.5 border border-white/10 text-white font-mono text-xs bg-white/5">uname -a</code> to see running containers, memory usage, and kernel telemetry in real time.
+              Feel free to poke around and verify what's running under the hood — don't worry, you can't break it.
             </p>
 
             <div className="h-[480px] w-full">
