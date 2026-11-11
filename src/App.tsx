@@ -1,6 +1,16 @@
 const CURRENT_YEAR = new Date().getFullYear()
 
 // Inline SVG icons (zero dep)
+function GlobeIcon({ className = 'w-5 h-5' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+      <path d="M2 12h20" />
+    </svg>
+  )
+}
+
 function GithubIcon({ className = 'w-5 h-5' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -63,10 +73,13 @@ export default function App() {
           <a href="#contact" className="hover:text-white transition-colors">CONTACT</a>
         </nav>
         <div className="flex items-center gap-3">
+          <a href="https://nhatprx.com" target="_blank" rel="noopener noreferrer" aria-label="Website" className="text-white/40 hover:text-white transition-colors">
+            <GlobeIcon className="w-4 h-4" />
+          </a>
           <a href="https://github.com/nhatprx" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-white/40 hover:text-white transition-colors">
             <GithubIcon className="w-4 h-4" />
           </a>
-          <a href="https://linkedin.com/in/nhatprx" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-white/40 hover:text-white transition-colors">
+          <a href="https://www.linkedin.com/in/nhatprx/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-white/40 hover:text-white transition-colors">
             <LinkedinIcon className="w-4 h-4" />
           </a>
         </div>
@@ -89,8 +102,9 @@ export default function App() {
                 <span className="text-white/20">Pham</span>
               </h1>
               <p className="mt-6 text-sm text-white/50 leading-relaxed max-w-md">
-                Software engineer with production experience across backend systems,
-                cloud infrastructure, and full-stack delivery. Based in Ho Chi Minh City.
+                Software Engineer with production experience across backend systems,
+                cloud infrastructure, and full-stack delivery. Built and shipped real systems
+                at Grevo Solutions and contributed to AWS infrastructure design during an internship at Amazon.
               </p>
 
               <div className="mt-8">
@@ -107,7 +121,8 @@ export default function App() {
                 <span className="px-3 py-1 border border-white/10">#Backend</span>
                 <span className="px-3 py-1 border border-white/10">#CloudInfra</span>
                 <span className="px-3 py-1 border border-white/10">#FullStack</span>
-                <span className="px-3 py-1 border border-white/10">#Automation</span>
+                <span className="px-3 py-1 border border-white/10">#AWS</span>
+                <span className="px-3 py-1 border border-white/10">#SpringBoot</span>
               </div>
             </div>
           </div>
@@ -140,32 +155,35 @@ export default function App() {
               </h2>
               <div className="space-y-4 text-sm text-white/60 leading-relaxed">
                 <p>
-                  I'm a software engineer comfortable owning a feature end-to-end — from system
-                  design to deployment. I have production experience across backend systems,
-                  cloud infrastructure (AWS, GCP), and full-stack delivery.
+                  Software Engineer comfortable owning a feature end-to-end — from system design
+                  to deployment. Production experience across backend systems, cloud infrastructure,
+                  and full-stack delivery. Built and shipped real systems at Grevo Solutions and
+                  contributed to AWS infrastructure design during an internship at Amazon.
                 </p>
                 <p>
-                  Strong understanding of CI/CD principles and system architecture. Hands-on experience
-                  with automated pipelines (Jenkins), containerized deployments (Docker), and cloud services
-                  (Google Cloud Run, AWS Lambda, S3, ElastiCache).
+                  Strong understanding of OOP, SOLID principles, and RESTful API design. Hands-on experience
+                  with CI/CD pipelines (Jenkins) and containerized deployments (Docker, Google Cloud Run).
+                  Familiar with AWS Well-Architected Framework across security, reliability, and performance pillars.
                 </p>
               </div>
 
-              <div className="mt-10 grid grid-cols-2 gap-4">
+              <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="border border-white/10 p-5">
-                  <div className="text-2xl font-bold">B.Eng</div>
-                  <div className="font-mono text-[10px] text-white/30 mt-1">COMPUTER SCIENCE</div>
-                  <div className="text-xs text-white/40 mt-2">Ho Chi Minh City University of Technology</div>
+                  <div className="text-xl font-bold">FPT University</div>
+                  <div className="font-mono text-[10px] text-white/30 mt-1">BACHELOR OF ENGINEERING</div>
+                  <div className="text-xs text-white/50 mt-2">Computer Science · Sep 2022 – Present</div>
+                  <div className="text-[11px] text-white/30 mt-1">Ho Chi Minh City, VN</div>
                 </div>
                 <div className="border border-white/10 p-5">
-                  <div className="text-2xl font-bold">3+</div>
-                  <div className="font-mono text-[10px] text-white/30 mt-1">YEARS IN TECH</div>
-                  <div className="text-xs text-white/40 mt-2">Backend, Cloud, Full-Stack</div>
+                  <div className="text-xl font-bold">Multimedia University</div>
+                  <div className="font-mono text-[10px] text-white/30 mt-1">STUDENT EXCHANGE PROGRAM</div>
+                  <div className="text-xs text-white/50 mt-2">Interpersonal Communication · Jan – Apr 2023</div>
+                  <div className="text-[11px] text-white/30 mt-1">Malaysia</div>
                 </div>
               </div>
 
               <div className="mt-8 flex flex-wrap gap-2">
-                {['English', 'Vietnamese', 'Japanese (Basic)'].map(lang => (
+                {['English', 'Vietnamese (Native)', 'Japanese (Basic)'].map(lang => (
                   <span key={lang} className="font-mono text-[10px] px-3 py-1.5 border border-white/10 text-white/40">
                     {lang}
                   </span>
@@ -188,60 +206,70 @@ export default function App() {
               </h2>
 
               <div className="space-y-12">
-                {/* Mao — Cloud Infrastructure Intern */}
+                {/* Amazon Web Services (AWS) — Cloud Infrastructure Intern */}
                 <article className="border-l border-white/10 pl-6">
                   <div className="flex items-baseline justify-between gap-4 mb-3">
                     <h3 className="text-lg font-bold">Cloud Infrastructure Intern</h3>
                     <span className="font-mono text-[10px] text-white/30 shrink-0">JAN — AUG 2026</span>
                   </div>
-                  <p className="text-xs font-mono text-white/40 mb-3">MAO SERVICES · Ho Chi Minh City</p>
+                  <p className="text-xs font-mono text-white/40 mb-3">AMAZON WEB SERVICES (AWS) · Ho Chi Minh City · On-site</p>
+                  <p className="text-sm text-white/50 leading-relaxed mb-3">
+                    Contributed to designing and optimizing cloud infrastructure for a subscription-based web application on AWS,
+                    from architecture evaluation through hands-on implementation and cost optimization.
+                  </p>
                   <ul className="space-y-2 text-sm text-white/50 leading-relaxed">
-                    <li>• Contributed to designing and optimizing cloud infrastructure for a subscription-based web application</li>
-                    <li>• Researched and recommended architecture patterns tailored to workload profiles of thousands to tens of thousands of daily requests</li>
+                    <li>• Researched and recommended AWS architecture patterns tailored to workload profiles of thousands to tens of thousands of daily requests</li>
+                    <li>• Participated in architectural decisions and hands-on implementation of a subscription-based web application</li>
                     <li>• Implemented monitoring and observability using CloudWatch for faster detection of performance bottlenecks</li>
-                    <li>• Optimized S3 sizing, caching strategy and storage configuration, contributing to ~17% cloud cost reduction</li>
+                    <li>• Optimized EC2 sizing, caching strategy, and storage configuration, contributing to ~17% cloud cost reduction</li>
                   </ul>
                   <div className="mt-4 flex flex-wrap gap-1.5">
-                    {['AWS S3', 'CloudFront', 'Lambda', 'API Gateway', 'ElastiCache', 'Redis', 'CloudWatch'].map(t => (
+                    {['EC2', 'S3', 'CloudFront', 'RDS', 'Lambda', 'API Gateway', 'ElastiCache (Redis)', 'ALB', 'CloudWatch'].map(t => (
                       <span key={t} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">{t}</span>
                     ))}
                   </div>
                 </article>
 
-                {/* Reoolutions — Founding Engineer */}
+                {/* Grevo Solutions — Founding Engineer */}
                 <article className="border-l border-white/10 pl-6">
                   <div className="flex items-baseline justify-between gap-4 mb-3">
                     <h3 className="text-lg font-bold">Founding Engineer & Project Lead</h3>
-                    <span className="font-mono text-[10px] text-white/30 shrink-0">JAN 2025 — JAN 2026</span>
+                    <span className="font-mono text-[10px] text-white/30 shrink-0">MAR 2025 — JAN 2026</span>
                   </div>
-                  <p className="text-xs font-mono text-white/40 mb-3">REOOLUTIONS · Ho Chi Minh City</p>
+                  <p className="text-xs font-mono text-white/40 mb-3">GREVO SOLUTIONS · Ho Chi Minh City · On-site</p>
+                  <p className="text-sm text-white/50 leading-relaxed mb-3">
+                    Led end-to-end technical ownership of a production-grade urban waste management platform,
+                    driving architecture decisions and team delivery from system design through cloud deployment.
+                  </p>
                   <ul className="space-y-2 text-sm text-white/50 leading-relaxed">
-                    <li>• Led end-to-end technical ownership of a production-grade urban waste management platform</li>
-                    <li>• Led a team of 4 engineers across backend, frontend, and cloud infrastructure</li>
-                    <li>• Built a Spring Boot backend with 91 APIs supporting citizen, collector, enterprise, and admin workflows</li>
-                    <li>• Built an Arab-inspired intelligent dispatch engine with zone-based collector matching, coordinate smoothing, and dynamic order batching — reducing manual coordination by ~40%</li>
+                    <li>• Led a team of 4 engineers across backend, frontend, and cloud infrastructure, owning architecture, code quality, and end-to-end delivery</li>
+                    <li>• Designed and implemented a Spring Boot backend with 91 REST APIs supporting citizen, collector, enterprise, and admin workflows</li>
+                    <li>• Built a Grab-inspired intelligent dispatch engine with GPS-based collector matching, coordinate smoothing, and dynamic order batching/splitting, reducing manual coordination by ~40%</li>
                     <li>• Built a WebSocket-based real-time communication layer for task assignment, status updates, and live tracking</li>
-                    <li>• Implemented production-grade security with OAuth2 and over 81% unit/integration test coverage</li>
-                    <li>• Managed CI/CD via Jenkins, containerized deployments on Google Cloud Run, migrated media storage to Amazon S3</li>
+                    <li>• Implemented production-grade security and quality standards with JWT, OAuth2, RBAC, and over 81% unit/integration test coverage</li>
+                    <li>• Managed CI/CD via Jenkins, containerized deployments on Google Cloud Run, and migrated media storage to Amazon S3 for improved reliability and maintainability</li>
                   </ul>
                   <div className="mt-4 flex flex-wrap gap-1.5">
-                    {['Java', 'Spring Boot', 'PostgreSQL', 'Redis', 'WebSocket', 'Docker', 'Jenkins', 'GCP', 'AWS S3'].map(t => (
+                    {['Java', 'Spring Boot', 'PostgreSQL', 'Redis', 'WebSocket', 'Docker', 'Jenkins', 'Google Cloud Run', 'AWS S3', 'VietMap API'].map(t => (
                       <span key={t} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">{t}</span>
                     ))}
                   </div>
                 </article>
 
-                {/* University IT — Technical Staff */}
+                {/* FPT Education — Technical Staff */}
                 <article className="border-l border-white/10 pl-6">
                   <div className="flex items-baseline justify-between gap-4 mb-3">
                     <h3 className="text-lg font-bold">Technical Staff</h3>
                     <span className="font-mono text-[10px] text-white/30 shrink-0">JAN 2023 — AUG 2024</span>
                   </div>
-                  <p className="text-xs font-mono text-white/40 mb-3">HO CHI MINH CITY UNIVERSITY OF TECHNOLOGY</p>
+                  <p className="text-xs font-mono text-white/40 mb-3">FPT EDUCATION · Ho Chi Minh City · On-site</p>
+                  <p className="text-sm text-white/50 leading-relaxed mb-3">
+                    Supported technical operations and internal software development at FPT Education, while contributing to organizational events and student-facing initiatives.
+                  </p>
                   <ul className="space-y-2 text-sm text-white/50 leading-relaxed">
-                    <li>• Built and maintained internal student management web applications serving the education division</li>
-                    <li>• Managed and maintained computer equipment and technical facilities</li>
-                    <li>• Coordinated major events including Camp 2023 — recognized as one of the top 20 outstanding contributors</li>
+                    <li>• Built and maintained internal student management web applications serving the FPT Education division, handling user account management and reporting workflows</li>
+                    <li>• Managed and maintained computer equipment and technical facilities to ensure system availability</li>
+                    <li>• Coordinated major events including F-Camp 2023 — recognized as one of the top 20 outstanding contributors in the organization</li>
                   </ul>
                 </article>
               </div>
@@ -256,55 +284,54 @@ export default function App() {
             <div className="lg:col-span-6 max-w-xl text-left lg:pl-8">
               <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">03 — PROJECTS</p>
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
-                Personal
+                Personal &
                 <br />
-                <span className="text-white/30">projects.</span>
+                <span className="text-white/30">featured projects.</span>
               </h2>
 
               <div className="space-y-10">
-                {/* Ordine — Automation Framework */}
+                {/* LordNine Bot — MMORPG Automation Framework */}
                 <article className="border border-white/10 p-6 hover:border-white/30 transition-colors">
                   <div className="flex items-baseline justify-between gap-4 mb-2">
-                    <h3 className="text-lg font-bold">Ordine Automation Framework</h3>
-                    <span className="font-mono text-[10px] text-white/30">2026</span>
+                    <h3 className="text-lg font-bold">LordNine Bot · Automation Framework</h3>
+                    <span className="font-mono text-[10px] text-white/30 shrink-0">MAR — APR 2026</span>
                   </div>
-                  <p className="text-xs font-mono text-white/30 mb-4">SaaS PRODUCT · SHIPPED</p>
+                  <p className="text-xs font-mono text-white/30 mb-4">PERSONAL PROJECT · SAAS PRODUCT</p>
                   <p className="text-sm text-white/50 leading-relaxed mb-4">
-                    Built and shipped a production-grade automation framework as a SaaS product handling
-                    100+ concurrent instances with a full distribution pipeline. Iterated across 34 releases in 2 months.
+                    Built and shipped a production-grade MMORPG automation framework as a SaaS product, handling
+                    100+ concurrent instances with a full distribution pipeline iterated across 34 releases in 2 months.
                   </p>
-                  <ul className="space-y-1.5 text-sm text-white/40">
-                    <li>• No-code visual flowchart engine — ~85% task completion rate</li>
-                    <li>• 99.99% visual state detection accuracy via template matching</li>
-                    <li>• Custom client reducing per-instance memory from ~100MB to ~1MB</li>
-                    <li>• Adaptive screenshot scheduling (150ms → 800ms) — ~90% overhead reduction</li>
-                    <li>• Complete SaaS pipeline: bound licenses, 256 verified auto-update, Windows installer</li>
+                  <ul className="space-y-2 text-sm text-white/40">
+                    <li>• Built a production-grade NPC automation engine controlling 100+ concurrent instances with sessions up to 36 hours</li>
+                    <li>• Designed a no-code visual flowchart engine achieving ~85% task completion rate and 99.99% visual state detection accuracy via OpenCV template matching</li>
+                    <li>• Replaced Playwright with a custom CDP client, reducing per-instance memory from ~100MB to ~1KB — enabling 100+ concurrency on consumer hardware</li>
+                    <li>• Implemented AIMD adaptive screenshot scheduling (150ms–800ms) and GUI queue coalescing, achieving ~90% reduction in UI update overhead</li>
+                    <li>• Shipped a complete SaaS pipeline: HWID-bound license system, SHA256-verified auto-update, and Windows installer — iterated to v3.24+ across 34 releases in 2 months</li>
                   </ul>
                   <div className="mt-4 flex flex-wrap gap-1.5">
-                    {['Python 3.13', 'OpenCV', 'Chrome DevTools Protocol', 'Custom Tkinter', 'Excel', 'NSIS Installer'].map(t => (
+                    {['Python 3.13', 'OpenCV', 'Chrome DevTools Protocol', 'CustomTkinter', 'SQLite', 'Vercel', 'PyInstaller', 'Inno Setup'].map(t => (
                       <span key={t} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">{t}</span>
                     ))}
                   </div>
                 </article>
 
-                {/* Smart Attendance System */}
+                {/* Attenda — Smart Attendance System */}
                 <article className="border border-white/10 p-6 hover:border-white/30 transition-colors">
                   <div className="flex items-baseline justify-between gap-4 mb-2">
-                    <h3 className="text-lg font-bold">Smart Attendance System</h3>
-                    <span className="font-mono text-[10px] text-white/30">2025</span>
+                    <h3 className="text-lg font-bold">Attenda · Smart Attendance System</h3>
+                    <span className="font-mono text-[10px] text-white/30 shrink-0">MAR — AUG 2025</span>
                   </div>
                   <p className="text-xs font-mono text-white/30 mb-4">TEAM LEAD · 4 PERSON TEAM</p>
                   <p className="text-sm text-white/50 leading-relaxed mb-4">
-                    Led a team to build a cost-optimized smart attendance system for university use,
-                    combining ESP32/ESP32S3 edge hardware with a cloud-connected web dashboard.
+                    Led a 4-person team to build a cost-optimized smart attendance system for university use,
+                    combining ESP32-S3 edge hardware with a cloud-connected web dashboard.
                   </p>
-                  <ul className="space-y-1.5 text-sm text-white/40">
-                    <li>• Fingerprint sensor + face recognition achieving ~95% accuracy with &lt;15s latency</li>
-                    <li>• React + TypeScript dashboard managing 1000+ student records with real-time monitoring</li>
-                    <li>• Python/Unicorn/PostgreSQL backend handling 500+ daily attendance events</li>
+                  <ul className="space-y-2 text-sm text-white/40">
+                    <li>• Engineered edge-based attendance hardware using ESP32-S3 with fingerprint sensor, minimizing cloud overhead through local processing; implemented TensorFlow face recognition achieving ~95% accuracy with &lt;1.5s latency</li>
+                    <li>• Built a React + TypeScript dashboard managing 1,000+ student records with real-time monitoring; designed Python/PostgreSQL backend handling 500+ daily attendance events</li>
                   </ul>
                   <div className="mt-4 flex flex-wrap gap-1.5">
-                    {['ESP32', 'Sensor', 'React', 'TypeScript', 'Python', 'PostgreSQL'].map(t => (
+                    {['ESP32-S3', 'TensorFlow', 'React', 'TypeScript', 'Python', 'Gunicorn', 'PostgreSQL'].map(t => (
                       <span key={t} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">{t}</span>
                     ))}
                   </div>
@@ -328,18 +355,18 @@ export default function App() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                 <div>
-                  <h3 className="font-mono text-[10px] tracking-[0.3em] text-white/30 mb-4">LANGUAGES</h3>
+                  <h3 className="font-mono text-[10px] tracking-[0.3em] text-white/30 mb-4">PROGRAMMING LANGUAGES</h3>
                   <div className="flex flex-wrap gap-2">
-                    {['JavaScript', 'TypeScript', 'Java', 'Python', 'SQL'].map(s => (
+                    {['JavaScript', 'Java', 'Python'].map(s => (
                       <span key={s} className="text-sm px-3 py-1.5 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors">{s}</span>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-mono text-[10px] tracking-[0.3em] text-white/30 mb-4">FRAMEWORKS</h3>
+                  <h3 className="font-mono text-[10px] tracking-[0.3em] text-white/30 mb-4">FRAMEWORKS & PLATFORMS</h3>
                   <div className="flex flex-wrap gap-2">
-                    {['React', 'Node.js', 'Spring Boot', 'Three.js', 'Next.js'].map(s => (
+                    {['ReactJS', 'NodeJS', 'ThreeJS', 'Spring Boot'].map(s => (
                       <span key={s} className="text-sm px-3 py-1.5 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors">{s}</span>
                     ))}
                   </div>
@@ -348,25 +375,25 @@ export default function App() {
                 <div>
                   <h3 className="font-mono text-[10px] tracking-[0.3em] text-white/30 mb-4">DATABASES</h3>
                   <div className="flex flex-wrap gap-2">
-                    {['PostgreSQL', 'Redis', 'MongoDB'].map(s => (
+                    {['MySQL', 'PostgreSQL', 'Redis'].map(s => (
                       <span key={s} className="text-sm px-3 py-1.5 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors">{s}</span>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-mono text-[10px] tracking-[0.3em] text-white/30 mb-4">DEVOPS & CLOUD</h3>
+                  <h3 className="font-mono text-[10px] tracking-[0.3em] text-white/30 mb-4">DEVOPS & INFRA</h3>
                   <div className="flex flex-wrap gap-2">
-                    {['Docker', 'Jenkins', 'Google Cloud Run', 'AWS (S3, Lambda, CloudFront)', 'GitHub Actions'].map(s => (
+                    {['Git', 'Docker', 'Jenkins', 'Google Cloud Run', 'Render', 'Vercel', 'Railway', 'AWS (EC2, S3, Lambda)'].map(s => (
                       <span key={s} className="text-sm px-3 py-1.5 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors">{s}</span>
                     ))}
                   </div>
                 </div>
 
                 <div className="sm:col-span-2">
-                  <h3 className="font-mono text-[10px] tracking-[0.3em] text-white/30 mb-4">ARCHITECTURE & PRACTICES</h3>
+                  <h3 className="font-mono text-[10px] tracking-[0.3em] text-white/30 mb-4">ARCHITECTURE & PRINCIPLES</h3>
                   <div className="flex flex-wrap gap-2">
-                    {['CI/CD Pipelines', 'Microservices', 'REST APIs', 'WebSocket', 'OAuth2', 'Well-Architected Framework', 'Clean Architecture'].map(s => (
+                    {['OOP & SOLID Principles', 'RESTful API Design', 'CI/CD Pipelines (Jenkins)', 'Containerized Deployments (Docker, Cloud Run)', 'AWS Well-Architected Framework'].map(s => (
                       <span key={s} className="text-sm px-3 py-1.5 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors">{s}</span>
                     ))}
                   </div>
@@ -393,6 +420,14 @@ export default function App() {
               </p>
 
               <div className="space-y-4">
+                <a href="https://nhatprx.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 border border-white/10 hover:border-white/30 transition-colors group">
+                  <GlobeIcon className="w-5 h-5 text-white/30 group-hover:text-white transition-colors" />
+                  <div>
+                    <div className="text-sm font-bold">nhatprx.com</div>
+                    <div className="text-xs text-white/30">Website</div>
+                  </div>
+                </a>
+
                 <a href="mailto:nhatprx@gmail.com" className="flex items-center gap-4 p-4 border border-white/10 hover:border-white/30 transition-colors group">
                   <MailIcon className="w-5 h-5 text-white/30 group-hover:text-white transition-colors" />
                   <div>
@@ -417,7 +452,7 @@ export default function App() {
                   </div>
                 </a>
 
-                <a href="https://linkedin.com/in/nhatprx" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 border border-white/10 hover:border-white/30 transition-colors group">
+                <a href="https://www.linkedin.com/in/nhatprx/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 border border-white/10 hover:border-white/30 transition-colors group">
                   <LinkedinIcon className="w-5 h-5 text-white/30 group-hover:text-white transition-colors" />
                   <div>
                     <div className="text-sm font-bold">linkedin.com/in/nhatprx</div>
