@@ -194,7 +194,7 @@ export default function App() {
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[0.95]">
                 Minh Nhat
                 <br />
-                <span className="text-white/20">Pham</span>
+                <span className="text-white/20">Pham.</span>
               </h1>
               <p className="mt-6 text-sm text-white/50 leading-relaxed max-w-md">
                 Software Engineer with production experience across backend systems,
