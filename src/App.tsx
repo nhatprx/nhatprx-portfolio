@@ -1,7 +1,37 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Ec2Terminal from './components/Ec2Terminal'
 
 const CURRENT_YEAR = new Date().getFullYear()
+
+const BLOG_POSTS = [
+  {
+    title: 'Reverse-Engineering MMORPG Automation: Why CDP Beat Playwright by 10,000%',
+    date: 'APR 2026',
+    readTime: '6 MIN READ',
+    summary:
+      'How dissecting headless browser internals and swapping heavy WebDriver abstraction for lightweight raw Chrome DevTools Protocol sockets reduced per-instance memory from ~100MB to ~1KB, enabling 100+ concurrent worker instances on commodity hardware.',
+    tags: ['Python', 'CDP', 'Reverse Engineering', 'Performance'],
+    slug: 'cdp-vs-playwright-automation',
+  },
+  {
+    title: 'Designing an Edge-Cloud Biometric System with ESP32-S3 and TensorFlow',
+    date: 'AUG 2025',
+    readTime: '5 MIN READ',
+    summary:
+      'Architectural trade-offs of running on-device facial recognition on microcontrollers versus offloading to cloud workers: latency, privacy constraints, and resilient offline queueing with PostgreSQL synchronization.',
+    tags: ['IoT', 'ESP32-S3', 'TensorFlow', 'PostgreSQL'],
+    slug: 'edge-cloud-biometric-esp32',
+  },
+  {
+    title: 'Lessons from AWS Multi-Tenant Microservice Deployments and Docker Isolation',
+    date: 'JAN 2026',
+    readTime: '7 MIN READ',
+    summary:
+      'Key findings on VPC peering, container hardening, and egress optimization during cloud infrastructure design for production workloads.',
+    tags: ['AWS', 'Docker', 'DevOps', 'Architecture'],
+    slug: 'aws-microservice-docker-isolation',
+  },
+]
 
 const SKILL_CATEGORIES = [
   {
@@ -80,6 +110,14 @@ function DownloadIcon({ className = 'w-4 h-4' }: { className?: string }) {
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
       <polyline points="7 10 12 15 17 10" />
       <line x1="12" x2="12" y1="15" y2="3" />
+    </svg>
+  )
+}
+
+function ArrowUpIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 19V5M5 12l7-7 7 7" />
     </svg>
   )
 }
@@ -222,6 +260,16 @@ function ContactForm() {
 }
 
 export default function App() {
+  const [showTopBtn, setShowTopBtn] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowTopBtn(window.scrollY > 400)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black">
       {/* Top Header */}
@@ -238,6 +286,7 @@ export default function App() {
             <a href="#experience" className="hover:text-white transition-colors">EXPERIENCE</a>
             <a href="#projects" className="hover:text-white transition-colors">PROJECTS</a>
             <a href="#skills" className="hover:text-white transition-colors">SKILLS</a>
+            <a href="#blog" className="hover:text-white transition-colors">BLOG</a>
             <a href="#contact" className="hover:text-white transition-colors">CONTACT</a>
           </nav>
           <div className="flex items-center gap-3">
@@ -557,10 +606,50 @@ export default function App() {
           </div>
         </section>
 
-        {/* ========== 05 - CONTACT ========== */}
+        {/* ========== 05 - BLOG ========== */}
+        <section id="blog" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
+          <div className="w-full max-w-2xl mx-auto text-left">
+            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">05 - BLOG</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
+              Engineering
+              <br />
+              <span className="text-white/30">notes.</span>
+            </h2>
+
+            <div className="space-y-6">
+              {BLOG_POSTS.map(post => (
+                <article
+                  key={post.slug}
+                  className="border border-white/10 p-6 hover:border-white/30 transition-colors"
+                >
+                  <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+                    <span className="font-mono text-[10px] text-white/40 tracking-wider">
+                      {post.date} · {post.readTime}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-bold tracking-tight mb-3 text-white">
+                    {post.title}
+                  </h3>
+                  <p className="text-sm text-white/50 leading-relaxed mb-4">
+                    {post.summary}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {post.tags.map(t => (
+                      <span key={t} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ========== 06 - CONTACT ========== */}
         <section id="contact" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
           <div className="w-full max-w-2xl mx-auto text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">05 - CONTACT</p>
+            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">06 - CONTACT</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
               Let's build
               <br />
@@ -583,6 +672,18 @@ export default function App() {
           </div>
         </footer>
       </main>
+
+      {/* Back to top button */}
+      {showTopBtn && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="Back to top"
+          title="Back to top"
+          className="fixed bottom-6 right-6 z-40 p-3 bg-black/90 border border-white/20 text-white/70 hover:text-white hover:border-white transition-all shadow-2xl backdrop-blur-sm cursor-pointer"
+        >
+          <ArrowUpIcon className="w-4 h-4" />
+        </button>
+      )}
     </div>
   )
 }
