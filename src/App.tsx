@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
+import Lenis from 'lenis'
+import 'lenis/dist/lenis.css'
 import Ec2Terminal from './components/Ec2Terminal'
 import { TRANSLATIONS, type SupportedLang } from './data/translations'
 import BlogPostModal from './components/BlogPostModal'
@@ -217,6 +219,7 @@ export default function App() {
   const [isLangSwitching, setIsLangSwitching] = useState(false)
   const [loadingLabel, setLoadingLabel] = useState('INITIALIZING ENVIRONMENT...')
   const langMenuRef = useRef<HTMLDivElement>(null)
+  const lenisRef = useRef<Lenis | null>(null)
 
   const [lang, setLang] = useState<SupportedLang>(() => {
     const saved = localStorage.getItem('nhatprx_lang') as SupportedLang
@@ -226,6 +229,45 @@ export default function App() {
 
   const t = TRANSLATIONS[lang]
   const selectedPost = t.blog.posts.find((p) => p.slug === selectedPostSlug)
+
+  // Initialize Lenis smooth scrolling
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.1,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 2,
+    })
+    lenisRef.current = lenis
+
+    let rafId: number
+    function raf(time: number) {
+      lenis.raf(time)
+      rafId = requestAnimationFrame(raf)
+    }
+    rafId = requestAnimationFrame(raf)
+
+    return () => {
+      cancelAnimationFrame(rafId)
+      lenis.destroy()
+      lenisRef.current = null
+    }
+  }, [])
+
+  const scrollTo = (target: string | number) => {
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(target, { duration: 1.1 })
+    } else {
+      if (typeof target === 'number') {
+        window.scrollTo({ top: target, behavior: 'smooth' })
+      } else {
+        document.querySelector(target)?.scrollIntoView({ behavior: 'smooth' })
+      }
+    }
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -313,7 +355,7 @@ export default function App() {
         <div className="w-full max-w-5xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 shrink-0">
             <button
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              onClick={() => scrollTo(0)}
               className="font-mono text-xs tracking-[0.3em] text-white/80 hover:text-white transition-colors cursor-pointer"
             >
               NHATPRX
@@ -323,25 +365,74 @@ export default function App() {
           </div>
 
           <nav className="hidden lg:flex items-center gap-6 text-xs font-mono tracking-wider text-white/40">
-            <a href="#terminal" className="hover:text-white transition-colors">
+            <a
+              href="#terminal"
+              onClick={(e) => {
+                e.preventDefault()
+                scrollTo('#terminal')
+              }}
+              className="hover:text-white transition-colors"
+            >
               {t.nav.liveLab}
             </a>
-            <a href="#about" className="hover:text-white transition-colors">
+            <a
+              href="#about"
+              onClick={(e) => {
+                e.preventDefault()
+                scrollTo('#about')
+              }}
+              className="hover:text-white transition-colors"
+            >
               {t.nav.about}
             </a>
-            <a href="#experience" className="hover:text-white transition-colors">
+            <a
+              href="#experience"
+              onClick={(e) => {
+                e.preventDefault()
+                scrollTo('#experience')
+              }}
+              className="hover:text-white transition-colors"
+            >
               {t.nav.experience}
             </a>
-            <a href="#projects" className="hover:text-white transition-colors">
+            <a
+              href="#projects"
+              onClick={(e) => {
+                e.preventDefault()
+                scrollTo('#projects')
+              }}
+              className="hover:text-white transition-colors"
+            >
               {t.nav.projects}
             </a>
-            <a href="#skills" className="hover:text-white transition-colors">
+            <a
+              href="#skills"
+              onClick={(e) => {
+                e.preventDefault()
+                scrollTo('#skills')
+              }}
+              className="hover:text-white transition-colors"
+            >
               {t.nav.skills}
             </a>
-            <a href="#blog" className="hover:text-white transition-colors">
+            <a
+              href="#blog"
+              onClick={(e) => {
+                e.preventDefault()
+                scrollTo('#blog')
+              }}
+              className="hover:text-white transition-colors"
+            >
               {t.nav.blog}
             </a>
-            <a href="#contact" className="hover:text-white transition-colors">
+            <a
+              href="#contact"
+              onClick={(e) => {
+                e.preventDefault()
+                scrollTo('#contact')
+              }}
+              className="hover:text-white transition-colors"
+            >
               {t.nav.contact}
             </a>
           </nav>
@@ -429,7 +520,11 @@ export default function App() {
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <a
                 href="#contact"
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors"
+                onClick={(e) => {
+                  e.preventDefault()
+                  scrollTo('#contact')
+                }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors cursor-pointer"
               >
                 {t.hero.getInTouch}
                 <span aria-hidden="true">→</span>
@@ -720,7 +815,7 @@ export default function App() {
       {/* Back to top button */}
       {showTopBtn && (
         <button
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          onClick={() => scrollTo(0)}
           aria-label="Back to top"
           title="Back to top"
           className="fixed bottom-6 right-6 z-40 p-3 bg-black/90 border border-white/20 text-white/70 hover:text-white hover:border-white transition-all shadow-2xl backdrop-blur-sm cursor-pointer"

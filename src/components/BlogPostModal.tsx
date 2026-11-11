@@ -75,6 +75,7 @@ export default function BlogPostModal({
         {/* Modal Scrollable Article Content */}
         <div
           ref={contentRef}
+          data-lenis-prevent
           className="flex-1 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-6 sm:p-10 space-y-8 select-text font-sans"
         >
           {/* Post Header */}

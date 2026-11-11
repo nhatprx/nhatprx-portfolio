@@ -340,6 +340,7 @@ CGroup: /
       {/* Terminal Scrollable Output Area */}
       <div
         ref={outputContainerRef}
+        data-lenis-prevent
         className="flex-1 p-4 overflow-y-auto space-y-1.5 text-xs leading-relaxed select-text font-mono"
       >
         {history.map((entry, idx) => (
