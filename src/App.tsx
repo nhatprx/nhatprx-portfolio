@@ -1,11 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Ec2Terminal from './components/Ec2Terminal'
 import { TRANSLATIONS, type SupportedLang } from './data/translations'
 import { BLOG_POSTS } from './data/blogData'
-import BlogPostView from './components/BlogPostView'
+import BlogPostModal from './components/BlogPostModal'
 import CustomCursor from './components/CustomCursor'
 
 const CURRENT_YEAR = new Date().getFullYear()
+
+const LANG_OPTIONS: { code: SupportedLang; label: string; short: string }[] = [
+  { code: 'en', label: 'English', short: 'EN' },
+  { code: 'vi', label: 'Tiếng Việt', short: 'VI' },
+  { code: 'fr', label: 'Français', short: 'FR' },
+  { code: 'ja', label: '日本語', short: 'JA' },
+]
 
 const SKILL_CATEGORIES = [
   {
@@ -239,7 +246,10 @@ function ContactForm({
 
 export default function App() {
   const [showTopBtn, setShowTopBtn] = useState(false)
-  const [activePostSlug, setActivePostSlug] = useState<string | null>(null)
+  const [selectedPostSlug, setSelectedPostSlug] = useState<string | null>(null)
+  const [langOpen, setLangOpen] = useState(false)
+  const langMenuRef = useRef<HTMLDivElement>(null)
+
   const [lang, setLang] = useState<SupportedLang>(() => {
     const saved = localStorage.getItem('nhatprx_lang') as SupportedLang
     if (saved && ['en', 'vi', 'fr', 'ja'].includes(saved)) return saved
@@ -247,7 +257,7 @@ export default function App() {
   })
 
   const t = TRANSLATIONS[lang]
-  const activePost = BLOG_POSTS.find((p) => p.slug === activePostSlug)
+  const selectedPost = BLOG_POSTS.find((p) => p.slug === selectedPostSlug)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -257,19 +267,20 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target as Node)) {
+        setLangOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   const handleLangChange = (newLang: SupportedLang) => {
     setLang(newLang)
     localStorage.setItem('nhatprx_lang', newLang)
-  }
-
-  const navigateToSection = (sectionId: string) => {
-    if (activePostSlug) {
-      setActivePostSlug(null)
-      setTimeout(() => {
-        const el = document.getElementById(sectionId)
-        el?.scrollIntoView({ behavior: 'smooth' })
-      }, 50)
-    }
+    setLangOpen(false)
   }
 
   return (
@@ -282,14 +293,11 @@ export default function App() {
       <CustomCursor />
 
       {/* Top Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 p-4 sm:p-6 lg:px-14 backdrop-blur-md bg-black/60 border-b border-white/5">
+      <header className="fixed top-0 left-0 right-0 z-40 p-4 sm:p-6 lg:px-14 backdrop-blur-md bg-black/60 border-b border-white/5">
         <div className="w-full max-w-5xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 shrink-0">
             <button
-              onClick={() => {
-                setActivePostSlug(null)
-                window.scrollTo({ top: 0, behavior: 'smooth' })
-              }}
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               className="font-mono text-xs tracking-[0.3em] text-white/80 hover:text-white transition-colors cursor-pointer"
             >
               NHATPRX
@@ -299,74 +307,61 @@ export default function App() {
           </div>
 
           <nav className="hidden lg:flex items-center gap-6 text-xs font-mono tracking-wider text-white/40">
-            <a
-              href="#terminal"
-              onClick={() => navigateToSection('terminal')}
-              className="hover:text-white transition-colors"
-            >
+            <a href="#terminal" className="hover:text-white transition-colors">
               {t.nav.liveLab}
             </a>
-            <a
-              href="#about"
-              onClick={() => navigateToSection('about')}
-              className="hover:text-white transition-colors"
-            >
+            <a href="#about" className="hover:text-white transition-colors">
               {t.nav.about}
             </a>
-            <a
-              href="#experience"
-              onClick={() => navigateToSection('experience')}
-              className="hover:text-white transition-colors"
-            >
+            <a href="#experience" className="hover:text-white transition-colors">
               {t.nav.experience}
             </a>
-            <a
-              href="#projects"
-              onClick={() => navigateToSection('projects')}
-              className="hover:text-white transition-colors"
-            >
+            <a href="#projects" className="hover:text-white transition-colors">
               {t.nav.projects}
             </a>
-            <a
-              href="#skills"
-              onClick={() => navigateToSection('skills')}
-              className="hover:text-white transition-colors"
-            >
+            <a href="#skills" className="hover:text-white transition-colors">
               {t.nav.skills}
             </a>
-            <a
-              href="#blog"
-              onClick={() => navigateToSection('blog')}
-              className="hover:text-white transition-colors"
-            >
+            <a href="#blog" className="hover:text-white transition-colors">
               {t.nav.blog}
             </a>
-            <a
-              href="#contact"
-              onClick={() => navigateToSection('contact')}
-              className="hover:text-white transition-colors"
-            >
+            <a href="#contact" className="hover:text-white transition-colors">
               {t.nav.contact}
             </a>
           </nav>
 
           <div className="flex items-center gap-3 shrink-0">
-            {/* Language Switcher */}
-            <div className="flex items-center border border-white/15 bg-white/[0.02]">
-              {(['en', 'vi', 'fr', 'ja'] as const).map((l) => (
-                <button
-                  key={l}
-                  onClick={() => handleLangChange(l)}
-                  aria-label={`Switch to ${l.toUpperCase()}`}
-                  className={`px-2 py-0.5 font-mono text-[10px] uppercase transition-colors cursor-pointer ${
-                    lang === l
-                      ? 'bg-white text-black font-semibold'
-                      : 'text-white/40 hover:text-white'
-                  }`}
-                >
-                  {l}
-                </button>
-              ))}
+            {/* Language Dropdown (Dropbox) */}
+            <div ref={langMenuRef} className="relative">
+              <button
+                onClick={() => setLangOpen((prev) => !prev)}
+                aria-expanded={langOpen}
+                aria-haspopup="true"
+                aria-label="Select Language"
+                className="flex items-center gap-1.5 px-2.5 py-1 font-mono text-xs border border-white/15 bg-white/[0.03] text-white/80 hover:text-white hover:border-white/30 transition-colors cursor-pointer"
+              >
+                <span className="font-semibold uppercase">{lang}</span>
+                <span className="text-[9px] text-white/40">{langOpen ? '▲' : '▼'}</span>
+              </button>
+
+              {langOpen && (
+                <div className="absolute right-0 top-full mt-1.5 w-36 bg-black/95 border border-white/20 shadow-2xl py-1 z-50 backdrop-blur-md">
+                  {LANG_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.code}
+                      onClick={() => handleLangChange(opt.code)}
+                      className={`w-full text-left px-3 py-1.5 text-xs font-mono flex items-center justify-between hover:bg-white/10 transition-colors cursor-pointer ${
+                        lang === opt.code
+                          ? 'text-white bg-white/10 font-semibold'
+                          : 'text-white/60'
+                      }`}
+                    >
+                      <span>{opt.label}</span>
+                      <span className="text-[10px] text-white/30">{opt.short}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <a
@@ -391,25 +386,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* View Switch: Article View vs Main Portfolio */}
-      {activePost ? (
-        <BlogPostView
-          post={activePost}
-          t={t}
-          onBack={() => {
-            setActivePostSlug(null)
-            setTimeout(() => {
-              const el = document.getElementById('blog')
-              el?.scrollIntoView({ behavior: 'smooth' })
-            }, 50)
-          }}
-          onSelectPost={(slug) => {
-            setActivePostSlug(slug)
-          }}
-          allPosts={BLOG_POSTS}
-        />
-      ) : (
-        <main className="relative z-10 pt-24">
+      <main className="relative z-10 pt-24">
           {/* ========== HERO ========== */}
           <section className="min-h-screen flex items-center p-6 sm:p-10 lg:p-14">
             <div className="w-full max-w-2xl mx-auto text-left my-auto">
@@ -720,10 +697,7 @@ export default function App() {
                 {BLOG_POSTS.map(post => (
                   <article
                     key={post.slug}
-                    onClick={() => {
-                      setActivePostSlug(post.slug)
-                      window.scrollTo({ top: 0, behavior: 'smooth' })
-                    }}
+                    onClick={() => setSelectedPostSlug(post.slug)}
                     className="border border-white/10 p-6 hover:border-white/30 transition-all cursor-pointer group bg-white/[0.01]"
                   >
                     <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
@@ -778,7 +752,17 @@ export default function App() {
             </div>
           </footer>
         </main>
-      )}
+
+        {/* Large Blog Post Modal */}
+        {selectedPost && (
+          <BlogPostModal
+            post={selectedPost}
+            t={t}
+            onClose={() => setSelectedPostSlug(null)}
+            onSelectPost={(slug) => setSelectedPostSlug(slug)}
+            allPosts={BLOG_POSTS}
+          />
+        )}
 
       {/* Back to top button */}
       {showTopBtn && (
