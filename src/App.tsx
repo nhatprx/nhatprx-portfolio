@@ -293,7 +293,7 @@ export default function App() {
           <div className="w-64 space-y-4 text-center px-4">
             <div className="flex items-center justify-between text-[11px] text-white/60 tracking-wider">
               <span className="truncate">{loadingLabel}</span>
-              <span className="w-1.5 h-1.5 bg-emerald-400 animate-pulse ml-2 shrink-0" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse ml-2 shrink-0" />
             </div>
 
             <div className="w-full h-[2px] bg-white/10 overflow-hidden relative">
@@ -440,7 +440,7 @@ export default function App() {
         <section id="terminal" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
           <div className="w-full max-w-2xl mx-auto text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-emerald-400/90 mb-4 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-emerald-400 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block shrink-0" />
               {t.server.tag}
             </p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">

@@ -313,7 +313,7 @@ CGroup: /
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 bg-emerald-400 animate-pulse" />
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           <span className="text-[10px] text-emerald-400/80 tracking-widest uppercase">
             ap-southeast-1 · linux-x86_64
           </span>
