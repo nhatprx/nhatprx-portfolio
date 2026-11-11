@@ -311,6 +311,52 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
                       className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
                     />
                   </div>
+                  <div>
+                    <label className="block text-[10px] text-white/40 uppercase mb-1">
+                      Resume File (PDF / Link / File)
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={currentDict.hero.resumeUrl || ''}
+                        placeholder="/[nhatprx] PERSONAL RESUME.pdf"
+                        onChange={(e) =>
+                          updateCurrentDict((d) => ({
+                            ...d,
+                            hero: { ...d.hero, resumeUrl: e.target.value },
+                          }))
+                        }
+                        className="flex-1 bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none font-mono text-[11px]"
+                      />
+                      <label className="px-3 py-2 border border-white/20 text-[10px] text-white/80 hover:text-white hover:border-white cursor-pointer bg-white/[0.04] flex items-center shrink-0">
+                        <span>CHOOSE</span>
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (!file) return
+                            const reader = new FileReader()
+                            reader.onload = () => {
+                              const result = reader.result as string
+                              updateCurrentDict((d) => ({
+                                ...d,
+                                hero: { ...d.hero, resumeUrl: result, resumeFileName: file.name },
+                              }))
+                              showToast(`Loaded file: ${file.name}`)
+                            }
+                            reader.readAsDataURL(file)
+                          }}
+                        />
+                      </label>
+                    </div>
+                    {currentDict.hero.resumeFileName && (
+                      <p className="text-[10px] text-emerald-400 mt-1 font-mono">
+                        Active file: {currentDict.hero.resumeFileName}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <label className="block text-[10px] text-white/40 uppercase mb-1">Hero Lead Description</label>

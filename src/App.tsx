@@ -64,6 +64,22 @@ function DownloadIcon({ className = 'w-4 h-4' }: { className?: string }) {
   )
 }
 
+function ChevronLeftIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+  )
+}
+
+function ChevronRightIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  )
+}
+
 function ArrowUpIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -228,6 +244,8 @@ export default function App() {
     if (typeof window === 'undefined') return false
     return window.location.hash === '#admin' || window.location.pathname === '/admin'
   })
+  const [activeExp, setActiveExp] = useState(0)
+  const [touchStartX, setTouchStartX] = useState<number | null>(null)
 
   const [lang, setLang] = useState<SupportedLang>(() => {
     const saved = localStorage.getItem('nhatprx_lang') as SupportedLang
@@ -568,8 +586,8 @@ export default function App() {
                 <span aria-hidden="true">→</span>
               </a>
               <a
-                href="/%5Bnhatprx%5D%20PERSONAL%20RESUME.pdf"
-                download="[nhatprx] PERSONAL RESUME.pdf"
+                href={t.hero.resumeUrl || '/%5Bnhatprx%5D%20PERSONAL%20RESUME.pdf'}
+                download={t.hero.resumeFileName || '[nhatprx] PERSONAL RESUME.pdf'}
                 className="inline-flex items-center gap-2 px-5 py-2.5 border border-white/20 text-white font-mono text-xs font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-colors"
               >
                 <DownloadIcon className="w-3.5 h-3.5 text-white/60" />
@@ -649,37 +667,121 @@ export default function App() {
         <section id="experience" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">
           <div className="w-full max-w-2xl mx-auto text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.experience.tag}</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
               {t.experience.title}
               <br />
               <span className="text-white/30">{t.experience.titleSub}</span>
             </h2>
 
-            <div className="space-y-12">
-              {t.experience.items.map((exp, idx) => (
-                <article key={idx} className="border-l border-white/10 pl-6">
-                  <div className="flex items-baseline justify-between gap-4 mb-3">
-                    <h3 className="text-lg font-bold">{exp.role}</h3>
-                    <span className="font-mono text-[10px] text-white/30 shrink-0">{exp.period}</span>
+            {/* Slider Navigation Bar */}
+            <div className="flex items-center justify-between gap-4 mb-6">
+              {/* Progress/indicator pills */}
+              <div className="flex items-center gap-2">
+                {t.experience.items.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setActiveExp(idx)}
+                    aria-label={`Experience slide ${idx + 1}`}
+                    className={`h-1.5 transition-all duration-300 cursor-pointer ${
+                      Math.min(activeExp, Math.max(0, t.experience.items.length - 1)) === idx
+                        ? 'w-8 bg-white'
+                        : 'w-2 bg-white/20 hover:bg-white/40'
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {/* Slide counter & arrows */}
+              <div className="flex items-center gap-3 font-mono text-xs text-white/50">
+                <span>
+                  {String(Math.min(activeExp, Math.max(0, t.experience.items.length - 1)) + 1).padStart(2, '0')} / {String(t.experience.items.length).padStart(2, '0')}
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setActiveExp((prev) => Math.max(0, prev - 1))}
+                    disabled={Math.min(activeExp, Math.max(0, t.experience.items.length - 1)) === 0}
+                    aria-label="Previous experience"
+                    className="p-1.5 border border-white/10 hover:border-white/30 text-white disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/5 transition-colors cursor-pointer"
+                  >
+                    <ChevronLeftIcon className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveExp((prev) => Math.min(t.experience.items.length - 1, prev + 1))}
+                    disabled={Math.min(activeExp, Math.max(0, t.experience.items.length - 1)) === t.experience.items.length - 1}
+                    aria-label="Next experience"
+                    className="p-1.5 border border-white/10 hover:border-white/30 text-white disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/5 transition-colors cursor-pointer"
+                  >
+                    <ChevronRightIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Horizontal Slider Viewport */}
+            <div
+              className="relative overflow-hidden outline-none focus-visible:ring-1 focus-visible:ring-white/30"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowRight') {
+                  e.preventDefault()
+                  setActiveExp((prev) => Math.min(t.experience.items.length - 1, prev + 1))
+                } else if (e.key === 'ArrowLeft') {
+                  e.preventDefault()
+                  setActiveExp((prev) => Math.max(0, prev - 1))
+                }
+              }}
+              onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
+              onTouchEnd={(e) => {
+                if (touchStartX === null) return
+                const diff = touchStartX - e.changedTouches[0].clientX
+                if (diff > 40) {
+                  setActiveExp((prev) => Math.min(t.experience.items.length - 1, prev + 1))
+                } else if (diff < -40) {
+                  setActiveExp((prev) => Math.max(0, prev - 1))
+                }
+                setTouchStartX(null)
+              }}
+              role="region"
+              aria-label="Work experience carousel"
+            >
+              <div
+                className="flex transition-transform duration-500 ease-out"
+                style={{
+                  transform: `translateX(-${Math.min(activeExp, Math.max(0, t.experience.items.length - 1)) * 100}%)`,
+                }}
+              >
+                {t.experience.items.map((exp, idx) => (
+                  <div key={idx} className="w-full shrink-0">
+                    <article className="border border-white/10 bg-white/[0.02] p-6 sm:p-8 h-full flex flex-col justify-between hover:border-white/20 transition-colors">
+                      <div>
+                        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-3">
+                          <h3 className="text-lg font-bold">{exp.role}</h3>
+                          <span className="font-mono text-[10px] text-white/30 shrink-0">{exp.period}</span>
+                        </div>
+                        <p className="text-xs font-mono text-white/40 mb-3">{exp.company}</p>
+                        <p className="text-sm text-white/50 leading-relaxed mb-4">
+                          {exp.summary}
+                        </p>
+                        <ul className="space-y-2 text-sm text-white/50 leading-relaxed">
+                          {exp.bullets.map((b, bIdx) => (
+                            <li key={bIdx}>• {b}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="mt-6 pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
+                        {exp.tech.map((tech) => (
+                          <span key={tech} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    </article>
                   </div>
-                  <p className="text-xs font-mono text-white/40 mb-3">{exp.company}</p>
-                  <p className="text-sm text-white/50 leading-relaxed mb-3">
-                    {exp.summary}
-                  </p>
-                  <ul className="space-y-2 text-sm text-white/50 leading-relaxed">
-                    {exp.bullets.map((b, bIdx) => (
-                      <li key={bIdx}>• {b}</li>
-                    ))}
-                  </ul>
-                  <div className="mt-4 flex flex-wrap gap-1.5">
-                    {exp.tech.map((tech) => (
-                      <span key={tech} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                </article>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </section>

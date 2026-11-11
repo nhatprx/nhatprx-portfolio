@@ -61,6 +61,8 @@ export interface TranslationDict {
     desc: string
     getInTouch: string
     resume: string
+    resumeUrl?: string
+    resumeFileName?: string
   }
   server: {
     tag: string
