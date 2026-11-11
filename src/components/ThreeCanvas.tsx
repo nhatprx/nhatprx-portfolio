@@ -4,10 +4,11 @@ import { OrbitControls } from '@react-three/drei'
 import BitexcoTower, { type TowerMaterialMode } from './BitexcoTower'
 import { RotateCcw, Sparkles, Circle, Square, Grid } from 'lucide-react'
 
-// Camera framing matching user's preferred screenshot (top chóp fully visible, helipad angled toward viewer)
+// Camera framing: tower shifted left to give clean breathing room to hero text on right
+// position/target Y tilted slightly down so circular helipad deck and railing are clearly visible
 const DEFAULT_CAMERA = {
-  position: [0.75, 2.2, 5.6] as [number, number, number],
-  target: [0.75, 2.4, 0] as [number, number, number],
+  position: [1.35, 2.45, 5.5] as [number, number, number],
+  target: [1.35, 2.15, 0] as [number, number, number],
   fov: 40,
 }
 
