@@ -248,6 +248,8 @@ export default function App() {
   const [activeExp, setActiveExp] = useState(0)
   const [windowWidth, setWindowWidth] = useState(() => (typeof window !== 'undefined' ? window.innerWidth : 1000))
   const [touchStartX, setTouchStartX] = useState<number | null>(null)
+  const horizontalRunwayRef = useRef<HTMLDivElement>(null)
+  const [horizontalProgress, setHorizontalProgress] = useState(0)
 
   const [lang, setLang] = useState<SupportedLang>(() => {
     const saved = localStorage.getItem('nhatprx_lang') as SupportedLang
@@ -306,6 +308,28 @@ export default function App() {
   }, [])
 
   const scrollTo = (target: string | number) => {
+    if (typeof target === 'string' && ['#about', '#experience', '#projects', '#skills', '#blog'].includes(target)) {
+      if (horizontalRunwayRef.current) {
+        const rect = horizontalRunwayRef.current.getBoundingClientRect()
+        const runwayTop = window.scrollY + rect.top
+        const total = horizontalRunwayRef.current.offsetHeight - window.innerHeight
+        const stepMap: Record<string, number> = {
+          '#about': 0,
+          '#experience': 0.25,
+          '#projects': 0.5,
+          '#skills': 0.75,
+          '#blog': 1.0,
+        }
+        const targetY = runwayTop + (stepMap[target] ?? 0) * total
+        if (lenisRef.current) {
+          lenisRef.current.scrollTo(targetY, { duration: 1.1 })
+        } else {
+          window.scrollTo({ top: targetY, behavior: 'smooth' })
+        }
+        return
+      }
+    }
+
     if (lenisRef.current) {
       lenisRef.current.scrollTo(target, { duration: 1.1 })
     } else {
@@ -316,6 +340,26 @@ export default function App() {
       }
     }
   }
+
+  useEffect(() => {
+    const updateProgress = () => {
+      if (!horizontalRunwayRef.current) return
+      const rect = horizontalRunwayRef.current.getBoundingClientRect()
+      const total = horizontalRunwayRef.current.offsetHeight - window.innerHeight
+      if (total <= 0) return
+      const current = -rect.top
+      const p = Math.max(0, Math.min(1, current / total))
+      setHorizontalProgress(p)
+    }
+
+    window.addEventListener('scroll', updateProgress, { passive: true })
+    window.addEventListener('resize', updateProgress)
+    updateProgress()
+    return () => {
+      window.removeEventListener('scroll', updateProgress)
+      window.removeEventListener('resize', updateProgress)
+    }
+  }, [])
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth)
@@ -340,40 +384,11 @@ export default function App() {
     return () => clearTimeout(timer)
   }, [])
 
-  const [isNavVertical, setIsNavVertical] = useState(false)
-  const [activeSection, setActiveSection] = useState('#hero')
-
   useEffect(() => {
-    const sections = ['hero', 'terminal', 'about', 'experience', 'projects', 'skills', 'blog', 'contact']
     const handleScroll = () => {
-      const scrollY = window.scrollY
-      setShowTopBtn(scrollY > 400)
-
-      // Switch to vertical when and only when the user scrolls to section about
-      const aboutEl = document.getElementById('about')
-      if (aboutEl) {
-        const rect = aboutEl.getBoundingClientRect()
-        setIsNavVertical(rect.top <= 100)
-      } else {
-        setIsNavVertical(false)
-      }
-
-      const scrollPos = scrollY + window.innerHeight * 0.35
-      for (const sec of sections) {
-        const el = document.getElementById(sec)
-        if (el) {
-          const top = el.offsetTop
-          const height = el.offsetHeight
-          if (scrollPos >= top && scrollPos < top + height) {
-            setActiveSection(`#${sec}`)
-            break
-          }
-        }
-      }
+      setShowTopBtn(window.scrollY > 400)
     }
-
     window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll()
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
@@ -443,142 +458,136 @@ export default function App() {
         </div>
       )}
 
-      {/* Top Header - Transitions from Horizontal Top Bar to Vertical Left Sidebar */}
-      <header
-        className={`fixed top-0 left-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          isNavVertical
-            ? 'w-full lg:w-56 xl:w-60 h-16 lg:h-screen bg-black/90 backdrop-blur-md border-b lg:border-b-0 lg:border-r border-white/10 shadow-2xl px-6 lg:px-4 py-4 lg:py-6 flex flex-row lg:flex-col justify-between'
-            : 'w-full h-16 sm:h-20 bg-black/60 backdrop-blur-md border-b border-white/5 px-6 sm:px-10 lg:px-14 flex flex-row items-center justify-between'
-        }`}
-      >
-        {/* Brand / Logo */}
-        <div className="flex items-center gap-3 shrink-0">
-          <button
-            onClick={() => scrollTo(0)}
-            className="font-mono text-xs tracking-[0.3em] text-white/80 hover:text-white transition-colors cursor-pointer"
-          >
-            NHATPRX
-          </button>
-          <span className="w-1.5 h-1.5 rounded-full bg-white" />
-          <span className="font-mono text-xs text-white/40">2026</span>
-        </div>
-
-        {/* Section Navigation Links */}
-        <nav
-          aria-label="Section Navigation"
-          className={`hidden lg:flex transition-all duration-500 ${
-            isNavVertical
-              ? 'flex-col items-start gap-1 w-full my-auto py-4 border-y border-white/10'
-              : 'flex-row items-center gap-6'
-          }`}
-        >
-          {isNavVertical && (
-            <div className="text-[9px] font-mono text-white/30 tracking-[0.25em] uppercase px-2 pb-1.5 w-full flex items-center justify-between">
-              <span>NAVIGATE</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            </div>
-          )}
-          {[
-            { id: '#hero', label: t.nav.liveLab, num: '00' },
-            { id: '#about', label: t.nav.about, num: '01' },
-            { id: '#experience', label: t.nav.experience, num: '02' },
-            { id: '#projects', label: t.nav.projects, num: '03' },
-            { id: '#skills', label: t.nav.skills, num: '04' },
-            { id: '#blog', label: t.nav.blog, num: '05' },
-            { id: '#contact', label: t.nav.contact, num: '06' },
-          ].map((item) => {
-            const isActive = activeSection === item.id || (item.id === '#hero' && activeSection === '#terminal')
-            return (
-              <a
-                key={item.id}
-                href={item.id}
-                onClick={(e) => {
-                  e.preventDefault()
-                  scrollTo(item.id)
-                }}
-                className={`transition-all duration-200 cursor-pointer font-mono tracking-wider flex items-center ${
-                  isNavVertical
-                    ? `w-full py-1.5 px-2 text-[11px] gap-2.5 ${
-                        isActive
-                          ? 'text-white font-semibold bg-white/10 border-l-2 border-emerald-400 pl-2.5'
-                          : 'text-white/40 hover:text-white hover:bg-white/5'
-                      }`
-                    : `text-xs ${isActive ? 'text-white font-semibold' : 'text-white/40 hover:text-white'}`
-                }`}
-              >
-                {isNavVertical && (
-                  <span className="text-[9px] text-white/30 font-mono shrink-0">{item.num}</span>
-                )}
-                <span className="truncate">{item.label}</span>
-              </a>
-            )
-          })}
-        </nav>
-
-        {/* Controls: Language dropdown & Socials */}
-        <div
-          className={`flex items-center gap-3 shrink-0 ${
-            isNavVertical ? 'w-full lg:flex-col lg:items-stretch lg:gap-3 pt-2' : ''
-          }`}
-        >
-          {/* Language Dropdown */}
-          <div ref={langMenuRef} className="relative w-full">
+      {/* Top Header */}
+      <header className="fixed top-0 left-0 right-0 z-40 p-4 sm:p-6 lg:px-14 backdrop-blur-md bg-black/60 border-b border-white/5">
+        <div className="w-full flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 shrink-0">
             <button
-              onClick={() => setLangOpen((prev) => !prev)}
-              aria-expanded={langOpen}
-              aria-haspopup="true"
-              aria-label="Select Language"
-              className={`flex items-center justify-between gap-2 px-3 py-1.5 font-mono text-xs border border-white/20 bg-white/[0.04] text-white/90 hover:text-white hover:border-white/40 transition-all cursor-pointer ${
-                isNavVertical ? 'w-full' : ''
-              }`}
+              onClick={() => scrollTo(0)}
+              className="font-mono text-xs tracking-[0.3em] text-white/80 hover:text-white transition-colors cursor-pointer"
             >
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] text-white/40 uppercase hidden lg:inline">LANG:</span>
-                <span className="font-semibold uppercase">{lang}</span>
-              </div>
-              <span className="text-[9px] text-white/50">{langOpen ? (isNavVertical ? '▼' : '▲') : (isNavVertical ? '▲' : '▼')}</span>
+              NHATPRX
             </button>
-
-            {langOpen && (
-              <div
-                className={`absolute bg-black/95 border border-white/20 shadow-[0_15px_40px_rgba(0,0,0,0.85)] py-1.5 z-50 backdrop-blur-md animate-dropdown divide-y divide-white/5 ${
-                  isNavVertical
-                    ? 'bottom-full mb-2 left-0 w-full'
-                    : 'right-0 top-full mt-2 w-52'
-                }`}
-              >
-                <div className="px-3.5 py-1 font-mono text-[9px] text-white/30 tracking-widest uppercase">
-                  LOCALE
-                </div>
-                <div className="py-1">
-                  {LANG_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.code}
-                      onClick={() => handleLangChange(opt.code)}
-                      className={`w-full text-left px-3.5 py-2 text-xs font-mono flex items-center justify-between hover:bg-white/10 transition-colors cursor-pointer ${
-                        lang === opt.code ? 'text-white bg-white/10 font-semibold' : 'text-white/60'
-                      }`}
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className={`w-1.5 h-1.5 rounded-full ${lang === opt.code ? 'bg-emerald-400' : 'bg-transparent'}`} />
-                        <span>{opt.label}</span>
-                      </span>
-                      <span className="text-[10px] text-white/30 px-1.5 py-0.5 border border-white/10 bg-white/5">
-                        {opt.short}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+            <span className="w-1.5 h-1.5 rounded-full bg-white" />
+            <span className="font-mono text-xs text-white/40">2026</span>
           </div>
 
-          {/* Social Icons */}
-          <div
-            className={`flex items-center gap-3 ${
-              isNavVertical ? 'justify-around pt-2 border-t border-white/10' : ''
-            }`}
-          >
+          <nav className="hidden lg:flex items-center gap-6 text-xs font-mono tracking-wider text-white/40">
+            <a
+              href="#terminal"
+              onClick={(e) => {
+                e.preventDefault()
+                scrollTo('#terminal')
+              }}
+              className="hover:text-white transition-colors"
+            >
+              {t.nav.liveLab}
+            </a>
+            <a
+              href="#about"
+              onClick={(e) => {
+                e.preventDefault()
+                scrollTo('#about')
+              }}
+              className="hover:text-white transition-colors"
+            >
+              {t.nav.about}
+            </a>
+            <a
+              href="#experience"
+              onClick={(e) => {
+                e.preventDefault()
+                scrollTo('#experience')
+              }}
+              className="hover:text-white transition-colors"
+            >
+              {t.nav.experience}
+            </a>
+            <a
+              href="#projects"
+              onClick={(e) => {
+                e.preventDefault()
+                scrollTo('#projects')
+              }}
+              className="hover:text-white transition-colors"
+            >
+              {t.nav.projects}
+            </a>
+            <a
+              href="#skills"
+              onClick={(e) => {
+                e.preventDefault()
+                scrollTo('#skills')
+              }}
+              className="hover:text-white transition-colors"
+            >
+              {t.nav.skills}
+            </a>
+            <a
+              href="#blog"
+              onClick={(e) => {
+                e.preventDefault()
+                scrollTo('#blog')
+              }}
+              className="hover:text-white transition-colors"
+            >
+              {t.nav.blog}
+            </a>
+            <a
+              href="#contact"
+              onClick={(e) => {
+                e.preventDefault()
+                scrollTo('#contact')
+              }}
+              className="hover:text-white transition-colors"
+            >
+              {t.nav.contact}
+            </a>
+          </nav>
+
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Language Dropdown (Dropbox) */}
+            <div ref={langMenuRef} className="relative">
+              <button
+                onClick={() => setLangOpen((prev) => !prev)}
+                aria-expanded={langOpen}
+                aria-haspopup="true"
+                aria-label="Select Language"
+                className="flex items-center gap-2 px-3 py-1.5 font-mono text-xs border border-white/20 bg-white/[0.04] text-white/90 hover:text-white hover:border-white/40 transition-all cursor-pointer"
+              >
+                <span className="font-semibold uppercase">{lang}</span>
+                <span className="text-[9px] text-white/50">{langOpen ? '▲' : '▼'}</span>
+              </button>
+
+              {langOpen && (
+                <div className="absolute right-0 top-full mt-2 w-52 bg-black/95 border border-white/20 shadow-[0_15px_40px_rgba(0,0,0,0.85)] py-1.5 z-50 backdrop-blur-md animate-dropdown divide-y divide-white/5">
+                  <div className="px-3.5 py-1 font-mono text-[9px] text-white/30 tracking-widest uppercase">
+                    LOCALE
+                  </div>
+                  <div className="py-1">
+                    {LANG_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.code}
+                        onClick={() => handleLangChange(opt.code)}
+                        className={`w-full text-left px-3.5 py-2 text-xs font-mono flex items-center justify-between hover:bg-white/10 transition-colors cursor-pointer ${lang === opt.code
+                          ? 'text-white bg-white/10 font-semibold'
+                          : 'text-white/60'
+                          }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className={`w-1.5 h-1.5 rounded-full ${lang === opt.code ? 'bg-emerald-400' : 'bg-transparent'}`} />
+                          <span>{opt.label}</span>
+                        </span>
+                        <span className="text-[10px] text-white/30 px-1.5 py-0.5 border border-white/10 bg-white/5">
+                          {opt.short}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <a
               href="https://github.com/nhatprx"
               target="_blank"
@@ -666,8 +675,75 @@ export default function App() {
           </div>
         </section>
 
-        {/* ========== 01 - ABOUT ========== */}
-        <section id="about" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:py-24 lg:pl-56 lg:pr-14">
+        {/* ========== HORIZONTAL SCROLL RUNWAY (01 ABOUT -> 05 BLOG) ========== */}
+        <div
+          ref={horizontalRunwayRef}
+          id="horizontal-runway"
+          className="relative h-[500vh]"
+          onWheel={(e) => {
+            if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 15) {
+              if (lenisRef.current) {
+                lenisRef.current.scrollTo(window.scrollY + e.deltaX * 1.5, { immediate: false })
+              } else {
+                window.scrollBy({ top: e.deltaX, behavior: 'smooth' })
+              }
+            }
+          }}
+        >
+          <div className="sticky top-0 h-screen overflow-hidden">
+            {/* Horizontal Track Indicator / Pills */}
+            <div className="absolute top-20 sm:top-24 left-4 sm:left-10 lg:left-14 right-4 sm:right-10 lg:right-14 z-30 flex items-center justify-between pointer-events-none">
+              <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto overflow-x-auto no-scrollbar py-1">
+                {[
+                  { id: '#about', label: '01 ABOUT' },
+                  { id: '#experience', label: '02 EXPERIENCE' },
+                  { id: '#projects', label: '03 PROJECTS' },
+                  { id: '#skills', label: '04 SKILLS' },
+                  { id: '#blog', label: '05 BLOG' },
+                ].map((sec, idx) => {
+                  const isActive = Math.min(4, Math.max(0, Math.round(horizontalProgress * 4))) === idx
+                  return (
+                    <button
+                      key={sec.id}
+                      type="button"
+                      onClick={() => scrollTo(sec.id)}
+                      className={`font-mono text-[10px] tracking-widest px-2.5 py-1 border transition-all cursor-pointer whitespace-nowrap ${
+                        isActive
+                          ? 'border-white bg-white text-black font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)]'
+                          : 'border-white/10 text-white/40 hover:text-white/70 hover:border-white/30 bg-black/70 backdrop-blur-md'
+                      }`}
+                    >
+                      {sec.label}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div className="hidden md:flex items-center gap-3 font-mono text-[10px] text-white/40 pointer-events-auto bg-black/70 backdrop-blur-md border border-white/10 px-3 py-1">
+                <span className="tracking-widest">HORIZONTAL JOURNEY</span>
+                <div className="w-16 h-1 bg-white/10 relative overflow-hidden">
+                  <div
+                    className="h-full bg-white transition-all duration-150"
+                    style={{ width: `${horizontalProgress * 100}%` }}
+                  />
+                </div>
+                <span>{Math.round(horizontalProgress * 100)}%</span>
+              </div>
+            </div>
+
+            {/* Horizontal Track containing the 5 sections */}
+            <div
+              className="flex h-screen will-change-transform transition-transform duration-75 ease-out"
+              style={{
+                width: '500vw',
+                transform: `translateX(-${horizontalProgress * 400}vw)`,
+              }}
+            >
+              {/* ========== 01 - ABOUT ========== */}
+              <div
+                id="about"
+                className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-24 overflow-y-auto"
+              >
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.about.tag}</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
@@ -708,7 +784,7 @@ export default function App() {
               ))}
             </div>
           </div>
-        </section>
+        </div>
 
         {/* ========== 02 - EXPERIENCE (3-CARD INFINITE LOOP STAGE) ========== */}
         {(() => {
@@ -729,7 +805,10 @@ export default function App() {
           }
 
           return (
-            <section id="experience" className="min-h-screen py-24 p-6 sm:p-10 lg:py-24 lg:pl-56 lg:pr-14 flex items-center justify-center overflow-hidden">
+            <div
+              id="experience"
+              className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-24 overflow-y-auto"
+            >
               <div className="w-full text-left">
                 {/* Header & Story progress indicator */}
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 px-2 sm:px-4">
@@ -890,12 +969,15 @@ export default function App() {
                   })}
                 </div>
               </div>
-            </section>
+            </div>
           )
         })()}
 
         {/* ========== 03 - PROJECTS ========== */}
-        <section id="projects" className="min-h-screen py-24 p-6 sm:p-10 lg:py-24 lg:pl-56 lg:pr-14">
+        <div
+          id="projects"
+          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-24 overflow-y-auto"
+        >
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.projects.tag}</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
@@ -947,10 +1029,13 @@ export default function App() {
               ))}
             </div>
           </div>
-        </section>
+        </div>
 
         {/* ========== 04 - SKILLS ========== */}
-        <section id="skills" className="min-h-screen py-24 p-6 sm:p-10 lg:py-24 lg:pl-56 lg:pr-14">
+        <div
+          id="skills"
+          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-24 overflow-y-auto"
+        >
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.skills.tag}</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
@@ -979,10 +1064,13 @@ export default function App() {
               ))}
             </div>
           </div>
-        </section>
+        </div>
 
         {/* ========== 05 - BLOG ========== */}
-        <section id="blog" className="min-h-screen py-24 p-6 sm:p-10 lg:py-24 lg:pl-56 lg:pr-14">
+        <div
+          id="blog"
+          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-24 overflow-y-auto"
+        >
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.blog.tag}</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
@@ -1025,10 +1113,13 @@ export default function App() {
               ))}
             </div>
           </div>
-        </section>
+        </div>
+      </div>
+    </div>
+  </div>
 
         {/* ========== 06 - CONTACT ========== */}
-        <section id="contact" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:py-24 lg:pl-56 lg:pr-14">
+        <section id="contact" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14">
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.contact.tag}</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
@@ -1047,7 +1138,7 @@ export default function App() {
         </section>
 
         {/* ========== FOOTER ========== */}
-        <footer className="py-8 p-6 sm:p-10 lg:pl-56 lg:pr-14">
+        <footer className="py-8 p-6 sm:p-10 lg:p-14">
           <div className="w-full text-xs font-mono text-white/20">
             <span>&copy; {CURRENT_YEAR} Minh Nhat Pham. {t.footer.rights}</span>
           </div>
