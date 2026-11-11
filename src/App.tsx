@@ -93,6 +93,16 @@ export default function App() {
                 cloud infrastructure, and full-stack delivery. Based in Ho Chi Minh City.
               </p>
 
+              <div className="mt-8">
+                <a
+                  href="#contact"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors"
+                >
+                  GET IN TOUCH
+                  <span aria-hidden="true">→</span>
+                </a>
+              </div>
+
               <div className="mt-8 flex flex-wrap gap-2 font-mono text-[11px] text-white/40">
                 <span className="px-3 py-1 border border-white/10">#Backend</span>
                 <span className="px-3 py-1 border border-white/10">#CloudInfra</span>
