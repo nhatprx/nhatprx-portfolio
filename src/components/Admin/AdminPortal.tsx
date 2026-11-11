@@ -159,7 +159,10 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
 
   // Authenticated Admin Dashboard
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-black text-white font-mono select-text overflow-hidden">
+    <div
+      data-lenis-prevent
+      className="fixed inset-0 z-50 flex flex-col bg-black text-white font-mono select-text overflow-hidden overscroll-contain"
+    >
       {/* Toast Alert */}
       {toastMessage && (
         <div className="fixed top-4 right-4 z-50 bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 px-4 py-2 text-xs font-mono backdrop-blur-md shadow-2xl flex items-center gap-2">
@@ -240,7 +243,10 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
       </nav>
 
       {/* Content Area */}
-      <main className="flex-1 overflow-y-auto p-4 sm:p-8 max-w-5xl mx-auto w-full space-y-6">
+      <main
+        data-lenis-prevent
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain admin-scroll p-4 sm:p-8 max-w-5xl mx-auto w-full space-y-6"
+      >
         {/* TAB 1: SECTIONS & BIO */}
         {activeTab === 'sections' && (
           <div className="space-y-6">
@@ -462,8 +468,14 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
 
             {/* Experience Edit Modal / Inline Panel */}
             {expDraft && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                <div className="bg-black border border-white/20 p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto space-y-4 shadow-2xl">
+              <div
+                data-lenis-prevent
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overscroll-contain"
+              >
+                <div
+                  data-lenis-prevent
+                  className="bg-black border border-white/20 p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto overscroll-contain admin-scroll space-y-4 shadow-2xl"
+                >
                   <h3 className="text-xs font-bold tracking-wider uppercase border-b border-white/10 pb-2">
                     {editingExpIndex !== null ? 'EDIT EXPERIENCE' : 'ADD NEW EXPERIENCE'}
                   </h3>
@@ -647,8 +659,14 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
 
             {/* Project Edit Modal */}
             {projDraft && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                <div className="bg-black border border-white/20 p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto space-y-4 shadow-2xl">
+              <div
+                data-lenis-prevent
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overscroll-contain"
+              >
+                <div
+                  data-lenis-prevent
+                  className="bg-black border border-white/20 p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto overscroll-contain admin-scroll space-y-4 shadow-2xl"
+                >
                   <h3 className="text-xs font-bold tracking-wider uppercase border-b border-white/10 pb-2">
                     {editingProjIndex !== null ? 'EDIT PROJECT' : 'ADD NEW PROJECT'}
                   </h3>
@@ -859,8 +877,14 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
 
             {/* Blog Edit Modal */}
             {blogDraft && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                <div className="bg-black border border-white/20 p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-4 shadow-2xl">
+              <div
+                data-lenis-prevent
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overscroll-contain"
+              >
+                <div
+                  data-lenis-prevent
+                  className="bg-black border border-white/20 p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto overscroll-contain admin-scroll space-y-4 shadow-2xl"
+                >
                   <h3 className="text-xs font-bold tracking-wider uppercase border-b border-white/10 pb-2">
                     {editingBlogIndex !== null ? 'EDIT BLOG NOTE' : 'ADD NEW BLOG NOTE'}
                   </h3>

@@ -85,3 +85,4 @@ export function setAdminAuthenticated(auth: boolean): void {
 }
 
 export type { LocalizedBlogPost, ExperienceItem, ProjectItem, SupportedLang, TranslationDict }
+
