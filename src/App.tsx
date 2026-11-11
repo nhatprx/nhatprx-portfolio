@@ -2,6 +2,29 @@ import { useState } from 'react'
 
 const CURRENT_YEAR = new Date().getFullYear()
 
+const SKILL_CATEGORIES = [
+  {
+    title: 'LANGUAGES',
+    skills: ['JavaScript', 'Java', 'Python'],
+  },
+  {
+    title: 'FRAMEWORKS',
+    skills: ['Spring Boot', 'ReactJS', 'NodeJS', 'ThreeJS'],
+  },
+  {
+    title: 'DATABASES',
+    skills: ['PostgreSQL', 'MySQL', 'Redis'],
+  },
+  {
+    title: 'DEVOPS & CLOUD',
+    skills: ['AWS (EC2, S3, Lambda)', 'Docker', 'Google Cloud Run', 'Jenkins', 'Vercel', 'Render', 'Railway', 'Git'],
+  },
+  {
+    title: 'ARCHITECTURE',
+    skills: ['OOP & SOLID Principles', 'RESTful API Design', 'CI/CD Pipelines (Jenkins)', 'Containerized Deployments', 'AWS Well-Architected Framework'],
+  },
+]
+
 // Inline SVG icons (zero dep)
 function GithubIcon({ className = 'w-5 h-5' }: { className?: string }) {
   return (
@@ -142,13 +165,54 @@ function ContactForm() {
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={status === 'sending'}
-        className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors disabled:opacity-50"
-      >
-        {status === 'sending' ? 'SENDING...' : 'SEND MESSAGE →'}
-      </button>
+      <div className="flex flex-wrap items-center gap-3 pt-2">
+        <button
+          type="submit"
+          disabled={status === 'sending'}
+          className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors disabled:opacity-50"
+        >
+          {status === 'sending' ? 'SENDING...' : 'SEND MESSAGE →'}
+        </button>
+
+        <div className="flex items-center gap-2">
+          <a
+            href="mailto:nhatprx@gmail.com"
+            aria-label="Email: nhatprx@gmail.com"
+            title="nhatprx@gmail.com"
+            className="p-3 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
+          >
+            <MailIcon className="w-4 h-4" />
+          </a>
+          <a
+            href="tel:+84879888965"
+            aria-label="Phone: +84 879 888 965"
+            title="+84 879 888 965"
+            className="p-3 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
+          >
+            <PhoneIcon className="w-4 h-4" />
+          </a>
+          <a
+            href="https://github.com/nhatprx"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub: nhatprx"
+            title="github.com/nhatprx"
+            className="p-3 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
+          >
+            <GithubIcon className="w-4 h-4" />
+          </a>
+          <a
+            href="https://www.linkedin.com/in/nhatprx/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="LinkedIn: nhatprx"
+            title="linkedin.com/in/nhatprx"
+            className="p-3 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
+          >
+            <LinkedinIcon className="w-4 h-4" />
+          </a>
+        </div>
+      </div>
     </form>
   )
 }
@@ -448,51 +512,24 @@ export default function App() {
                 <span className="text-white/30">stack.</span>
               </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="font-mono text-[10px] tracking-[0.3em] text-white/30 mb-4">PROGRAMMING LANGUAGES</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {['JavaScript', 'Java', 'Python'].map(s => (
-                      <span key={s} className="text-sm px-3 py-1.5 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors">{s}</span>
-                    ))}
+              <div className="divide-y divide-white/10 border-t border-b border-white/10">
+                {SKILL_CATEGORIES.map(group => (
+                  <div key={group.title} className="py-5 sm:grid sm:grid-cols-12 sm:gap-4 items-start">
+                    <h3 className="sm:col-span-4 font-mono text-[10px] tracking-[0.25em] text-white/30 mb-2 sm:mb-0 pt-1">
+                      {group.title}
+                    </h3>
+                    <div className="sm:col-span-8 flex flex-wrap gap-2">
+                      {group.skills.map(s => (
+                        <span
+                          key={s}
+                          className="font-mono text-xs px-2.5 py-1 bg-white/[0.03] border border-white/10 text-white/80 hover:text-white hover:border-white/30 transition-colors"
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-
-                <div>
-                  <h3 className="font-mono text-[10px] tracking-[0.3em] text-white/30 mb-4">FRAMEWORKS & PLATFORMS</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {['ReactJS', 'NodeJS', 'ThreeJS', 'Spring Boot'].map(s => (
-                      <span key={s} className="text-sm px-3 py-1.5 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors">{s}</span>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-mono text-[10px] tracking-[0.3em] text-white/30 mb-4">DATABASES</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {['MySQL', 'PostgreSQL', 'Redis'].map(s => (
-                      <span key={s} className="text-sm px-3 py-1.5 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors">{s}</span>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-mono text-[10px] tracking-[0.3em] text-white/30 mb-4">DEVOPS & INFRA</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {['Git', 'Docker', 'Jenkins', 'Google Cloud Run', 'Render', 'Vercel', 'Railway', 'AWS (EC2, S3, Lambda)'].map(s => (
-                      <span key={s} className="text-sm px-3 py-1.5 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors">{s}</span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="sm:col-span-2">
-                  <h3 className="font-mono text-[10px] tracking-[0.3em] text-white/30 mb-4">ARCHITECTURE & PRINCIPLES</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {['OOP & SOLID Principles', 'RESTful API Design', 'CI/CD Pipelines (Jenkins)', 'Containerized Deployments (Docker, Cloud Run)', 'AWS Well-Architected Framework'].map(s => (
-                      <span key={s} className="text-sm px-3 py-1.5 border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors">{s}</span>
-                    ))}
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
@@ -515,49 +552,7 @@ export default function App() {
               </p>
 
               <ContactForm />
-
-              <div className="pt-6 border-t border-white/5">
-                <p className="font-mono text-[10px] tracking-widest text-white/30 mb-4">DIRECT CHANNELS</p>
-                <div className="flex items-center gap-3">
-                  <a
-                    href="mailto:nhatprx@gmail.com"
-                    aria-label="Email: nhatprx@gmail.com"
-                    title="nhatprx@gmail.com"
-                    className="p-3 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
-                  >
-                    <MailIcon className="w-5 h-5" />
-                  </a>
-                  <a
-                    href="tel:+84879888965"
-                    aria-label="Phone: +84 879 888 965"
-                    title="+84 879 888 965"
-                    className="p-3 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
-                  >
-                    <PhoneIcon className="w-5 h-5" />
-                  </a>
-                  <a
-                    href="https://github.com/nhatprx"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="GitHub: nhatprx"
-                    title="github.com/nhatprx"
-                    className="p-3 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
-                  >
-                    <GithubIcon className="w-5 h-5" />
-                  </a>
-                  <a
-                    href="https://www.linkedin.com/in/nhatprx/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="LinkedIn: nhatprx"
-                    title="linkedin.com/in/nhatprx"
-                    className="p-3 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
-                  >
-                    <LinkedinIcon className="w-5 h-5" />
-                  </a>
-                </div>
-              </div>
-          </div>
+            </div>
         </div>
       </section>
 
