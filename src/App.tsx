@@ -250,6 +250,9 @@ export default function App() {
   const [touchStartX, setTouchStartX] = useState<number | null>(null)
   const horizontalRunwayRef = useRef<HTMLDivElement>(null)
   const [horizontalProgress, setHorizontalProgress] = useState(0)
+  const [isNavVertical, setIsNavVertical] = useState(false)
+  const [activeSection, setActiveSection] = useState('#hero')
+  const [showTopHeader, setShowTopHeader] = useState(true)
 
   const [lang, setLang] = useState<SupportedLang>(() => {
     const saved = localStorage.getItem('nhatprx_lang') as SupportedLang
@@ -308,6 +311,15 @@ export default function App() {
   }, [])
 
   const scrollTo = (target: string | number) => {
+    if (target === '#hero' || target === 0) {
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo(0, { duration: 1.1 })
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+      return
+    }
+
     if (typeof target === 'string' && ['#about', '#experience', '#projects', '#skills', '#blog'].includes(target)) {
       if (horizontalRunwayRef.current) {
         const rect = horizontalRunwayRef.current.getBoundingClientRect()
@@ -342,22 +354,43 @@ export default function App() {
   }
 
   useEffect(() => {
-    const updateProgress = () => {
-      if (!horizontalRunwayRef.current) return
-      const rect = horizontalRunwayRef.current.getBoundingClientRect()
-      const total = horizontalRunwayRef.current.offsetHeight - window.innerHeight
-      if (total <= 0) return
-      const current = -rect.top
-      const p = Math.max(0, Math.min(1, current / total))
-      setHorizontalProgress(p)
+    const handleScroll = () => {
+      const scrollY = window.scrollY
+      setShowTopBtn(scrollY > 400)
+      setShowTopHeader(scrollY < 120)
+
+      if (horizontalRunwayRef.current) {
+        const rect = horizontalRunwayRef.current.getBoundingClientRect()
+        const total = horizontalRunwayRef.current.offsetHeight - window.innerHeight
+        if (total > 0) {
+          const current = -rect.top
+          const p = Math.max(0, Math.min(1, current / total))
+          setHorizontalProgress(p)
+
+          if (rect.top > 120) {
+            setActiveSection('#hero')
+            setIsNavVertical(false)
+          } else if (rect.bottom < 120) {
+            setActiveSection('#contact')
+            setIsNavVertical(true)
+          } else {
+            setIsNavVertical(true)
+            if (p < 0.125) setActiveSection('#about')
+            else if (p < 0.375) setActiveSection('#experience')
+            else if (p < 0.625) setActiveSection('#projects')
+            else if (p < 0.875) setActiveSection('#skills')
+            else setActiveSection('#blog')
+          }
+        }
+      }
     }
 
-    window.addEventListener('scroll', updateProgress, { passive: true })
-    window.addEventListener('resize', updateProgress)
-    updateProgress()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('resize', handleScroll)
+    handleScroll()
     return () => {
-      window.removeEventListener('scroll', updateProgress)
-      window.removeEventListener('resize', updateProgress)
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleScroll)
     }
   }, [])
 
@@ -382,14 +415,6 @@ export default function App() {
       setIsInitialLoading(false)
     }, 550)
     return () => clearTimeout(timer)
-  }, [])
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowTopBtn(window.scrollY > 400)
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   useEffect(() => {
@@ -459,7 +484,11 @@ export default function App() {
       )}
 
       {/* Top Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 p-4 sm:p-6 lg:px-14 backdrop-blur-md bg-black/60 border-b border-white/5">
+      <header
+        className={`fixed top-0 left-0 right-0 z-40 p-4 sm:p-6 lg:px-14 backdrop-blur-md bg-black/60 border-b border-white/5 transition-all duration-300 ease-out ${
+          showTopHeader ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-full pointer-events-none'
+        }`}
+      >
         <div className="w-full flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 shrink-0">
             <button
@@ -610,6 +639,111 @@ export default function App() {
         </div>
       </header>
 
+      {/* Left Vertical Navigation (Appears as user reaches About and stays for Runway & Contact) */}
+      <aside
+        aria-label="Vertical Navigation"
+        className={`fixed left-0 top-0 bottom-0 w-56 xl:w-60 z-40 hidden lg:flex flex-col justify-between p-6 bg-black/90 backdrop-blur-xl border-r border-white/10 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          isNavVertical ? 'translate-x-0 opacity-100 pointer-events-auto' : '-translate-x-full opacity-0 pointer-events-none'
+        }`}
+      >
+        <div className="space-y-6">
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => scrollTo(0)}
+              className="font-mono text-xs tracking-[0.25em] text-white/90 hover:text-white transition-colors cursor-pointer text-left"
+            >
+              NHATPRX
+            </button>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            <span className="font-mono text-[10px] text-white/40">2026</span>
+          </div>
+
+          <div className="font-mono text-[9px] text-white/30 tracking-widest border-t border-white/5 pt-3 uppercase">
+            NAVIGATION
+          </div>
+
+          <nav className="flex flex-col space-y-1 text-xs font-mono">
+            {[
+              { id: '#hero', label: t.nav.liveLab, num: '00' },
+              { id: '#about', label: t.nav.about, num: '01' },
+              { id: '#experience', label: t.nav.experience, num: '02' },
+              { id: '#projects', label: t.nav.projects, num: '03' },
+              { id: '#skills', label: t.nav.skills, num: '04' },
+              { id: '#blog', label: t.nav.blog, num: '05' },
+              { id: '#contact', label: t.nav.contact, num: '06' },
+            ].map((item) => {
+              const isActive = activeSection === item.id
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => scrollTo(item.id === '#hero' ? 0 : item.id)}
+                  className={`group flex items-center justify-between px-2.5 py-2 transition-all cursor-pointer text-left border-l-2 ${
+                    isActive
+                      ? 'border-white text-white font-semibold bg-white/[0.06] pl-3'
+                      : 'border-transparent text-white/40 hover:text-white/80 hover:border-white/30 hover:bg-white/[0.02]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className={`text-[10px] ${isActive ? 'text-white' : 'text-white/30'}`}>
+                      {item.num}
+                    </span>
+                    <span className="tracking-wider">{item.label}</span>
+                  </div>
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                  )}
+                </button>
+              )
+            })}
+          </nav>
+        </div>
+
+        <div className="space-y-4 pt-4 border-t border-white/10">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[10px] text-white/30">LOCALE</span>
+            <div className="flex items-center gap-1 font-mono text-[10px]">
+              {LANG_OPTIONS.map((opt) => (
+                <button
+                  key={opt.code}
+                  onClick={() => handleLangChange(opt.code)}
+                  className={`px-1.5 py-0.5 border cursor-pointer transition-colors ${
+                    lang === opt.code
+                      ? 'border-white/60 bg-white/10 text-white font-semibold'
+                      : 'border-white/10 text-white/40 hover:text-white'
+                  }`}
+                >
+                  {opt.short}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-white/40">
+            <span className="font-mono text-[10px] text-white/30">SOCIALS</span>
+            <div className="flex items-center gap-3">
+              <a
+                href="https://github.com/nhatprx"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="GitHub"
+                className="hover:text-white transition-colors"
+              >
+                <GithubIcon className="w-4 h-4" />
+              </a>
+              <a
+                href="https://www.linkedin.com/in/nhatprx/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn"
+                className="hover:text-white transition-colors"
+              >
+                <LinkedinIcon className="w-4 h-4" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </aside>
+
       <main className="relative z-10 pt-16 sm:pt-20">
         {/* ========== HERO & TERMINAL (STACKED: HERO CONTENT ON TOP OF TERMINAL) ========== */}
         <section id="hero" className="flex flex-col justify-center px-6 sm:px-10 lg:px-14 py-3 sm:py-4 min-h-[calc(100vh-4rem)] sm:min-h-[calc(100vh-5rem)]">
@@ -692,7 +826,7 @@ export default function App() {
         >
           <div className="sticky top-0 h-screen overflow-hidden">
             {/* Horizontal Track Indicator / Pills */}
-            <div className="absolute top-20 sm:top-24 left-4 sm:left-10 lg:left-14 right-4 sm:right-10 lg:right-14 z-30 flex items-center justify-between pointer-events-none">
+            <div className="absolute top-20 sm:top-24 left-4 sm:left-10 lg:left-64 xl:left-72 right-4 sm:right-10 lg:right-14 z-30 flex items-center justify-between pointer-events-none">
               <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto overflow-x-auto no-scrollbar py-1">
                 {[
                   { id: '#about', label: '01 ABOUT' },
@@ -742,7 +876,7 @@ export default function App() {
               {/* ========== 01 - ABOUT ========== */}
               <div
                 id="about"
-                className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-24 overflow-y-auto"
+                className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:pl-64 xl:pl-72 lg:pr-16 py-24 overflow-y-auto"
               >
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.about.tag}</p>
@@ -807,7 +941,7 @@ export default function App() {
           return (
             <div
               id="experience"
-              className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-24 overflow-y-auto"
+              className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:pl-64 xl:pl-72 lg:pr-16 py-24 overflow-y-auto"
             >
               <div className="w-full text-left">
                 {/* Header & Story progress indicator */}
@@ -976,7 +1110,7 @@ export default function App() {
         {/* ========== 03 - PROJECTS ========== */}
         <div
           id="projects"
-          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-24 overflow-y-auto"
+          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:pl-64 xl:pl-72 lg:pr-16 py-24 overflow-y-auto"
         >
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.projects.tag}</p>
@@ -1034,7 +1168,7 @@ export default function App() {
         {/* ========== 04 - SKILLS ========== */}
         <div
           id="skills"
-          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-24 overflow-y-auto"
+          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:pl-64 xl:pl-72 lg:pr-16 py-24 overflow-y-auto"
         >
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.skills.tag}</p>
@@ -1069,7 +1203,7 @@ export default function App() {
         {/* ========== 05 - BLOG ========== */}
         <div
           id="blog"
-          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-24 overflow-y-auto"
+          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:pl-64 xl:pl-72 lg:pr-16 py-24 overflow-y-auto"
         >
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.blog.tag}</p>
@@ -1119,7 +1253,7 @@ export default function App() {
   </div>
 
         {/* ========== 06 - CONTACT ========== */}
-        <section id="contact" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14">
+        <section id="contact" className="min-h-screen flex items-center py-24 px-6 sm:px-10 lg:pl-64 xl:pl-72 lg:pr-14">
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.contact.tag}</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
@@ -1138,7 +1272,7 @@ export default function App() {
         </section>
 
         {/* ========== FOOTER ========== */}
-        <footer className="py-8 p-6 sm:p-10 lg:p-14">
+        <footer className="py-8 px-6 sm:px-10 lg:pl-64 xl:pl-72 lg:pr-14">
           <div className="w-full text-xs font-mono text-white/20">
             <span>&copy; {CURRENT_YEAR} Minh Nhat Pham. {t.footer.rights}</span>
           </div>
