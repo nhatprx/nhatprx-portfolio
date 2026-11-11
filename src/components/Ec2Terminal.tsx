@@ -36,11 +36,18 @@ export default function Ec2Terminal() {
   const [inputVal, setInputVal] = useState('')
   const [cmdHistory, setCmdHistory] = useState<string[]>([])
   const [historyIndex, setHistoryIndex] = useState<number>(-1)
-  const terminalEndRef = useRef<HTMLDivElement>(null)
+  const outputContainerRef = useRef<HTMLDivElement>(null)
+  const isInitialMount = useRef(true)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+    if (outputContainerRef.current) {
+      outputContainerRef.current.scrollTop = outputContainerRef.current.scrollHeight
+    }
   }, [history])
 
   const executeCommand = (cmdStr: string) => {
@@ -331,7 +338,10 @@ CGroup: /
       </div>
 
       {/* Terminal Scrollable Output Area */}
-      <div className="flex-1 p-4 overflow-y-auto space-y-1.5 text-xs leading-relaxed select-text font-mono">
+      <div
+        ref={outputContainerRef}
+        className="flex-1 p-4 overflow-y-auto space-y-1.5 text-xs leading-relaxed select-text font-mono"
+      >
         {history.map((entry, idx) => (
           <div key={idx} className="whitespace-pre-wrap break-all">
             {entry.type === 'input' && (
@@ -364,7 +374,6 @@ CGroup: /
             placeholder="type 'help' or any command..."
           />
         </div>
-        <div ref={terminalEndRef} />
       </div>
 
       {/* Terminal Footer Status Bar */}
