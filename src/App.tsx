@@ -619,11 +619,11 @@ export default function App() {
                   LIVE CLOUD NODE // AP-SOUTHEAST-1
                 </span>
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 sm:gap-5 h-auto lg:h-[420px] xl:h-[460px] 2xl:h-[500px] w-full">
+              <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 sm:gap-5 h-auto lg:h-[430px] xl:h-[470px] 2xl:h-[510px] w-full">
                 <div className="lg:col-span-6 h-[380px] sm:h-[420px] lg:h-full min-h-0">
                   <Ec2Terminal />
                 </div>
-                <div className="lg:col-span-4 h-[340px] sm:h-[380px] lg:h-full min-h-0">
+                <div className="lg:col-span-4 h-[360px] sm:h-[400px] lg:h-full min-h-0">
                   <ServerTelemetry />
                 </div>
               </div>
