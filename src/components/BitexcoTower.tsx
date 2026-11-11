@@ -31,10 +31,10 @@ export default function BitexcoTower({ mode = 'cyan' }: BitexcoTowerProps) {
     }
   }, [geometry, edgesGeo])
 
-  // Exact rotation:
+  // Exact rotation matching user preference:
   // 1. rotation.x = -PI/2 (makes STL Z-axis upright as Three.js Y-axis)
-  // 2. rotation.y = 265 degrees (aligns the helipad pointing to the right and crown tip to the left, matching the photo)
-  const angleY = (265 * Math.PI) / 180
+  // 2. rotation.y = 230 degrees (angles the helipad towards the viewer/right to clearly showcase the top deck and railing)
+  const angleY = (230 * Math.PI) / 180
 
   return (
     <Center>
