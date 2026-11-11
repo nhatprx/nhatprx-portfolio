@@ -57,6 +57,16 @@ function ArrowDown({ className = 'w-5 h-5' }: { className?: string }) {
   )
 }
 
+function DownloadIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" x2="12" y1="15" y2="3" />
+    </svg>
+  )
+}
+
 function ContactForm() {
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
@@ -202,13 +212,21 @@ export default function App() {
                 at Grevo Solutions and contributed to AWS infrastructure design during an internship at Amazon.
               </p>
 
-              <div className="mt-8">
+              <div className="mt-8 flex flex-wrap items-center gap-3">
                 <a
                   href="#contact"
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors"
                 >
                   GET IN TOUCH
                   <span aria-hidden="true">→</span>
+                </a>
+                <a
+                  href="/%5Bnhatprx%5D%20PERSONAL%20RESUME.pdf"
+                  download="[nhatprx] PERSONAL RESUME.pdf"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 border border-white/20 text-white font-mono text-xs font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-colors"
+                >
+                  <DownloadIcon className="w-3.5 h-3.5 text-white/60" />
+                  RESUME
                 </a>
               </div>
             </div>
