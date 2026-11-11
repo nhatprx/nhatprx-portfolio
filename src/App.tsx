@@ -10,7 +10,7 @@ const SKILL_CATEGORIES = [
   },
   {
     title: 'FRAMEWORKS',
-    gridClass: 'grid grid-cols-2 sm:grid-cols-4 gap-2',
+    gridClass: 'grid grid-cols-2 gap-2',
     skills: ['Spring Boot', 'ReactJS', 'NodeJS', 'ThreeJS'],
   },
   {
@@ -20,7 +20,7 @@ const SKILL_CATEGORIES = [
   },
   {
     title: 'DEVOPS & CLOUD',
-    gridClass: 'grid grid-cols-1 sm:grid-cols-2 gap-2',
+    gridClass: 'grid grid-cols-2 gap-2',
     skills: ['AWS (EC2, S3, Lambda)', 'Google Cloud Run', 'Docker', 'Jenkins', 'Vercel', 'Render', 'Railway', 'Git'],
   },
   {
@@ -535,7 +535,7 @@ export default function App() {
                       {group.skills.map(s => (
                         <span
                           key={s}
-                          className="flex items-center justify-center text-center font-mono text-xs px-2 py-2 bg-white/[0.03] border border-white/10 text-white/80 hover:text-white hover:border-white/30 transition-colors w-full"
+                          className="flex items-center justify-start text-left font-mono text-xs px-3 h-9 bg-white/[0.03] border border-white/10 text-white/80 hover:text-white hover:border-white/30 transition-colors w-full whitespace-nowrap"
                         >
                           {s}
                         </span>
