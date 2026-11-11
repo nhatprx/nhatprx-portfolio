@@ -73,14 +73,6 @@ export default function CustomCursor() {
 
   return (
     <>
-      {/* Dynamic Cursor Spotlight over Grid */}
-      <div
-        className="pointer-events-none fixed inset-0 z-10 transition-opacity duration-300"
-        style={{
-          background: `radial-gradient(650px circle at ${position.x}px ${position.y}px, rgba(255, 255, 255, 0.05), transparent 80%)`,
-        }}
-      />
-
       {/* Center Target Dot */}
       <div
         ref={cursorRef}

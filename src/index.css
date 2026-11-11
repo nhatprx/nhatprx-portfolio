@@ -14,11 +14,13 @@ body {
 
 /* Animated Faint Grey Square Grid Background */
 .bg-grid-animated {
-  background-size: 40px 40px;
+  background-size: 48px 48px;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  animation: grid-drift 40s linear infinite;
+    linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-repeat: repeat;
+  animation: grid-drift 10s linear infinite;
+  will-change: background-position;
 }
 
 @keyframes grid-drift {
@@ -26,11 +28,23 @@ body {
     background-position: 0 0;
   }
   100% {
-    background-position: 40px 40px;
+    background-position: 48px 48px;
   }
 }
 
-/* Optional custom cursor hide on desktop if desired */
-@media (pointer: fine) {
-  /* Keep standard cursor or style smooth interaction */
+/* Loading Bar Animation */
+@keyframes loading-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-loading-bar {
+  animation: loading-progress 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }

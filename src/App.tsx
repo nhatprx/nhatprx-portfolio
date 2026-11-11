@@ -213,6 +213,9 @@ export default function App() {
   const [showTopBtn, setShowTopBtn] = useState(false)
   const [selectedPostSlug, setSelectedPostSlug] = useState<string | null>(null)
   const [langOpen, setLangOpen] = useState(false)
+  const [isInitialLoading, setIsInitialLoading] = useState(true)
+  const [isLangSwitching, setIsLangSwitching] = useState(false)
+  const [loadingLabel, setLoadingLabel] = useState('INITIALIZING ENVIRONMENT...')
   const langMenuRef = useRef<HTMLDivElement>(null)
 
   const [lang, setLang] = useState<SupportedLang>(() => {
@@ -223,6 +226,13 @@ export default function App() {
 
   const t = TRANSLATIONS[lang]
   const selectedPost = t.blog.posts.find((p) => p.slug === selectedPostSlug)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false)
+    }, 550)
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -243,19 +253,60 @@ export default function App() {
   }, [])
 
   const handleLangChange = (newLang: SupportedLang) => {
-    setLang(newLang)
-    localStorage.setItem('nhatprx_lang', newLang)
+    if (newLang === lang) {
+      setLangOpen(false)
+      return
+    }
+
     setLangOpen(false)
+    setIsLangSwitching(true)
+
+    const labelMap: Record<SupportedLang, string> = {
+      en: 'SWITCHING TO ENGLISH...',
+      vi: 'ĐANG CHUYỂN SANG TIẾNG VIỆT...',
+      fr: 'CHARGEMENT EN FRANÇAIS...',
+      ja: '日本語に切り替え中...',
+    }
+    setLoadingLabel(labelMap[newLang] || 'SWITCHING LOCALE...')
+
+    setTimeout(() => {
+      setLang(newLang)
+      localStorage.setItem('nhatprx_lang', newLang)
+      setTimeout(() => {
+        setIsLangSwitching(false)
+      }, 300)
+    }, 250)
   }
 
   return (
     <div className="relative min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black">
       {/* Animated faint grey grid background */}
-      <div className="pointer-events-none fixed inset-0 z-0 bg-grid-animated opacity-60" />
-      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_20%,transparent_0%,rgba(0,0,0,0.85)_100%)]" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-grid-animated opacity-75" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_30%,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
 
-      {/* Interactive Custom Cursor with Spotlight */}
+      {/* Interactive Custom Cursor */}
       <CustomCursor />
+
+      {/* Screen Loader (Initial & Language Switch) */}
+      {(isInitialLoading || isLangSwitching) && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black font-mono text-white select-none transition-opacity duration-200">
+          <div className="w-64 space-y-4 text-center px-4">
+            <div className="flex items-center justify-between text-[11px] text-white/60 tracking-wider">
+              <span className="truncate">{loadingLabel}</span>
+              <span className="w-1.5 h-1.5 bg-emerald-400 animate-pulse ml-2 shrink-0" />
+            </div>
+
+            <div className="w-full h-[2px] bg-white/10 overflow-hidden relative">
+              <div className="h-full w-full bg-white animate-loading-bar" />
+            </div>
+
+            <div className="flex items-center justify-between text-[10px] text-white/30 tracking-widest pt-1">
+              <span>SYS://PORTFOLIO</span>
+              <span>NHATPRX · 2026</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Top Header */}
       <header className="fixed top-0 left-0 right-0 z-40 p-4 sm:p-6 lg:px-14 backdrop-blur-md bg-black/60 border-b border-white/5">
