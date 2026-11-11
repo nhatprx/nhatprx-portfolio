@@ -245,6 +245,7 @@ export default function App() {
     return window.location.hash === '#admin' || window.location.pathname === '/admin'
   })
   const [activeExp, setActiveExp] = useState(0)
+  const [windowWidth, setWindowWidth] = useState(() => (typeof window !== 'undefined' ? window.innerWidth : 1000))
   const [touchStartX, setTouchStartX] = useState<number | null>(null)
 
   const [lang, setLang] = useState<SupportedLang>(() => {
@@ -314,6 +315,12 @@ export default function App() {
       }
     }
   }
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   // Pause Lenis smooth scrolling on main page while modal or admin is open
   useEffect(() => {
@@ -662,127 +669,193 @@ export default function App() {
           </div>
         </section>
 
-        {/* ========== 02 - EXPERIENCE ========== */}
-        <section id="experience" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">
-          <div className="w-full max-w-2xl mx-auto text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.experience.tag}</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
-              {t.experience.title}
-              <br />
-              <span className="text-white/30">{t.experience.titleSub}</span>
-            </h2>
+        {/* ========== 02 - EXPERIENCE (3-CARD INFINITE LOOP STAGE) ========== */}
+        {(() => {
+          const items = t.experience.items
+          const N = items.length
+          const realIndex = ((activeExp % N) + N) % N
+          const cardWidth = Math.min(windowWidth - 48, 560)
+          const gap = windowWidth < 640 ? 16 : 28
 
-            {/* Slider Navigation Bar */}
-            <div className="flex items-center justify-between gap-4 mb-6">
-              {/* Progress/indicator pills */}
-              <div className="flex items-center gap-2">
-                {t.experience.items.map((_, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setActiveExp(idx)}
-                    aria-label={`Experience slide ${idx + 1}`}
-                    className={`h-1.5 transition-all duration-300 cursor-pointer ${Math.min(activeExp, Math.max(0, t.experience.items.length - 1)) === idx
-                        ? 'w-8 bg-white'
-                        : 'w-2 bg-white/20 hover:bg-white/40'
+          // 5 slots around activeExp: 2 left, 1 center, 2 right for seamless infinite transition
+          const slots = [activeExp - 2, activeExp - 1, activeExp, activeExp + 1, activeExp + 2]
+
+          const jumpToChapter = (targetIdx: number) => {
+            let diff = targetIdx - realIndex
+            if (diff > 1) diff -= N
+            if (diff < -1) diff += N
+            setActiveExp((prev) => prev + diff)
+          }
+
+          return (
+            <section id="experience" className="min-h-screen py-24 p-4 sm:p-6 lg:p-10 flex items-center justify-center overflow-hidden">
+              <div className="w-full max-w-5xl mx-auto text-left">
+                {/* Header & Story progress indicator */}
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 px-2 sm:px-4">
+                  <div>
+                    <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-2">{t.experience.tag}</p>
+                    <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
+                      {t.experience.title} <span className="text-white/30">{t.experience.titleSub}</span>
+                    </h2>
+                  </div>
+
+                  <div className="flex items-center gap-3 font-mono text-xs text-white/40 shrink-0">
+                    <span>
+                      CH. 0{realIndex + 1} / 0{N}
+                    </span>
+                    <div className="w-20 sm:w-24 h-1 bg-white/10 relative overflow-hidden">
+                      <div
+                        className="h-full bg-white transition-all duration-300"
+                        style={{ width: `${((realIndex + 1) / N) * 100}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setActiveExp((prev) => prev - 1)}
+                        aria-label="Previous chapter (infinite loop)"
+                        className="p-1.5 border border-white/10 hover:border-white/30 text-white hover:bg-white/5 transition-colors cursor-pointer"
+                      >
+                        <ChevronLeftIcon className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveExp((prev) => prev + 1)}
+                        aria-label="Next chapter (infinite loop)"
+                        className="p-1.5 border border-white/10 hover:border-white/30 text-white hover:bg-white/5 transition-colors cursor-pointer"
+                      >
+                        <ChevronRightIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Timeline Chapter Pills */}
+                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 mb-6 px-2 sm:px-4">
+                  {items.map((exp, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => jumpToChapter(idx)}
+                      className={`font-mono text-[10px] tracking-wider px-3 py-1.5 border transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
+                        realIndex === idx
+                          ? 'border-white bg-white text-black font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)]'
+                          : 'border-white/10 text-white/40 hover:text-white/70 hover:border-white/30 bg-white/[0.02]'
                       }`}
-                  />
-                ))}
-              </div>
+                    >
+                      <span>0{idx + 1}</span>
+                      <span className="opacity-40">|</span>
+                      <span className="truncate max-w-[130px] sm:max-w-none">{exp.role.split('·')[0].split('&')[0].trim()}</span>
+                    </button>
+                  ))}
+                </div>
 
-              {/* Slide counter & arrows */}
-              <div className="flex items-center gap-3 font-mono text-xs text-white/50">
-                <span>
-                  {String(Math.min(activeExp, Math.max(0, t.experience.items.length - 1)) + 1).padStart(2, '0')} / {String(t.experience.items.length).padStart(2, '0')}
-                </span>
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setActiveExp((prev) => Math.max(0, prev - 1))}
-                    disabled={Math.min(activeExp, Math.max(0, t.experience.items.length - 1)) === 0}
-                    aria-label="Previous experience"
-                    className="p-1.5 border border-white/10 hover:border-white/30 text-white disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/5 transition-colors cursor-pointer"
-                  >
-                    <ChevronLeftIcon className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveExp((prev) => Math.min(t.experience.items.length - 1, prev + 1))}
-                    disabled={Math.min(activeExp, Math.max(0, t.experience.items.length - 1)) === t.experience.items.length - 1}
-                    aria-label="Next experience"
-                    className="p-1.5 border border-white/10 hover:border-white/30 text-white disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/5 transition-colors cursor-pointer"
-                  >
-                    <ChevronRightIcon className="w-4 h-4" />
-                  </button>
+                {/* 3-Card Stage with Infinite Loop */}
+                <div
+                  className="relative w-full h-[540px] sm:h-[490px] overflow-hidden outline-none"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowRight') {
+                      e.preventDefault()
+                      setActiveExp((prev) => prev + 1)
+                    } else if (e.key === 'ArrowLeft') {
+                      e.preventDefault()
+                      setActiveExp((prev) => prev - 1)
+                    }
+                  }}
+                  onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
+                  onTouchEnd={(e) => {
+                    if (touchStartX === null) return
+                    const diff = touchStartX - e.changedTouches[0].clientX
+                    if (diff > 40) {
+                      setActiveExp((prev) => prev + 1)
+                    } else if (diff < -40) {
+                      setActiveExp((prev) => prev - 1)
+                    }
+                    setTouchStartX(null)
+                  }}
+                  role="region"
+                  aria-label="3-card experience infinite stage"
+                >
+                  {slots.map((slot) => {
+                    const itemIndex = ((slot % N) + N) % N
+                    const exp = items[itemIndex]
+                    const offset = slot - activeExp // -2, -1, 0, 1, 2
+                    const isCenter = offset === 0
+
+                    return (
+                      <div
+                        key={slot}
+                        onClick={() => Math.abs(offset) === 1 && setActiveExp((prev) => prev + offset)}
+                        style={{
+                          width: `${cardWidth}px`,
+                          transform: `translateX(calc(-50% + ${offset * (cardWidth + gap)}px)) scale(${isCenter ? 1 : 0.94})`,
+                          left: '50%',
+                          opacity: isCenter ? 1 : Math.abs(offset) === 1 ? 0.38 : 0,
+                          zIndex: isCenter ? 20 : 10 - Math.abs(offset),
+                          pointerEvents: Math.abs(offset) > 1 ? 'none' : 'auto',
+                          transition: 'transform 500ms cubic-bezier(0.16, 1, 0.3, 1), opacity 500ms ease',
+                        }}
+                        className={`absolute top-0 bottom-0 select-none ${
+                          Math.abs(offset) === 1 ? 'cursor-pointer hover:opacity-60' : ''
+                        }`}
+                      >
+                        <article
+                          className={`h-full flex flex-col justify-between p-6 sm:p-8 border transition-all duration-300 ${
+                            isCenter
+                              ? 'border-white/30 bg-white/[0.04] shadow-[0_0_50px_rgba(255,255,255,0.06)]'
+                              : 'border-white/10 bg-white/[0.01]'
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-white/10">
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                                    isCenter ? 'bg-emerald-400 animate-pulse' : 'bg-white/20'
+                                  }`}
+                                />
+                                <span className="font-mono text-[10px] tracking-[0.25em] text-white/50 uppercase">
+                                  CHAPTER 0{itemIndex + 1} // STORY
+                                </span>
+                              </div>
+                              <span className="font-mono text-[10px] text-white/40 border border-white/10 px-2 py-0.5">
+                                {exp.period}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-2">
+                              <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white">{exp.role}</h3>
+                            </div>
+                            <p className="text-xs font-mono text-emerald-400/90 mb-4">{exp.company}</p>
+                            <p className="text-sm text-white/60 leading-relaxed mb-4">
+                              {exp.summary}
+                            </p>
+                            <ul className="space-y-2 text-sm text-white/50 leading-relaxed mb-6">
+                              {exp.bullets.map((b, bIdx) => (
+                                <li key={bIdx}>• {b}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div className="mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
+                            {exp.tech.map((tech) => (
+                              <span
+                                key={tech}
+                                className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30 bg-white/[0.02]"
+                              >
+                                {tech}
+                              </span>
+                            ))}
+                          </div>
+                        </article>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
-            </div>
-
-            {/* Horizontal Slider Viewport */}
-            <div
-              className="relative overflow-hidden outline-none focus-visible:ring-1 focus-visible:ring-white/30"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'ArrowRight') {
-                  e.preventDefault()
-                  setActiveExp((prev) => Math.min(t.experience.items.length - 1, prev + 1))
-                } else if (e.key === 'ArrowLeft') {
-                  e.preventDefault()
-                  setActiveExp((prev) => Math.max(0, prev - 1))
-                }
-              }}
-              onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
-              onTouchEnd={(e) => {
-                if (touchStartX === null) return
-                const diff = touchStartX - e.changedTouches[0].clientX
-                if (diff > 40) {
-                  setActiveExp((prev) => Math.min(t.experience.items.length - 1, prev + 1))
-                } else if (diff < -40) {
-                  setActiveExp((prev) => Math.max(0, prev - 1))
-                }
-                setTouchStartX(null)
-              }}
-              role="region"
-              aria-label="Work experience carousel"
-            >
-              <div
-                className="flex transition-transform duration-500 ease-out"
-                style={{
-                  transform: `translateX(-${Math.min(activeExp, Math.max(0, t.experience.items.length - 1)) * 100}%)`,
-                }}
-              >
-                {t.experience.items.map((exp, idx) => (
-                  <div key={idx} className="w-full shrink-0">
-                    <article className="border border-white/10 bg-white/[0.02] p-6 sm:p-8 h-full flex flex-col justify-between hover:border-white/20 transition-colors">
-                      <div>
-                        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-3">
-                          <h3 className="text-lg font-bold">{exp.role}</h3>
-                          <span className="font-mono text-[10px] text-white/30 shrink-0">{exp.period}</span>
-                        </div>
-                        <p className="text-xs font-mono text-white/40 mb-3">{exp.company}</p>
-                        <p className="text-sm text-white/50 leading-relaxed mb-4">
-                          {exp.summary}
-                        </p>
-                        <ul className="space-y-2 text-sm text-white/50 leading-relaxed">
-                          {exp.bullets.map((b, bIdx) => (
-                            <li key={bIdx}>• {b}</li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="mt-6 pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
-                        {exp.tech.map((tech) => (
-                          <span key={tech} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">
-                            {tech}
-                          </span>
-                        ))}
-                      </div>
-                    </article>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+            </section>
+          )
+        })()}
 
         {/* ========== 03 - PROJECTS ========== */}
         <section id="projects" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">
