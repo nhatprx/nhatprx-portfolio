@@ -19,21 +19,13 @@ export default function BlogPostModal({
   const contentRef = useRef<HTMLDivElement>(null)
   const otherPosts = allPosts.filter((p) => p.slug !== post.slug)
 
-  // Close on ESC key and lock body scroll while modal is open
+  // Close on ESC key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', handleKeyDown)
-
-    // Save previous overflow style and lock scroll
-    const originalOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-      document.body.style.overflow = originalOverflow
-    }
+    return () => document.removeEventListener('keydown', handleKeyDown)
   }, [onClose])
 
   // Scroll modal body back to top when switched to another post
@@ -49,32 +41,46 @@ export default function BlogPostModal({
       aria-modal="true"
       aria-labelledby="modal-post-title"
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 md:p-8 bg-black/85 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 md:p-12 bg-black/55 backdrop-blur-[2px]"
     >
-      {/* Modal Dialog Card */}
+      {/* Floating Modal Window Card Overlay */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-4xl max-h-[92vh] bg-black/95 border border-white/20 flex flex-col shadow-2xl overflow-hidden text-left font-sans animate-in fade-in zoom-in-95 duration-150"
+        className="w-full max-w-3xl max-h-[82vh] bg-black/95 border border-white/25 flex flex-col shadow-[0_25px_70px_rgba(0,0,0,0.9)] overflow-hidden text-left font-sans animate-modal-pop"
       >
-        {/* Modal Header Bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/[0.02] shrink-0">
-          <div className="flex items-center gap-2 font-mono text-[11px] text-white/40 tracking-wider">
-            <span>{t.blog.modalNoteLabel}</span>
-            <span>•</span>
-            <span className="text-white/60">{post.date}</span>
-            <span>•</span>
-            <span>{post.readTime}</span>
+        {/* Window Chrome Title Bar */}
+        <div className="flex items-center justify-between px-5 py-3 border-b border-white/15 bg-white/[0.04] shrink-0">
+          <div className="flex items-center gap-3">
+            {/* Window control dots */}
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={onClose}
+                aria-label="Close window"
+                className="w-2.5 h-2.5 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors cursor-pointer"
+              />
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500/70" />
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />
+            </div>
+
+            <span className="font-mono text-[11px] text-white/50 tracking-wider truncate max-w-[220px] sm:max-w-md">
+              note://{post.slug}.md
+            </span>
           </div>
 
-          <button
-            onClick={onClose}
-            aria-label="Close dialog"
-            className="flex items-center gap-1.5 font-mono text-xs text-white/50 hover:text-white border border-white/10 px-2.5 py-1 hover:border-white/40 transition-colors cursor-pointer"
-          >
-            <span>✕</span>
-            <span>{t.blog.modalClose}</span>
-            <span className="text-[10px] text-white/30 hidden sm:inline">[ESC]</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[10px] text-white/40 hidden sm:inline">
+              {post.date} · {post.readTime}
+            </span>
+            <button
+              onClick={onClose}
+              aria-label="Close dialog"
+              className="flex items-center gap-1.5 font-mono text-xs text-white/70 hover:text-white border border-white/15 px-2.5 py-0.5 hover:border-white/40 transition-colors cursor-pointer bg-white/[0.02]"
+            >
+              <span>✕</span>
+              <span>{t.blog.modalClose}</span>
+              <span className="text-[10px] text-white/30 hidden sm:inline">[ESC]</span>
+            </button>
+          </div>
         </div>
 
         {/* Modal Scrollable Article Content */}
@@ -83,10 +89,18 @@ export default function BlogPostModal({
           className="flex-1 overflow-y-auto p-6 sm:p-10 space-y-8 select-text font-sans"
         >
           {/* Post Header */}
-          <header className="border-b border-white/10 pb-8">
+          <header className="border-b border-white/10 pb-6">
+            <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] text-white/40 mb-3 uppercase tracking-wider">
+              <span>{t.blog.modalNoteLabel}</span>
+              <span>•</span>
+              <span className="text-white/60">{post.date}</span>
+              <span>•</span>
+              <span>{post.readTime}</span>
+            </div>
+
             <h1
               id="modal-post-title"
-              className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight mb-4 text-white leading-tight"
+              className="text-2xl sm:text-3xl font-bold tracking-tight mb-4 text-white leading-tight"
             >
               {post.title}
             </h1>
@@ -111,7 +125,7 @@ export default function BlogPostModal({
           <div className="space-y-8 text-sm text-white/80 leading-relaxed">
             {post.content.sections.map((sec, idx) => (
               <section key={idx} className="space-y-3">
-                <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight border-b border-white/5 pb-2">
+                <h2 className="text-lg font-bold text-white tracking-tight border-b border-white/5 pb-2">
                   {sec.heading}
                 </h2>
                 {sec.body.map((p, pIdx) => (
@@ -136,7 +150,7 @@ export default function BlogPostModal({
           </div>
 
           {/* Modal Footer Next Articles */}
-          <footer className="mt-12 pt-8 border-t border-white/10 space-y-6">
+          <footer className="mt-10 pt-8 border-t border-white/10 space-y-5">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs text-white/40 tracking-wider uppercase">
                 {t.blog.modalOtherNotes}
@@ -154,7 +168,7 @@ export default function BlogPostModal({
                 <div
                   key={op.slug}
                   onClick={() => onSelectPost(op.slug)}
-                  className="p-4 border border-white/10 hover:border-white/30 transition-colors cursor-pointer group bg-white/[0.01]"
+                  className="p-3.5 border border-white/10 hover:border-white/30 transition-colors cursor-pointer group bg-white/[0.01]"
                 >
                   <span className="font-mono text-[9px] text-white/40 block mb-1">
                     {op.date} · {op.readTime}
@@ -174,4 +188,3 @@ export default function BlogPostModal({
     </div>
   )
 }
-

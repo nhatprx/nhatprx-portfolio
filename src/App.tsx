@@ -354,28 +354,38 @@ export default function App() {
                 aria-expanded={langOpen}
                 aria-haspopup="true"
                 aria-label="Select Language"
-                className="flex items-center gap-1.5 px-2.5 py-1 font-mono text-xs border border-white/15 bg-white/[0.03] text-white/80 hover:text-white hover:border-white/30 transition-colors cursor-pointer"
+                className="flex items-center gap-2 px-3 py-1.5 font-mono text-xs border border-white/20 bg-white/[0.04] text-white/90 hover:text-white hover:border-white/40 transition-all cursor-pointer"
               >
                 <span className="font-semibold uppercase">{lang}</span>
-                <span className="text-[9px] text-white/40">{langOpen ? '▲' : '▼'}</span>
+                <span className="text-[9px] text-white/50">{langOpen ? '▲' : '▼'}</span>
               </button>
 
               {langOpen && (
-                <div className="absolute right-0 top-full mt-1.5 w-36 bg-black/95 border border-white/20 shadow-2xl py-1 z-50 backdrop-blur-md">
-                  {LANG_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.code}
-                      onClick={() => handleLangChange(opt.code)}
-                      className={`w-full text-left px-3 py-1.5 text-xs font-mono flex items-center justify-between hover:bg-white/10 transition-colors cursor-pointer ${
-                        lang === opt.code
-                          ? 'text-white bg-white/10 font-semibold'
-                          : 'text-white/60'
-                      }`}
-                    >
-                      <span>{opt.label}</span>
-                      <span className="text-[10px] text-white/30">{opt.short}</span>
-                    </button>
-                  ))}
+                <div className="absolute right-0 top-full mt-2 w-52 bg-black/95 border border-white/20 shadow-[0_15px_40px_rgba(0,0,0,0.85)] py-1.5 z-50 backdrop-blur-md animate-dropdown divide-y divide-white/5">
+                  <div className="px-3.5 py-1 font-mono text-[9px] text-white/30 tracking-widest uppercase">
+                    LOCALE
+                  </div>
+                  <div className="py-1">
+                    {LANG_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.code}
+                        onClick={() => handleLangChange(opt.code)}
+                        className={`w-full text-left px-3.5 py-2 text-xs font-mono flex items-center justify-between hover:bg-white/10 transition-colors cursor-pointer ${
+                          lang === opt.code
+                            ? 'text-white bg-white/10 font-semibold'
+                            : 'text-white/60'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className={`w-1.5 h-1.5 rounded-full ${lang === opt.code ? 'bg-emerald-400' : 'bg-transparent'}`} />
+                          <span>{opt.label}</span>
+                        </span>
+                        <span className="text-[10px] text-white/30 px-1.5 py-0.5 border border-white/10 bg-white/5">
+                          {opt.short}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
