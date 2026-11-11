@@ -211,14 +211,6 @@ export default function App() {
                   <span aria-hidden="true">→</span>
                 </a>
               </div>
-
-              <div className="mt-8 flex flex-wrap gap-2 font-mono text-[11px] text-white/40">
-                <span className="px-3 py-1 border border-white/10">#Backend</span>
-                <span className="px-3 py-1 border border-white/10">#CloudInfra</span>
-                <span className="px-3 py-1 border border-white/10">#FullStack</span>
-                <span className="px-3 py-1 border border-white/10">#AWS</span>
-                <span className="px-3 py-1 border border-white/10">#SpringBoot</span>
-              </div>
             </div>
           </div>
 
