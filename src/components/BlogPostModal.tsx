@@ -1,13 +1,12 @@
 import { useEffect, useRef } from 'react'
-import { type BlogPost } from '../data/blogData'
-import { type TranslationDict } from '../data/translations'
+import { type LocalizedBlogPost, type TranslationDict } from '../data/translations'
 
 interface BlogPostModalProps {
-  post: BlogPost
+  post: LocalizedBlogPost
   t: TranslationDict
   onClose: () => void
   onSelectPost: (slug: string) => void
-  allPosts: BlogPost[]
+  allPosts: LocalizedBlogPost[]
 }
 
 export default function BlogPostModal({
@@ -60,7 +59,7 @@ export default function BlogPostModal({
         {/* Modal Header Bar */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/[0.02] shrink-0">
           <div className="flex items-center gap-2 font-mono text-[11px] text-white/40 tracking-wider">
-            <span>ENGINEERING NOTE</span>
+            <span>{t.blog.modalNoteLabel}</span>
             <span>•</span>
             <span className="text-white/60">{post.date}</span>
             <span>•</span>
@@ -73,7 +72,7 @@ export default function BlogPostModal({
             className="flex items-center gap-1.5 font-mono text-xs text-white/50 hover:text-white border border-white/10 px-2.5 py-1 hover:border-white/40 transition-colors cursor-pointer"
           >
             <span>✕</span>
-            <span>CLOSE</span>
+            <span>{t.blog.modalClose}</span>
             <span className="text-[10px] text-white/30 hidden sm:inline">[ESC]</span>
           </button>
         </div>
@@ -140,7 +139,7 @@ export default function BlogPostModal({
           <footer className="mt-12 pt-8 border-t border-white/10 space-y-6">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs text-white/40 tracking-wider uppercase">
-                OTHER ENGINEERING NOTES
+                {t.blog.modalOtherNotes}
               </span>
               <button
                 onClick={onClose}
@@ -164,7 +163,7 @@ export default function BlogPostModal({
                     {op.title}
                   </h3>
                   <span className="font-mono text-[10px] text-white/50 group-hover:text-white transition-colors">
-                    READ IN MODAL →
+                    {t.blog.modalReadInModal}
                   </span>
                 </div>
               ))}
@@ -175,3 +174,4 @@ export default function BlogPostModal({
     </div>
   )
 }
+
