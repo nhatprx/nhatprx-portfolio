@@ -340,3 +340,4 @@ export default function BitexcoTower({ scale = 1 }: BitexcoTowerProps) {
     </group>
   )
 }
+
