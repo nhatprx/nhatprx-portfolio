@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import Ec2Terminal from './components/Ec2Terminal'
+import ServerTelemetry from './components/ServerTelemetry'
 import { TRANSLATIONS, type SupportedLang } from './data/translations'
 import BlogPostModal from './components/BlogPostModal'
 import CustomCursor from './components/CustomCursor'
@@ -607,7 +608,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Terminal */}
+            {/* Terminal & Live Server Telemetry (7/3 Split) */}
             <div id="terminal" className="w-full flex flex-col justify-center">
               <div className="flex items-center justify-between gap-4 mb-2.5">
                 <p className="font-mono text-[10px] tracking-[0.4em] text-emerald-400/90 flex items-center gap-2">
@@ -618,8 +619,13 @@ export default function App() {
                   LIVE CLOUD NODE // AP-SOUTHEAST-1
                 </span>
               </div>
-              <div className="h-[480px] sm:h-[540px] lg:h-[620px] xl:h-[680px] 2xl:h-[720px] w-full">
-                <Ec2Terminal />
+              <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 sm:gap-5 h-auto lg:h-[620px] xl:h-[680px] 2xl:h-[720px] w-full">
+                <div className="lg:col-span-7 h-[440px] sm:h-[500px] lg:h-full min-h-0">
+                  <Ec2Terminal />
+                </div>
+                <div className="lg:col-span-3 h-[380px] sm:h-[440px] lg:h-full min-h-0">
+                  <ServerTelemetry />
+                </div>
               </div>
             </div>
           </div>
