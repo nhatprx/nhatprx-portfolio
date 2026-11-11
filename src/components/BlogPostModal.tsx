@@ -49,32 +49,21 @@ export default function BlogPostModal({
         className="w-full max-w-3xl max-h-[82vh] bg-black/95 border border-white/25 flex flex-col shadow-[0_25px_70px_rgba(0,0,0,0.9)] overflow-hidden text-left font-sans animate-modal-pop"
       >
         {/* Window Chrome Title Bar */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-white/15 bg-white/[0.04] shrink-0">
-          <div className="flex items-center gap-3">
-            {/* Window control dots */}
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={onClose}
-                aria-label="Close window"
-                className="w-2.5 h-2.5 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors cursor-pointer"
-              />
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500/70" />
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />
-            </div>
-
+        <div className="flex items-center justify-between px-6 py-3.5 border-b border-white/10 bg-white/[0.03] shrink-0">
+          <div className="flex items-center gap-2">
             <span className="font-mono text-[11px] text-white/50 tracking-wider truncate max-w-[220px] sm:max-w-md">
               note://{post.slug}.md
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <span className="font-mono text-[10px] text-white/40 hidden sm:inline">
               {post.date} · {post.readTime}
             </span>
             <button
               onClick={onClose}
               aria-label="Close dialog"
-              className="flex items-center gap-1.5 font-mono text-xs text-white/70 hover:text-white border border-white/15 px-2.5 py-0.5 hover:border-white/40 transition-colors cursor-pointer bg-white/[0.02]"
+              className="flex items-center gap-1.5 font-mono text-xs text-white/70 hover:text-white border border-white/15 px-3 py-1 hover:border-white/40 transition-colors cursor-pointer bg-white/[0.02]"
             >
               <span>✕</span>
               <span>{t.blog.modalClose}</span>
@@ -86,7 +75,7 @@ export default function BlogPostModal({
         {/* Modal Scrollable Article Content */}
         <div
           ref={contentRef}
-          className="flex-1 overflow-y-auto p-6 sm:p-10 space-y-8 select-text font-sans"
+          className="flex-1 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-6 sm:p-10 space-y-8 select-text font-sans"
         >
           {/* Post Header */}
           <header className="border-b border-white/10 pb-6">
