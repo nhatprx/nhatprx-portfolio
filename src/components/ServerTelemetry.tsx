@@ -6,29 +6,12 @@ interface ServiceStatus {
   latency: string
 }
 
-interface LogEntry {
-  id: number
-  time: string
-  method: string
-  path: string
-  status: number
-  duration: string
-}
-
 const INITIAL_SERVICES: ServiceStatus[] = [
   { name: 'nginx-proxy', status: 'UP', latency: '1.1ms' },
   { name: 'go-backend', status: 'UP', latency: '4.8ms' },
   { name: 'redis-cache', status: 'UP', latency: '0.6ms' },
   { name: 'postgres-pool', status: 'SYNC', latency: '8.2ms' },
-]
-
-const SAMPLE_ENDPOINTS = [
-  { method: 'GET', path: '/api/v1/health', status: 200 },
-  { method: 'GET', path: '/v1/telemetry/stream', status: 101 },
-  { method: 'POST', path: '/api/v1/auth/verify', status: 200 },
-  { method: 'GET', path: '/metrics/prometheus', status: 200 },
-  { method: 'GET', path: '/api/v1/projects', status: 304 },
-  { method: 'HEAD', path: '/ping', status: 200 },
+  { name: 'docker-daemon', status: 'UP', latency: '0.4ms' },
 ]
 
 export default function ServerTelemetry() {
@@ -37,12 +20,6 @@ export default function ServerTelemetry() {
   const [uptimeSeconds, setUptimeSeconds] = useState(418320)
   const [netRx, setNetRx] = useState(1420)
   const [netTx, setNetTx] = useState(680)
-  const [logs, setLogs] = useState<LogEntry[]>([
-    { id: 1, time: '06:12:44', method: 'GET', path: '/v1/telemetry/stream', status: 101, duration: '0.8ms' },
-    { id: 2, time: '06:13:02', method: 'GET', path: '/api/v1/projects', status: 200, duration: '2.1ms' },
-    { id: 3, time: '06:13:28', method: 'POST', path: '/api/v1/auth/verify', status: 200, duration: '4.5ms' },
-    { id: 4, time: '06:13:51', method: 'GET', path: '/metrics/prometheus', status: 200, duration: '1.4ms' },
-  ])
 
   // Ticking metrics and fluctuating telemetry
   useEffect(() => {
@@ -74,30 +51,6 @@ export default function ServerTelemetry() {
     return () => clearInterval(timer)
   }, [])
 
-  // Influx of live request stream logs
-  useEffect(() => {
-    const logTimer = setInterval(() => {
-      const now = new Date()
-      const timeStr = now.toTimeString().split(' ')[0]
-      const sample = SAMPLE_ENDPOINTS[Math.floor(Math.random() * SAMPLE_ENDPOINTS.length)]
-      const duration = (Math.random() * 3 + 0.6).toFixed(1) + 'ms'
-
-      setLogs((prev) => [
-        {
-          id: Date.now(),
-          time: timeStr,
-          method: sample.method,
-          path: sample.path,
-          status: sample.status,
-          duration,
-        },
-        ...prev.slice(0, 5),
-      ])
-    }, 3800)
-
-    return () => clearInterval(logTimer)
-  }, [])
-
   const formatUptime = (totalSecs: number) => {
     const days = Math.floor(totalSecs / 86400)
     const hours = Math.floor((totalSecs % 86400) / 3600)
@@ -124,7 +77,7 @@ export default function ServerTelemetry() {
       </div>
 
       {/* Main Telemetry Body */}
-      <div className="flex-1 p-3.5 sm:p-4 overflow-y-auto space-y-3.5 text-xs leading-relaxed scrollbar-none">
+      <div className="flex-1 p-4 sm:p-5 overflow-y-auto space-y-4 text-xs leading-relaxed scrollbar-none flex flex-col justify-between">
         {/* Metric 1: CPU Load */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
@@ -162,15 +115,15 @@ export default function ServerTelemetry() {
         </div>
 
         {/* Metric 3: Network Throughput */}
-        <div className="grid grid-cols-2 gap-2.5 pt-1 border-t border-white/10">
-          <div className="p-2.5 border border-white/10 bg-white/[0.02]">
+        <div className="grid grid-cols-2 gap-3 pt-1 border-t border-white/10">
+          <div className="p-3 border border-white/10 bg-white/[0.02]">
             <span className="text-[10px] text-white/50 block font-medium tracking-wider">NET RX (IN)</span>
             <span className="text-sm text-emerald-400 font-bold block mt-0.5">
               {(netRx / 1024).toFixed(2)} MB/s
             </span>
             <span className="text-[10px] text-white/40 block mt-0.5">14.8k pkts/s</span>
           </div>
-          <div className="p-2.5 border border-white/10 bg-white/[0.02]">
+          <div className="p-3 border border-white/10 bg-white/[0.02]">
             <span className="text-[10px] text-white/50 block font-medium tracking-wider">NET TX (OUT)</span>
             <span className="text-sm text-white/90 font-bold block mt-0.5">
               {(netTx / 1024).toFixed(2)} MB/s
@@ -179,7 +132,7 @@ export default function ServerTelemetry() {
           </div>
         </div>
 
-        {/* Metric 4: Microservices Health */}
+        {/* Metric 4: Microservices Health (Service Daemons) */}
         <div className="space-y-2 pt-1 border-t border-white/10">
           <span className="text-xs text-white/60 uppercase tracking-wider font-medium block">
             SERVICE DAEMONS
@@ -188,7 +141,7 @@ export default function ServerTelemetry() {
             {INITIAL_SERVICES.map((srv) => (
               <div
                 key={srv.name}
-                className="flex items-center justify-between py-1 px-2.5 bg-white/[0.02] border border-white/5"
+                className="flex items-center justify-between py-1.5 px-3 bg-white/[0.02] border border-white/5"
               >
                 <div className="flex items-center gap-2">
                   <span
@@ -212,52 +165,13 @@ export default function ServerTelemetry() {
             ))}
           </div>
         </div>
-
-        {/* Metric 5: Live Inbound Traffic Stream */}
-        <div className="space-y-2 pt-1 border-t border-white/10">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-white/60 uppercase tracking-wider font-medium">
-              REAL-TIME TRAFFIC
-            </span>
-            <span className="text-[11px] text-emerald-400 font-semibold font-mono">LIVE FEED</span>
-          </div>
-          <div className="space-y-1.5 font-mono text-xs">
-            {logs.slice(0, 4).map((entry) => (
-              <div
-                key={entry.id}
-                className="flex items-center justify-between text-white/60 hover:text-white transition-colors py-1 border-b border-white/[0.04]"
-              >
-                <div className="flex items-center gap-2 truncate pr-2">
-                  <span className="text-white/40 text-[11px]">{entry.time}</span>
-                  <span className="text-emerald-400 font-bold">{entry.method}</span>
-                  <span className="truncate text-white/85">{entry.path}</span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0 text-[11px]">
-                  <span
-                    className={`font-semibold ${
-                      entry.status === 200
-                        ? 'text-emerald-400'
-                        : entry.status === 101
-                        ? 'text-cyan-400'
-                        : 'text-amber-400'
-                    }`}
-                  >
-                    {entry.status}
-                  </span>
-                  <span className="text-white/40">{entry.duration}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* Footer Status Bar */}
-      <div className="px-4 py-2 bg-white/[0.02] border-t border-white/10 flex items-center justify-between text-xs text-white/50 shrink-0">
+      <div className="px-4 py-2.5 bg-white/[0.02] border-t border-white/10 flex items-center justify-between text-xs text-white/50 shrink-0">
         <span>UP: {formatUptime(uptimeSeconds)}</span>
         <span className="text-emerald-400 font-bold">100% HEALTH</span>
       </div>
     </div>
   )
 }
-
