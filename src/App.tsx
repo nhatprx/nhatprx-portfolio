@@ -247,6 +247,8 @@ export default function App() {
   const [activeExp, setActiveExp] = useState(0)
   const [windowWidth, setWindowWidth] = useState(() => (typeof window !== 'undefined' ? window.innerWidth : 1000))
   const [touchStartX, setTouchStartX] = useState<number | null>(null)
+  const horizontalTrackRef = useRef<HTMLDivElement>(null)
+  const [, setHorizontalProgress] = useState(0)
 
   const [lang, setLang] = useState<SupportedLang>(() => {
     const saved = localStorage.getItem('nhatprx_lang') as SupportedLang
@@ -305,6 +307,27 @@ export default function App() {
   }, [])
 
   const scrollTo = (target: string | number) => {
+    if (typeof target === 'string' && ['#about', '#experience', '#projects', '#skills'].includes(target)) {
+      if (horizontalTrackRef.current) {
+        const rect = horizontalTrackRef.current.getBoundingClientRect()
+        const trackTop = window.scrollY + rect.top
+        const total = horizontalTrackRef.current.offsetHeight - window.innerHeight
+        const stepMap: Record<string, number> = {
+          '#about': 0,
+          '#experience': 1 / 3,
+          '#projects': 2 / 3,
+          '#skills': 1,
+        }
+        const targetY = trackTop + (stepMap[target] ?? 0) * total
+        if (lenisRef.current) {
+          lenisRef.current.scrollTo(targetY, { duration: 1.1 })
+        } else {
+          window.scrollTo({ top: targetY, behavior: 'smooth' })
+        }
+        return
+      }
+    }
+
     if (lenisRef.current) {
       lenisRef.current.scrollTo(target, { duration: 1.1 })
     } else {
@@ -315,6 +338,22 @@ export default function App() {
       }
     }
   }
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!horizontalTrackRef.current) return
+      const rect = horizontalTrackRef.current.getBoundingClientRect()
+      const total = horizontalTrackRef.current.offsetHeight - window.innerHeight
+      if (total <= 0) return
+      const current = -rect.top
+      const p = Math.max(0, Math.min(1, current / total))
+      setHorizontalProgress(p)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth)
@@ -525,8 +564,8 @@ export default function App() {
                         key={opt.code}
                         onClick={() => handleLangChange(opt.code)}
                         className={`w-full text-left px-3.5 py-2 text-xs font-mono flex items-center justify-between hover:bg-white/10 transition-colors cursor-pointer ${lang === opt.code
-                            ? 'text-white bg-white/10 font-semibold'
-                            : 'text-white/60'
+                          ? 'text-white bg-white/10 font-semibold'
+                          : 'text-white/60'
                           }`}
                       >
                         <span className="flex items-center gap-2">
@@ -566,47 +605,50 @@ export default function App() {
       </header>
 
       <main className="relative z-10 pt-24">
-        {/* ========== HERO & TERMINAL LAB (COMBINED 3/7 RATIO) ========== */}
-        <section id="hero" className="min-h-[calc(100vh-6rem)] flex items-center px-6 sm:px-10 lg:px-14 py-4 sm:py-6">
-          <div className="w-full grid grid-cols-1 lg:grid-cols-10 gap-8 lg:gap-12 items-center">
-            {/* Left Column: Hero Content (3 / 10 = 30%) */}
-            <div className="lg:col-span-3 text-left flex flex-col justify-center">
-              <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-3">{t.hero.role}</p>
-              <h1 className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-bold tracking-tight leading-[0.95]">
-                Minh Nhat
-                <br />
-                <span className="text-white/20">Pham.</span>
-              </h1>
-              <p className="mt-4 text-xs sm:text-sm text-white/50 leading-relaxed max-w-md">
-                {t.hero.desc}
-              </p>
+        {/* ========== HERO & TERMINAL (STACKED: HERO CONTENT ON TOP OF TERMINAL) ========== */}
+        <section id="hero" className="min-h-screen flex flex-col justify-center px-6 sm:p-10 lg:p-14 py-8 sm:py-12">
+          <div className="w-full flex flex-col space-y-6 sm:space-y-8 my-auto">
+            {/* Top: Hero Content */}
+            <div className="w-full text-left">
+              <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 uppercase mb-2">{t.hero.role}</p>
+              
+              <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+                <div>
+                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[0.95]">
+                    Minh Nhat <span className="text-white/20">Pham.</span>
+                  </h1>
+                  <p className="mt-3 text-sm text-white/50 leading-relaxed max-w-2xl">
+                    {t.hero.desc}
+                  </p>
+                </div>
 
-              <div className="mt-6 flex flex-wrap items-center gap-3">
-                <a
-                  href="#contact"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    scrollTo('#contact')
-                  }}
-                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors cursor-pointer"
-                >
-                  {t.hero.getInTouch}
-                  <span aria-hidden="true">→</span>
-                </a>
-                <a
-                  href={t.hero.resumeUrl || '/%5Bnhatprx%5D%20PERSONAL%20RESUME.pdf'}
-                  download={t.hero.resumeFileName || '[nhatprx] PERSONAL RESUME.pdf'}
-                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-white/20 text-white font-mono text-xs font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-colors"
-                >
-                  <DownloadIcon className="w-3.5 h-3.5 text-white/60" />
-                  {t.hero.resume}
-                </a>
+                <div className="flex flex-wrap items-center gap-3 shrink-0">
+                  <a
+                    href="#contact"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      scrollTo('#contact')
+                    }}
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors cursor-pointer"
+                  >
+                    {t.hero.getInTouch}
+                    <span aria-hidden="true">→</span>
+                  </a>
+                  <a
+                    href={t.hero.resumeUrl || '/%5Bnhatprx%5D%20PERSONAL%20RESUME.pdf'}
+                    download={t.hero.resumeFileName || '[nhatprx] PERSONAL RESUME.pdf'}
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-white/20 text-white font-mono text-xs font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-colors"
+                  >
+                    <DownloadIcon className="w-3.5 h-3.5 text-white/60" />
+                    {t.hero.resume}
+                  </a>
+                </div>
               </div>
             </div>
 
-            {/* Right Column: Terminal (7 / 10 = 70%) */}
-            <div id="terminal" className="lg:col-span-7 w-full flex flex-col justify-center">
-              <div className="flex items-center justify-between gap-4 mb-2.5">
+            {/* Bottom: Terminal */}
+            <div id="terminal" className="w-full flex flex-col">
+              <div className="flex items-center justify-between gap-4 mb-2">
                 <p className="font-mono text-[10px] tracking-[0.4em] text-emerald-400/90 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block shrink-0" />
                   {t.server.tag}
@@ -615,7 +657,7 @@ export default function App() {
                   LIVE CLOUD NODE // AP-SOUTHEAST-1
                 </span>
               </div>
-              <div className="h-[400px] sm:h-[450px] lg:h-[480px] w-full">
+              <div className="h-[420px] sm:h-[460px] lg:h-[480px] w-full">
                 <Ec2Terminal />
               </div>
             </div>
@@ -734,11 +776,10 @@ export default function App() {
                       key={idx}
                       type="button"
                       onClick={() => jumpToChapter(idx)}
-                      className={`font-mono text-[10px] tracking-wider px-3 py-1.5 border transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
-                        realIndex === idx
+                      className={`font-mono text-[10px] tracking-wider px-3 py-1.5 border transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${realIndex === idx
                           ? 'border-white bg-white text-black font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)]'
                           : 'border-white/10 text-white/40 hover:text-white/70 hover:border-white/30 bg-white/[0.02]'
-                      }`}
+                        }`}
                     >
                       <span>0{idx + 1}</span>
                       <span className="opacity-40">|</span>
@@ -793,24 +834,21 @@ export default function App() {
                           pointerEvents: Math.abs(offset) > 1 ? 'none' : 'auto',
                           transition: 'transform 500ms cubic-bezier(0.16, 1, 0.3, 1), opacity 500ms ease',
                         }}
-                        className={`absolute top-0 bottom-0 select-none ${
-                          Math.abs(offset) === 1 ? 'cursor-pointer hover:opacity-60' : ''
-                        }`}
+                        className={`absolute top-0 bottom-0 select-none ${Math.abs(offset) === 1 ? 'cursor-pointer hover:opacity-60' : ''
+                          }`}
                       >
                         <article
-                          className={`h-full flex flex-col justify-between p-6 sm:p-8 border transition-all duration-300 ${
-                            isCenter
+                          className={`h-full flex flex-col justify-between p-6 sm:p-8 border transition-all duration-300 ${isCenter
                               ? 'border-white/30 bg-white/[0.04] shadow-[0_0_50px_rgba(255,255,255,0.06)]'
                               : 'border-white/10 bg-white/[0.01]'
-                          }`}
+                            }`}
                         >
                           <div>
                             <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-white/10">
                               <div className="flex items-center gap-2">
                                 <span
-                                  className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                                    isCenter ? 'bg-emerald-400 animate-pulse' : 'bg-white/20'
-                                  }`}
+                                  className={`w-1.5 h-1.5 rounded-full transition-colors ${isCenter ? 'bg-emerald-400 animate-pulse' : 'bg-white/20'
+                                    }`}
                                 />
                                 <span className="font-mono text-[10px] tracking-[0.25em] text-white/50 uppercase">
                                   CHAPTER 0{itemIndex + 1} // STORY
