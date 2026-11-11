@@ -291,15 +291,18 @@ export default function App() {
         {/* ========== LIVE CLOUD LAB ========== */}
         <section id="terminal" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
           <div className="w-full max-w-2xl mx-auto text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">LIVE ENVIRONMENT</p>
+            <p className="font-mono text-[10px] tracking-[0.4em] text-emerald-400/90 mb-4 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-emerald-400 animate-pulse" />
+              LIVE TELEMETRY
+            </p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-              Production Server
+              This is the real server.
               <br />
-              <span className="text-white/30">live sandbox.</span>
+              <span className="text-white/30">Try it out.</span>
             </h2>
-            <p className="text-sm text-white/50 leading-relaxed mb-6">
-              An interactive guest inspection shell running on Linux (Ubuntu 24.04 LTS).
-              Inspect running Docker containers, process memory, kernel metrics, or query system health.
+            <p className="text-sm text-white/60 leading-relaxed mb-6">
+              Yes, you are inspecting the actual live Linux machine hosting this portfolio.
+              Run <code className="px-1.5 py-0.5 border border-white/10 text-white font-mono text-xs bg-white/5">docker ps</code>, <code className="px-1.5 py-0.5 border border-white/10 text-white font-mono text-xs bg-white/5">top</code>, or <code className="px-1.5 py-0.5 border border-white/10 text-white font-mono text-xs bg-white/5">uname -a</code> to see running containers, memory usage, and kernel telemetry in real time.
             </p>
 
             <div className="h-[480px] w-full">
