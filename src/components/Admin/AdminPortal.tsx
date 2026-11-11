@@ -131,9 +131,6 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
                 className="w-full bg-white/[0.04] border border-white/20 px-3.5 py-2.5 text-xs text-white placeholder-white/20 focus:border-white focus:outline-none transition-colors"
               />
               {loginError && <p className="text-red-400 text-[11px] mt-2 font-mono">{loginError}</p>}
-              <p className="text-[10px] text-white/30 mt-2 font-mono">
-                Default: <code className="text-white/60">admin2026</code> (configurable in Security tab)
-              </p>
             </div>
 
             <div className="pt-2 flex items-center justify-between gap-3">
