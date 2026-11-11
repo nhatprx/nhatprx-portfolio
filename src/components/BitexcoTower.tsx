@@ -4,13 +4,13 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js'
 import { Center } from '@react-three/drei'
 import * as THREE from 'three'
 
-export type TowerMaterialMode = 'dark' | 'white' | 'wireframe'
+export type TowerMaterialMode = 'cyan' | 'dark' | 'white' | 'wireframe'
 
 interface BitexcoTowerProps {
   mode?: TowerMaterialMode
 }
 
-export default function BitexcoTower({ mode = 'dark' }: BitexcoTowerProps) {
+export default function BitexcoTower({ mode = 'cyan' }: BitexcoTowerProps) {
   const rawGeometry = useLoader(STLLoader, '/bitexco.stl')
 
   // Smooth vertex normals & architectural edges
@@ -41,7 +41,18 @@ export default function BitexcoTower({ mode = 'dark' }: BitexcoTowerProps) {
       <group rotation={[0, angleY, 0]}>
         <group rotation={[-Math.PI / 2, 0, 0]}>
           <mesh geometry={geometry} scale={0.088} castShadow receiveShadow>
-            {mode === 'dark' ? (
+            {mode === 'cyan' ? (
+              <meshPhysicalMaterial
+                color="#0284c7"
+                emissive="#0369a1"
+                emissiveIntensity={0.2}
+                roughness={0.08}
+                metalness={0.92}
+                clearcoat={1.0}
+                clearcoatRoughness={0.05}
+                reflectivity={1.0}
+              />
+            ) : mode === 'dark' ? (
               <meshPhysicalMaterial
                 color="#0c0c0c"
                 emissive="#000000"
@@ -58,11 +69,17 @@ export default function BitexcoTower({ mode = 'dark' }: BitexcoTowerProps) {
                 metalness={0.12}
               />
             ) : (
-              <meshBasicMaterial color="#ffffff" wireframe />
+              <meshBasicMaterial color="#38bdf8" wireframe />
             )}
           </mesh>
 
-          {/* Subtle white contour lines in dark mode */}
+          {/* Architectural contour lines */}
+          {mode === 'cyan' && (
+            <lineSegments geometry={edgesGeo} scale={0.088}>
+              <lineBasicMaterial color="#7dd3fc" transparent opacity={0.35} />
+            </lineSegments>
+          )}
+
           {mode === 'dark' && (
             <lineSegments geometry={edgesGeo} scale={0.088}>
               <lineBasicMaterial color="#ffffff" transparent opacity={0.2} />
