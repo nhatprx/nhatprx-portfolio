@@ -348,7 +348,15 @@ export default function App() {
     const handleScroll = () => {
       const scrollY = window.scrollY
       setShowTopBtn(scrollY > 400)
-      setIsNavVertical(scrollY > 180)
+
+      // Switch to vertical when and only when the user scrolls to section about
+      const aboutEl = document.getElementById('about')
+      if (aboutEl) {
+        const rect = aboutEl.getBoundingClientRect()
+        setIsNavVertical(rect.top <= 100)
+      } else {
+        setIsNavVertical(false)
+      }
 
       const scrollPos = scrollY + window.innerHeight * 0.35
       for (const sec of sections) {

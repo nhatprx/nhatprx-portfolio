@@ -37,9 +37,11 @@ export default function Ec2Terminal() {
   const [inputVal, setInputVal] = useState('')
   const [cmdHistory, setCmdHistory] = useState<string[]>([])
   const [historyIndex, setHistoryIndex] = useState<number>(-1)
+  const terminalRootRef = useRef<HTMLDivElement>(null)
   const outputContainerRef = useRef<HTMLDivElement>(null)
   const isInitialMount = useRef(true)
   const inputRef = useRef<HTMLInputElement>(null)
+  const [isScrollable, setIsScrollable] = useState(false)
 
   useEffect(() => {
     if (isInitialMount.current) {
@@ -50,6 +52,61 @@ export default function Ec2Terminal() {
       outputContainerRef.current.scrollTop = outputContainerRef.current.scrollHeight
     }
   }, [history])
+
+  // Monitor whether terminal output is overflowing and scrollable
+  useEffect(() => {
+    const el = outputContainerRef.current
+    const root = terminalRootRef.current
+    if (!el || !root) return
+
+    const checkScrollable = () => {
+      const scrollable = el.scrollHeight > el.clientHeight + 2
+      setIsScrollable(scrollable)
+      if (scrollable) {
+        root.setAttribute('data-lenis-prevent', 'true')
+      } else {
+        root.removeAttribute('data-lenis-prevent')
+      }
+    }
+
+    checkScrollable()
+
+    const observer = new ResizeObserver(checkScrollable)
+    observer.observe(el)
+    window.addEventListener('resize', checkScrollable)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', checkScrollable)
+    }
+  }, [history])
+
+  // When terminal is scrollable, intercept wheel events so site scroll (Lenis) doesn't hijack it
+  useEffect(() => {
+    const root = terminalRootRef.current
+    const output = outputContainerRef.current
+    if (!root || !output) return
+
+    const handleWheel = (e: WheelEvent) => {
+      const scrollable = output.scrollHeight > output.clientHeight + 2
+      if (!scrollable) {
+        root.removeAttribute('data-lenis-prevent')
+        return
+      }
+
+      root.setAttribute('data-lenis-prevent', 'true')
+
+      // If user wheels over terminal title bar, action buttons or status bar, route scroll to output
+      if (!output.contains(e.target as Node)) {
+        output.scrollTop += e.deltaY
+        e.preventDefault()
+      }
+    }
+
+    root.addEventListener('wheel', handleWheel, { passive: false })
+    return () => {
+      root.removeEventListener('wheel', handleWheel)
+    }
+  }, [])
 
   const executeCommand = (cmdStr: string) => {
     const raw = cmdStr.trim()
@@ -313,6 +370,21 @@ CGroup: /
 
   return (
     <div
+      ref={terminalRootRef}
+      data-lenis-prevent={isScrollable ? 'true' : undefined}
+      onMouseEnter={() => {
+        const el = outputContainerRef.current
+        const root = terminalRootRef.current
+        if (el && root) {
+          const scrollable = el.scrollHeight > el.clientHeight + 2
+          setIsScrollable(scrollable)
+          if (scrollable) {
+            root.setAttribute('data-lenis-prevent', 'true')
+          } else {
+            root.removeAttribute('data-lenis-prevent')
+          }
+        }
+      }}
       onClick={() => inputRef.current?.focus()}
       className="w-full h-full flex flex-col justify-between bg-black/90 border border-white/15 rounded-none shadow-2xl backdrop-blur-md overflow-hidden text-left font-mono select-none"
     >
@@ -351,7 +423,8 @@ CGroup: /
       {/* Terminal Scrollable Output Area */}
       <div
         ref={outputContainerRef}
-        className="flex-1 p-4 overflow-y-auto space-y-1.5 text-xs leading-relaxed select-text font-mono"
+        data-lenis-prevent={isScrollable ? 'true' : undefined}
+        className="flex-1 p-4 overflow-y-auto overscroll-contain terminal-scroll space-y-1.5 text-xs leading-relaxed select-text font-mono"
       >
         {history.map((entry, idx) => (
           <div key={idx} className="whitespace-pre-wrap break-all">

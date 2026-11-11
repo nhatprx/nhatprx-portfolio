@@ -50,6 +50,23 @@ body {
   background: rgba(255, 255, 255, 0.4) !important;
 }
 
+/* Slim scrollbar for Terminal */
+.terminal-scroll {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent !important;
+}
+.terminal-scroll::-webkit-scrollbar {
+  width: 5px !important;
+  display: block !important;
+}
+.terminal-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 2px !important;
+}
+.terminal-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4) !important;
+}
+
 /* Animated Faint Grey Square Grid Background */
 .bg-grid-animated {
   background-size: 48px 48px;
