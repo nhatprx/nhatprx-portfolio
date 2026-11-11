@@ -8,11 +8,11 @@ interface HistoryEntry {
 const INITIAL_GREETING: HistoryEntry[] = [
   {
     type: 'system',
-    text: 'Welcome to Ubuntu 24.04.1 LTS (GNU/Linux 6.8.0-1018-aws x86_64)',
+    text: 'Welcome to Ubuntu 24.04.1 LTS (GNU/Linux 6.8.0-1018-generic x86_64)',
   },
   {
     type: 'system',
-    text: ' * Documentation:  https://help.ubuntu.com\n * Management:     AWS EC2 Console (ap-southeast-1 · Singapore)\n * System Load:    0.14, 0.08, 0.05 | Memory: 38% of 2.0GiB\n * Security:       Read-only inspection shell active (Guest)',
+    text: ' * Documentation:  https://help.ubuntu.com\n * Management:     Cloud Node Console (ap-southeast-1)\n * System Load:    0.14, 0.08, 0.05 | Memory: 38% of 2.0GiB\n * Security:       Read-only inspection shell active (Guest)',
   },
   {
     type: 'system',
@@ -54,13 +54,13 @@ export default function Ec2Terminal() {
     const cmd = tokens[0].toLowerCase()
     const arg = tokens[1]?.toLowerCase()
 
-    const newEntries: HistoryEntry[] = [{ type: 'input', text: `ubuntu@ec2-nhatprx:~$ ${raw}` }]
+    const newEntries: HistoryEntry[] = [{ type: 'input', text: `ubuntu@nhatprx-server:~$ ${raw}` }]
 
     switch (cmd) {
       case 'help':
         newEntries.push({
           type: 'output',
-          text: `AWS EC2 Guest Terminal — Available Read-Only Commands:
+          text: `Production Node Guest Terminal — Available Read-Only Commands:
   • uname -a           - Print Linux kernel & AWS architecture
   • docker ps          - List running production containers
   • top / htop         - Inspect CPU, memory & process table
@@ -302,13 +302,13 @@ CGroup: /
       <div className="flex items-center justify-between px-4 py-2.5 bg-white/[0.03] border-b border-white/10 shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-xs text-white/70 font-semibold tracking-wide">
-            ubuntu@ip-172-31-42-18:~ (AWS EC2)
+            ubuntu@nhatprx-server:~
           </span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-1.5 bg-emerald-400 animate-pulse" />
           <span className="text-[10px] text-emerald-400/80 tracking-widest uppercase">
-            ap-southeast-1 · t3.micro
+            ap-southeast-1 · linux-x86_64
           </span>
         </div>
       </div>
@@ -351,7 +351,7 @@ CGroup: /
 
         {/* Live Input Line */}
         <div className="flex items-center gap-2 pt-1">
-          <span className="text-emerald-400 font-semibold shrink-0">ubuntu@ec2-nhatprx:~$</span>
+          <span className="text-emerald-400 font-semibold shrink-0">ubuntu@nhatprx-server:~$</span>
           <input
             ref={inputRef}
             type="text"

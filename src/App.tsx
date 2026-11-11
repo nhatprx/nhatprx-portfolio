@@ -293,12 +293,12 @@ export default function App() {
           <div className="w-full max-w-2xl mx-auto text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">LIVE ENVIRONMENT</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-              AWS EC2
+              Production Server
               <br />
               <span className="text-white/30">live sandbox.</span>
             </h2>
             <p className="text-sm text-white/50 leading-relaxed mb-6">
-              An interactive guest inspection shell running on AWS (Ubuntu 24.04 LTS · ap-southeast-1).
+              An interactive guest inspection shell running on Linux (Ubuntu 24.04 LTS).
               Inspect running Docker containers, process memory, kernel metrics, or query system health.
             </p>
 
