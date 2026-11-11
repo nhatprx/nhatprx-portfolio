@@ -1,4 +1,4 @@
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
@@ -143,6 +143,15 @@ export default function BitexcoTower({ scale = 1 }: BitexcoTowerProps) {
 
     return { towerGeo: tGeo, capGeo: cGeo, floorLinesGeo: fGeo }
   }, [])
+
+  // Clean up geometry memory on unmount (Ponytail Three.js performance guideline)
+  useEffect(() => {
+    return () => {
+      towerGeo.dispose()
+      capGeo.dispose()
+      floorLinesGeo.dispose()
+    }
+  }, [towerGeo, capGeo, floorLinesGeo])
 
   // Helipad Lights Array
   const helipadLights = useMemo(() => {
