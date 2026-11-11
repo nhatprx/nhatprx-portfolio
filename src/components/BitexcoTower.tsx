@@ -554,41 +554,6 @@ export default function BitexcoTower({ scale = 1, mode = 'night' }: BitexcoTower
           <meshStandardMaterial color="#0284c7" metalness={0.9} roughness={0.2} />
         </mesh>
       </group>
-
-      {/* ============================================================ */}
-      {/* 10. SAIGON WATERFRONT REFLECTIVE PLAZA PLATFORM              */}
-      {/* ============================================================ */}
-      <group position={[0, 0, 0]}>
-        {/* Base Plaza Disc */}
-        <mesh position={[0, -0.06, 0]}>
-          <cylinderGeometry args={[2.2, 2.3, 0.12, 64]} />
-          <meshStandardMaterial
-            color={mode === 'night' ? '#020617' : '#e2e8f0'}
-            roughness={0.3}
-            metalness={0.7}
-          />
-        </mesh>
-
-        {/* Reflective Water / Plaza Concentric Accent Rings */}
-        <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[1.5, 1.56, 64]} />
-          <meshBasicMaterial
-            color={mode === 'night' ? '#06b6d4' : '#0284c7'}
-            transparent
-            opacity={mode === 'night' ? 0.7 : 0.4}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-        <mesh position={[0, 0.006, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[1.85, 1.9, 64]} />
-          <meshBasicMaterial
-            color={mode === 'night' ? '#a855f7' : '#94a3b8'}
-            transparent
-            opacity={mode === 'night' ? 0.5 : 0.3}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-      </group>
     </group>
   )
 }
