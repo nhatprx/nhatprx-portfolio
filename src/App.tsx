@@ -447,7 +447,7 @@ export default function App() {
         </section>
 
         {/* ========== LIVE CLOUD LAB ========== */}
-        <section id="terminal" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
+        <section id="terminal" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14">
           <div className="w-full max-w-2xl mx-auto text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-emerald-400/90 mb-4 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block shrink-0" />
@@ -469,7 +469,7 @@ export default function App() {
         </section>
 
         {/* ========== 01 - ABOUT ========== */}
-        <section id="about" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
+        <section id="about" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14">
           <div className="w-full max-w-2xl mx-auto text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.about.tag}</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
@@ -513,7 +513,7 @@ export default function App() {
         </section>
 
         {/* ========== 02 - EXPERIENCE ========== */}
-        <section id="experience" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
+        <section id="experience" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">
           <div className="w-full max-w-2xl mx-auto text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.experience.tag}</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
@@ -552,7 +552,7 @@ export default function App() {
         </section>
 
         {/* ========== 03 - PROJECTS ========== */}
-        <section id="projects" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
+        <section id="projects" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">
           <div className="w-full max-w-2xl mx-auto text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.projects.tag}</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
@@ -605,7 +605,7 @@ export default function App() {
         </section>
 
         {/* ========== 04 - SKILLS ========== */}
-        <section id="skills" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
+        <section id="skills" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">
           <div className="w-full max-w-2xl mx-auto text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.skills.tag}</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
@@ -637,7 +637,7 @@ export default function App() {
         </section>
 
         {/* ========== 05 - BLOG ========== */}
-        <section id="blog" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
+        <section id="blog" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">
           <div className="w-full max-w-2xl mx-auto text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.blog.tag}</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
@@ -681,7 +681,7 @@ export default function App() {
         </section>
 
         {/* ========== 06 - CONTACT ========== */}
-        <section id="contact" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
+        <section id="contact" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14">
           <div className="w-full max-w-2xl mx-auto text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.contact.tag}</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
@@ -698,7 +698,7 @@ export default function App() {
         </section>
 
         {/* ========== FOOTER ========== */}
-        <footer className="border-t border-white/5 py-8 p-6 sm:p-10 lg:p-14">
+        <footer className="py-8 p-6 sm:p-10 lg:p-14">
           <div className="w-full max-w-2xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono text-white/20">
             <span>&copy; {CURRENT_YEAR} Minh Nhat Pham. {t.footer.rights}</span>
             <span>{t.footer.edition}</span>
