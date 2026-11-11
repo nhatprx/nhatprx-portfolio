@@ -232,6 +232,7 @@ export default function App() {
           <span className="font-mono text-xs text-white/40">2026</span>
         </div>
         <nav className="hidden md:flex items-center gap-8 text-xs font-mono tracking-wider text-white/40">
+          <a href="#terminal" className="hover:text-white transition-colors">LIVE LAB</a>
           <a href="#about" className="hover:text-white transition-colors">ABOUT</a>
           <a href="#experience" className="hover:text-white transition-colors">EXPERIENCE</a>
           <a href="#projects" className="hover:text-white transition-colors">PROJECTS</a>
@@ -247,11 +248,6 @@ export default function App() {
           </a>
         </div>
       </header>
-
-      {/* Fixed Left Half: Live AWS EC2 Linux Terminal (Desktop only) */}
-      <aside aria-label="AWS EC2 Terminal" className="hidden lg:block fixed left-0 top-24 w-1/2 h-[calc(100vh-8rem)] p-6 lg:pl-14 lg:pr-8 z-30 pointer-events-auto">
-        <Ec2Terminal />
-      </aside>
 
       {/* Main Content Area: Split 50/50 Desktop Layout (Left empty, text on right) */}
       <main className="relative pt-24">
@@ -291,6 +287,29 @@ export default function App() {
                   <DownloadIcon className="w-3.5 h-3.5 text-white/60" />
                   RESUME
                 </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========== LIVE CLOUD LAB ========== */}
+        <section id="terminal" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14 border-t border-white/5">
+          <div className="grid grid-cols-1 lg:grid-cols-12 w-full">
+            <div className="hidden lg:block lg:col-span-6" />
+            <div className="lg:col-span-6 max-w-xl text-left lg:pl-8">
+              <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">LIVE ENVIRONMENT</p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+                AWS EC2
+                <br />
+                <span className="text-white/30">live sandbox.</span>
+              </h2>
+              <p className="text-sm text-white/50 leading-relaxed mb-6">
+                An interactive guest inspection shell running on AWS (Ubuntu 24.04 LTS · ap-southeast-1).
+                Inspect running Docker containers, process memory, kernel metrics, or query system health.
+              </p>
+
+              <div className="h-[480px] w-full">
+                <Ec2Terminal />
               </div>
             </div>
           </div>
