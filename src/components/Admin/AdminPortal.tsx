@@ -106,12 +106,6 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-xs font-bold tracking-widest text-white uppercase">AUTH://PORTAL</span>
             </div>
-            <button
-              onClick={onClose}
-              className="text-white/40 hover:text-white text-xs border border-white/10 px-2 py-0.5"
-            >
-              EXIT [ESC]
-            </button>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
