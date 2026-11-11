@@ -415,7 +415,7 @@ export default function App() {
 
       {/* Top Header */}
       <header className="fixed top-0 left-0 right-0 z-40 p-4 sm:p-6 lg:px-14 backdrop-blur-md bg-black/60 border-b border-white/5">
-        <div className="w-full max-w-5xl mx-auto flex items-center justify-between gap-4">
+        <div className="w-full flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={() => scrollTo(0)}
@@ -568,14 +568,14 @@ export default function App() {
       <main className="relative z-10 pt-24">
         {/* ========== HERO ========== */}
         <section className="min-h-screen flex items-center p-6 sm:p-10 lg:p-14">
-          <div className="w-full max-w-2xl mx-auto text-left my-auto">
+          <div className="w-full text-left my-auto">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-4">{t.hero.role}</p>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[0.95]">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight leading-[0.95]">
               Minh Nhat
               <br />
               <span className="text-white/20">Pham.</span>
             </h1>
-            <p className="mt-6 text-sm text-white/50 leading-relaxed max-w-md">
+            <p className="mt-6 text-sm sm:text-base text-white/50 leading-relaxed max-w-2xl">
               {t.hero.desc}
             </p>
 
@@ -605,7 +605,7 @@ export default function App() {
 
         {/* ========== LIVE CLOUD LAB ========== */}
         <section id="terminal" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14">
-          <div className="w-full max-w-2xl mx-auto text-left">
+          <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-emerald-400/90 mb-4 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block shrink-0" />
               {t.server.tag}
@@ -615,7 +615,7 @@ export default function App() {
               <br />
               <span className="text-white/30">{t.server.titleSub}</span>
             </h2>
-            <p className="text-sm text-white/60 leading-relaxed mb-6">
+            <p className="text-sm text-white/60 leading-relaxed mb-6 max-w-3xl">
               {t.server.desc}
             </p>
 
@@ -627,14 +627,14 @@ export default function App() {
 
         {/* ========== 01 - ABOUT ========== */}
         <section id="about" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14">
-          <div className="w-full max-w-2xl mx-auto text-left">
+          <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.about.tag}</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
               {t.about.title}
               <br />
               <span className="text-white/30">{t.about.titleSub}</span>
             </h2>
-            <div className="space-y-4 text-sm text-white/60 leading-relaxed">
+            <div className="space-y-4 text-sm text-white/60 leading-relaxed max-w-4xl">
               <p>{t.about.p1}</p>
               <p>{t.about.p2}</p>
             </div>
@@ -643,7 +643,7 @@ export default function App() {
               <h3 className="font-mono text-[10px] tracking-[0.25em] text-white/30 mb-4 uppercase">
                 {t.about.educationTitle}
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="border border-white/10 p-5">
                   <div className="text-lg font-bold">{t.about.edu1School}</div>
                   <div className="font-mono text-[10px] text-white/30 mt-1">{t.about.edu1Degree}</div>
@@ -688,8 +688,8 @@ export default function App() {
           }
 
           return (
-            <section id="experience" className="min-h-screen py-24 p-4 sm:p-6 lg:p-10 flex items-center justify-center overflow-hidden">
-              <div className="w-full max-w-5xl mx-auto text-left">
+            <section id="experience" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 flex items-center justify-center overflow-hidden">
+              <div className="w-full text-left">
                 {/* Header & Story progress indicator */}
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 px-2 sm:px-4">
                   <div>
@@ -859,7 +859,7 @@ export default function App() {
 
         {/* ========== 03 - PROJECTS ========== */}
         <section id="projects" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">
-          <div className="w-full max-w-2xl mx-auto text-left">
+          <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.projects.tag}</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
               {t.projects.title}
@@ -867,37 +867,39 @@ export default function App() {
               <span className="text-white/30">{t.projects.titleSub}</span>
             </h2>
 
-            <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {t.projects.items.map((proj, idx) => (
-                <article key={idx} className="border border-white/10 p-6 hover:border-white/30 transition-colors">
-                  <div className="flex items-baseline justify-between gap-4 mb-2">
-                    <h3 className="text-lg font-bold">{proj.title}</h3>
-                    <div className="flex items-center gap-3">
-                      {proj.repoUrl && (
-                        <a
-                          href={proj.repoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label="View source code on GitHub"
-                          title="View source on GitHub"
-                          className="text-white/40 hover:text-white transition-colors"
-                        >
-                          <GithubIcon className="w-4 h-4" />
-                        </a>
-                      )}
-                      <span className="font-mono text-[10px] text-white/30 shrink-0">{proj.period}</span>
+                <article key={idx} className="border border-white/10 p-6 hover:border-white/30 transition-colors flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-baseline justify-between gap-4 mb-2">
+                      <h3 className="text-lg font-bold">{proj.title}</h3>
+                      <div className="flex items-center gap-3">
+                        {proj.repoUrl && (
+                          <a
+                            href={proj.repoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="View source code on GitHub"
+                            title="View source on GitHub"
+                            className="text-white/40 hover:text-white transition-colors"
+                          >
+                            <GithubIcon className="w-4 h-4" />
+                          </a>
+                        )}
+                        <span className="font-mono text-[10px] text-white/30 shrink-0">{proj.period}</span>
+                      </div>
                     </div>
+                    <p className="text-xs font-mono text-white/30 mb-4">{proj.meta}</p>
+                    <p className="text-sm text-white/50 leading-relaxed mb-4">
+                      {proj.desc}
+                    </p>
+                    <ul className="space-y-2 text-sm text-white/40 mb-6">
+                      {proj.bullets.map((b, bIdx) => (
+                        <li key={bIdx}>• {b}</li>
+                      ))}
+                    </ul>
                   </div>
-                  <p className="text-xs font-mono text-white/30 mb-4">{proj.meta}</p>
-                  <p className="text-sm text-white/50 leading-relaxed mb-4">
-                    {proj.desc}
-                  </p>
-                  <ul className="space-y-2 text-sm text-white/40">
-                    {proj.bullets.map((b, bIdx) => (
-                      <li key={bIdx}>• {b}</li>
-                    ))}
-                  </ul>
-                  <div className="mt-4 flex flex-wrap gap-1.5">
+                  <div className="pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
                     {proj.tech.map((tech) => (
                       <span key={tech} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">
                         {tech}
@@ -912,7 +914,7 @@ export default function App() {
 
         {/* ========== 04 - SKILLS ========== */}
         <section id="skills" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">
-          <div className="w-full max-w-2xl mx-auto text-left">
+          <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.skills.tag}</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
               {t.skills.title}
@@ -923,10 +925,10 @@ export default function App() {
             <div className="divide-y divide-white/10 border-t border-b border-white/10">
               {t.skills.categories.map((group) => (
                 <div key={group.title} className="py-5 sm:grid sm:grid-cols-12 sm:gap-4 items-start">
-                  <h3 className="sm:col-span-4 font-mono text-[10px] tracking-[0.25em] text-white/30 mb-2 sm:mb-0 pt-2">
+                  <h3 className="sm:col-span-3 font-mono text-[10px] tracking-[0.25em] text-white/30 mb-2 sm:mb-0 pt-2">
                     {group.title}
                   </h3>
-                  <div className={`sm:col-span-8 ${group.gridClass}`}>
+                  <div className={`sm:col-span-9 ${group.gridClass}`}>
                     {group.skills.map((s) => (
                       <span
                         key={s}
@@ -944,7 +946,7 @@ export default function App() {
 
         {/* ========== 05 - BLOG ========== */}
         <section id="blog" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">
-          <div className="w-full max-w-2xl mx-auto text-left">
+          <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.blog.tag}</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
               {t.blog.title}
@@ -952,28 +954,30 @@ export default function App() {
               <span className="text-white/30">{t.blog.titleSub}</span>
             </h2>
 
-            <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {t.blog.posts.map((post) => (
                 <article
                   key={post.slug}
                   onClick={() => setSelectedPostSlug(post.slug)}
-                  className="border border-white/10 p-6 hover:border-white/30 transition-all cursor-pointer group bg-white/[0.01]"
+                  className="border border-white/10 p-6 hover:border-white/30 transition-all cursor-pointer group bg-white/[0.01] flex flex-col justify-between"
                 >
-                  <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
-                    <span className="font-mono text-[10px] text-white/40 tracking-wider">
-                      {post.date} · {post.readTime}
-                    </span>
-                    <span className="font-mono text-[10px] text-white/40 group-hover:text-white transition-colors">
-                      {t.blog.readNote}
-                    </span>
+                  <div>
+                    <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+                      <span className="font-mono text-[10px] text-white/40 tracking-wider">
+                        {post.date} · {post.readTime}
+                      </span>
+                      <span className="font-mono text-[10px] text-white/40 group-hover:text-white transition-colors">
+                        {t.blog.readNote}
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-bold tracking-tight mb-3 text-white group-hover:text-white/90">
+                      {post.title}
+                    </h3>
+                    <p className="text-sm text-white/50 leading-relaxed mb-4">
+                      {post.summary}
+                    </p>
                   </div>
-                  <h3 className="text-lg font-bold tracking-tight mb-3 text-white group-hover:text-white/90">
-                    {post.title}
-                  </h3>
-                  <p className="text-sm text-white/50 leading-relaxed mb-4">
-                    {post.summary}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
                     {post.tags.map((tag) => (
                       <span key={tag} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">
                         {tag}
@@ -988,24 +992,26 @@ export default function App() {
 
         {/* ========== 06 - CONTACT ========== */}
         <section id="contact" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14">
-          <div className="w-full max-w-2xl mx-auto text-left">
+          <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.contact.tag}</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
               {t.contact.title}
               <br />
               <span className="text-white/30">{t.contact.titleSub}</span>
             </h2>
-            <p className="text-sm text-white/50 leading-relaxed mb-10">
+            <p className="text-sm text-white/50 leading-relaxed mb-10 max-w-2xl">
               {t.contact.desc}
             </p>
 
-            <ContactForm t={t} />
+            <div className="max-w-2xl">
+              <ContactForm t={t} />
+            </div>
           </div>
         </section>
 
         {/* ========== FOOTER ========== */}
         <footer className="py-8 p-6 sm:p-10 lg:p-14">
-          <div className="w-full max-w-2xl mx-auto text-xs font-mono text-white/20">
+          <div className="w-full text-xs font-mono text-white/20">
             <span>&copy; {CURRENT_YEAR} Minh Nhat Pham. {t.footer.rights}</span>
           </div>
         </footer>
