@@ -596,9 +596,9 @@ export default function App() {
                   </a>
                 </div>
 
-                {/* Mobile-only Terminal & Telemetry (stacked inline when split fixed is not feasible) */}
+                {/* Mobile-only Terminal & Telemetry (terminal hidden on phone devices) */}
                 <div className="lg:hidden mt-8 mb-4 w-full space-y-3">
-                  <div className="h-[360px] w-full shadow-xl">
+                  <div className="hidden md:block h-[360px] w-full shadow-xl">
                     <Ec2Terminal />
                   </div>
 
@@ -636,7 +636,7 @@ export default function App() {
                 <h3 className="font-mono text-[10px] tracking-[0.25em] text-white/40 mb-2.5 sm:mb-3 uppercase">
                   {t.about.educationTitle}
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className={`grid grid-cols-1 ${t.about.edu2School?.trim() ? 'sm:grid-cols-2' : ''} gap-3`}>
                   <div className="border border-white/10 p-3 sm:p-3.5 bg-white/[0.015] hover:border-white/25 hover:bg-white/[0.03] transition-all flex flex-col justify-between">
                     <div className="flex items-center justify-between gap-2">
                       <div className="text-xs sm:text-sm font-bold text-white tracking-wide truncate">
@@ -658,26 +658,28 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="border border-white/10 p-3 sm:p-3.5 bg-white/[0.015] hover:border-white/25 hover:bg-white/[0.03] transition-all flex flex-col justify-between">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="text-xs sm:text-sm font-bold text-white tracking-wide truncate">
-                        {t.about.edu2School}
+                  {t.about.edu2School?.trim() && (
+                    <div className="border border-white/10 p-3 sm:p-3.5 bg-white/[0.015] hover:border-white/25 hover:bg-white/[0.03] transition-all flex flex-col justify-between">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="text-xs sm:text-sm font-bold text-white tracking-wide truncate">
+                          {t.about.edu2School}
+                        </div>
+                        <span className="font-mono text-[10px] text-white/35 shrink-0">
+                          {t.about.edu2Location || t.about.edu2Dates}
+                        </span>
                       </div>
-                      <span className="font-mono text-[10px] text-white/35 shrink-0">
-                        {t.about.edu2Location || t.about.edu2Dates}
-                      </span>
-                    </div>
 
-                    <div className="flex items-center gap-1.5 mt-2 font-mono text-[11px] min-w-0">
-                      <span className="text-emerald-400 font-semibold tracking-wider uppercase shrink-0 text-[10px]">
-                        {t.about.edu2Degree}
-                      </span>
-                      <span className="text-white/20 shrink-0" aria-hidden="true">/</span>
-                      <span className="text-white/50 truncate text-[10.5px]">
-                        {t.about.edu2Major}
-                      </span>
+                      <div className="flex items-center gap-1.5 mt-2 font-mono text-[11px] min-w-0">
+                        <span className="text-emerald-400 font-semibold tracking-wider uppercase shrink-0 text-[10px]">
+                          {t.about.edu2Degree}
+                        </span>
+                        <span className="text-white/20 shrink-0" aria-hidden="true">/</span>
+                        <span className="text-white/50 truncate text-[10.5px]">
+                          {t.about.edu2Major}
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
