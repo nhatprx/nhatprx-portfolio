@@ -1,23 +1,73 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { type LocalizedBlogPost, type TranslationDict } from '../data/translations'
 
 interface BlogPostModalProps {
   post: LocalizedBlogPost
   t: TranslationDict
   onClose: () => void
-  onSelectPost: (slug: string) => void
-  allPosts: LocalizedBlogPost[]
+  onSelectPost?: (slug: string) => void
+  allPosts?: LocalizedBlogPost[]
+}
+
+// GitHub Dark Theme Syntax Highlighter
+function highlightCodeLine(line: string): ReactNode {
+  // 1. Full or leading comments (//, #, --)
+  const commentMatch = line.match(/^(\s*)((\/\/|#|--).*)$/)
+  if (commentMatch) {
+    return (
+      <>
+        {commentMatch[1]}
+        <span className="text-[#8b949e] italic">{commentMatch[2]}</span>
+      </>
+    )
+  }
+
+  // Token regex for GitHub Dark syntax: strings, inline comments, numbers, decorators, keywords, types, functions, operators
+  const tokenRegex =
+    /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|(\/\/.*|#.*|--.*)|(\b\d+[\d_]*(?:\.\d+)?\b)|(@\w+)|(\b(?:import|async|def|as|with|return|await|public|private|static|final|class|interface|new|if|else|long|double|float|int|void|boolean|BEGIN|COMMIT|SET|LOCAL|ALTER|TABLE|ADD|COLUMN|CREATE|INDEX|CONCURRENTLY|ON|WHERE|IS|NOT|NULL|services|image|read_only|security_opt|cap_drop|user|tmpfs)\b)|(\b(?:MicroInterpreter|TfLiteStatus|camera_fb_t|uint8_t|String|CacheEntry|ThreadLocalRandom|System|Math|Consumer|Flux|SensorHeartbeat|BufferOverflowStrategy|Schedulers|VARCHAR|tflite|TensorFlow|OpenCV|SQLite)\b)|(\b[a-zA-Z_]\w*(?=\s*\())|(->|::|=>)/g
+
+  const parts: ReactNode[] = []
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+
+  while ((match = tokenRegex.exec(line)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(line.slice(lastIndex, match.index))
+    }
+    const [full, str, comment, num, decorator, keyword, typeName, func, op] = match
+    if (str) {
+      parts.push(<span key={match.index} className="text-[#a5d6ff]">{str}</span>)
+    } else if (comment) {
+      parts.push(<span key={match.index} className="text-[#8b949e] italic">{comment}</span>)
+    } else if (num) {
+      parts.push(<span key={match.index} className="text-[#79c0ff]">{num}</span>)
+    } else if (decorator) {
+      parts.push(<span key={match.index} className="text-[#d2a8ff] font-medium">{decorator}</span>)
+    } else if (keyword) {
+      parts.push(<span key={match.index} className="text-[#ff7b72] font-semibold">{keyword}</span>)
+    } else if (typeName) {
+      parts.push(<span key={match.index} className="text-[#ffa657] font-medium">{typeName}</span>)
+    } else if (func) {
+      parts.push(<span key={match.index} className="text-[#d2a8ff]">{func}</span>)
+    } else if (op) {
+      parts.push(<span key={match.index} className="text-[#ff7b72]">{op}</span>)
+    }
+    lastIndex = match.index + full.length
+  }
+
+  if (lastIndex < line.length) {
+    parts.push(line.slice(lastIndex))
+  }
+
+  return parts
 }
 
 export default function BlogPostModal({
   post,
   t,
   onClose,
-  onSelectPost,
-  allPosts,
 }: BlogPostModalProps) {
   const contentRef = useRef<HTMLDivElement>(null)
-  const otherPosts = allPosts.filter((p) => p.slug !== post.slug)
 
   // Close on ESC key
   useEffect(() => {
@@ -91,11 +141,11 @@ export default function BlogPostModal({
           {/* Post Header */}
           <header className="border-b border-white/10 pb-6">
             <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] text-white/40 mb-3 uppercase tracking-wider">
-              <span>{t.blog.modalNoteLabel}</span>
-              <span>•</span>
+              <span className="text-emerald-400 font-semibold tracking-widest">{t.blog.modalNoteLabel}</span>
+              <span className="text-white/20">•</span>
               <span className="text-white/60">{post.date}</span>
-              <span>•</span>
-              <span>{post.readTime}</span>
+              <span className="text-white/20">•</span>
+              <span className="text-emerald-400/80">{post.readTime}</span>
             </div>
 
             <h1
@@ -105,7 +155,7 @@ export default function BlogPostModal({
               {post.title}
             </h1>
 
-            <p className="text-sm sm:text-base text-white/70 leading-relaxed italic border-l-2 border-white/30 pl-4 py-1">
+            <p className="text-sm sm:text-base text-white/80 leading-relaxed italic border-l-2 border-emerald-400/80 bg-emerald-400/[0.03] pl-4 py-2 my-4">
               {post.content.lead}
             </p>
 
@@ -122,67 +172,69 @@ export default function BlogPostModal({
           </header>
 
           {/* Post Content Sections */}
-          <div className="space-y-8 text-sm text-white/80 leading-relaxed">
-            {post.content.sections.map((sec, idx) => (
-              <section key={idx} className="space-y-3">
-                <h2 className="text-lg font-bold text-white tracking-tight border-b border-white/5 pb-2">
-                  {sec.heading}
-                </h2>
-                {sec.body.map((p, pIdx) => (
-                  <p key={pIdx} className="text-white/70 leading-relaxed">
-                    {p}
-                  </p>
-                ))}
+          <div className="space-y-8 text-sm text-white/80 leading-relaxed pb-4">
+            {post.content.sections.map((sec, idx) => {
+              const headingMatch = sec.heading.match(/^(\d+\.)\s*(.*)$/)
+              const indexNum = headingMatch ? headingMatch[1] : null
+              const titleText = headingMatch ? headingMatch[2] : sec.heading
 
-                {sec.code && (
-                  <div className="mt-4 border border-white/15 bg-white/[0.02] overflow-hidden">
-                    <div className="px-4 py-1.5 bg-white/[0.04] border-b border-white/10 flex items-center justify-between text-[10px] font-mono text-white/40">
-                      <span className="uppercase">{sec.code.language}</span>
-                      <span>snippet</span>
+              return (
+                <section key={idx} className="space-y-3.5">
+                  <h2 className="text-base sm:text-lg font-bold tracking-tight border-b border-white/10 pb-2 flex items-baseline gap-2">
+                    {indexNum ? (
+                      <span className="font-mono text-emerald-400 font-bold text-sm sm:text-base shrink-0">
+                        {indexNum}
+                      </span>
+                    ) : (
+                      <span className="font-mono text-emerald-400/80 font-bold text-sm shrink-0">
+                        0{idx + 1}.
+                      </span>
+                    )}
+                    <span className="text-white font-semibold">
+                      {titleText}
+                    </span>
+                  </h2>
+
+                  {sec.body.map((p, pIdx) => (
+                    <p key={pIdx} className="text-white/70 leading-relaxed">
+                      {p}
+                    </p>
+                  ))}
+
+                  {sec.code && (
+                    <div className="mt-4 border border-[#30363d] bg-[#0d1117] shadow-xl overflow-hidden">
+                      {/* GitHub-style Code Snippet Header */}
+                      <div className="px-4 py-1.5 bg-[#161b22] border-b border-[#30363d] flex items-center justify-between text-[11px] font-mono text-[#8b949e]">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400/80" />
+                          <span className="uppercase tracking-wider font-semibold text-white/80">
+                            {sec.code.language}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-[#8b949e]">source snippet</span>
+                      </div>
+
+                      {/* GitHub Dark Syntax Highlighting */}
+                      <pre className="p-4 text-xs font-mono text-[#c9d1d9] overflow-x-auto leading-relaxed select-text">
+                        <code>
+                          {sec.code.snippet.split('\n').map((codeLine, lIdx) => (
+                            <div key={lIdx} className="table-row">
+                              <span className="table-cell pr-4 text-right select-none text-[#484f58] text-[10.5px]">
+                                {lIdx + 1}
+                              </span>
+                              <span className="table-cell whitespace-pre">
+                                {highlightCodeLine(codeLine)}
+                              </span>
+                            </div>
+                          ))}
+                        </code>
+                      </pre>
                     </div>
-                    <pre className="p-4 text-xs font-mono text-white/90 overflow-x-auto leading-relaxed">
-                      <code>{sec.code.snippet}</code>
-                    </pre>
-                  </div>
-                )}
-              </section>
-            ))}
+                  )}
+                </section>
+              )
+            })}
           </div>
-
-          {/* Modal Footer Next Articles */}
-          <footer className="mt-10 pt-8 border-t border-white/10 space-y-5">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-xs text-white/40 tracking-wider uppercase">
-                {t.blog.modalOtherNotes}
-              </span>
-              <button
-                onClick={onClose}
-                className="font-mono text-xs text-white/60 hover:text-white underline underline-offset-4 cursor-pointer"
-              >
-                {t.blog.backToPortfolio}
-              </button>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              {otherPosts.map((op) => (
-                <div
-                  key={op.slug}
-                  onClick={() => onSelectPost(op.slug)}
-                  className="p-3.5 border border-white/10 hover:border-white/30 transition-colors cursor-pointer group bg-white/[0.01]"
-                >
-                  <span className="font-mono text-[9px] text-white/40 block mb-1">
-                    {op.date} · {op.readTime}
-                  </span>
-                  <h3 className="text-xs font-semibold text-white group-hover:text-white/90 line-clamp-2 mb-2">
-                    {op.title}
-                  </h3>
-                  <span className="font-mono text-[10px] text-white/50 group-hover:text-white transition-colors">
-                    {t.blog.modalReadInModal}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </footer>
         </div>
       </div>
     </div>

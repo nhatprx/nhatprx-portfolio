@@ -94,6 +94,8 @@ function ArrowUpIcon({ className = 'w-4 h-4' }: { className?: string }) {
 export default function App() {
   const [showTopBtn, setShowTopBtn] = useState(false)
   const [scrolledHeaderActions, setScrolledHeaderActions] = useState(false)
+  const [scrollProgress, setScrollProgress] = useState(0)
+  const [activeSection, setActiveSection] = useState('about')
   const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [loaderMounted, setLoaderMounted] = useState(true)
   const [isLangSwitching, setIsLangSwitching] = useState(false)
@@ -124,7 +126,7 @@ export default function App() {
   const [blogPage, setBlogPage] = useState(1)
   const [blogSearch, setBlogSearch] = useState('')
 
-  const [workTab, setWorkTab] = useState<'experience' | 'projects'>('experience')
+  const [workTab, setWorkTab] = useState<'experience' | 'projects'>('projects')
   const [activeExp, setActiveExp] = useState(0)
   const [activeProj, setActiveProj] = useState(0)
 
@@ -158,6 +160,10 @@ export default function App() {
 
   // Initialize Lenis smooth scrolling with optimized checkpoint responsiveness
   useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual'
+    }
+
     const lenis = new Lenis({
       duration: 1.0,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -168,6 +174,10 @@ export default function App() {
       touchMultiplier: 1.0,
     })
     lenisRef.current = lenis
+
+    // Force immediate anchor to top Hero section on reload / first load
+    window.scrollTo(0, 0)
+    lenis.scrollTo(0, { immediate: true })
 
     let rafId: number
     function raf(time: number) {
@@ -202,14 +212,19 @@ export default function App() {
       return
     }
 
-    const el = document.querySelector(target) as HTMLElement | null
+    // Normalize alias IDs to their canonical section containers
+    let resolvedTarget = target
+    if (target === '#tech-stack') resolvedTarget = '#skills'
+    if (target === '#experience' || target === '#projects') resolvedTarget = '#work'
+
+    const el = document.querySelector(resolvedTarget) as HTMLElement | null
     if (!el) return
 
-    // Dynamically calculate exact position of the section tag below the floating header
-    const tag = el.querySelector('p') || el.querySelector('h2') || el
-    const tagTop = tag.getBoundingClientRect().top + window.scrollY
-    const headerOffset = typeof window !== 'undefined' && window.innerWidth >= 1024 ? 116 : 96
-    const targetY = Math.max(0, Math.round(tagTop - headerOffset))
+    // Position section cleanly below the fixed header (header height: 68px on lg, 58px on mobile)
+    const elTop = el.getBoundingClientRect().top + window.scrollY
+    const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024
+    const headerHeight = isDesktop ? 68 : 58
+    const targetY = Math.max(0, Math.round(elTop - headerHeight))
 
     if (lenisRef.current) {
       lenisRef.current.scrollTo(targetY, { duration: 0.85 })
@@ -231,6 +246,8 @@ export default function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsInitialLoading(false)
+      window.scrollTo(0, 0)
+      lenisRef.current?.scrollTo(0, { immediate: true })
       const unmountTimer = setTimeout(() => {
         setLoaderMounted(false)
       }, 350)
@@ -241,8 +258,43 @@ export default function App() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolledHeaderActions(window.scrollY > 220)
-      setShowTopBtn(window.scrollY > 400)
+      const scrollY = window.scrollY
+      const innerHeight = window.innerHeight
+      const docHeight = document.documentElement.scrollHeight
+      const maxScroll = docHeight - innerHeight
+
+      setScrolledHeaderActions(scrollY > 200)
+      setShowTopBtn(scrollY > 200)
+
+      const pct = maxScroll > 0 ? Math.min(100, Math.max(0, Math.round((scrollY / maxScroll) * 100))) : 0
+      setScrollProgress(pct)
+
+      // 1. Bottom boundary: activate contact when near or at bottom
+      if (maxScroll > 0 && innerHeight + scrollY >= docHeight - 60) {
+        setActiveSection('contact')
+        return
+      }
+
+      // 2. Top boundary: activate about when near top
+      if (scrollY < 160) {
+        setActiveSection('about')
+        return
+      }
+
+      // 3. Focal scan line: reading zone at 35% of viewport height
+      const scanLine = Math.round(innerHeight * 0.35)
+      const sectionIds = ['contact', 'blog', 'work', 'skills', 'about']
+
+      for (const id of sectionIds) {
+        const el = document.getElementById(id)
+        if (el) {
+          const rect = el.getBoundingClientRect()
+          if (rect.top <= scanLine && rect.bottom > 116) {
+            setActiveSection(id)
+            break
+          }
+        }
+      }
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     handleScroll()
@@ -505,14 +557,14 @@ export default function App() {
           {/* ========== 01 - HERO & ABOUT (UNIFIED SECTION) ========== */}
           <section
             id="about"
-            className="relative pt-36 pb-20 sm:pt-40 sm:pb-24 lg:pt-44 lg:pb-24 px-6 sm:px-10 lg:px-14 flex flex-col text-left scroll-mt-28 sm:scroll-mt-32"
+            className="relative pt-36 pb-20 sm:pt-40 sm:pb-24 lg:pt-36 lg:pb-20 lg:min-h-screen px-6 sm:px-10 lg:px-14 flex flex-col justify-end text-left scroll-mt-28 sm:scroll-mt-32"
           >
             {/* Alias anchor for any links expecting #hero */}
             <div id="hero" className="absolute top-0" />
 
-            <div className="w-full">
-              {/* Hero Content Block */}
-              <div className="mb-8 sm:mb-10">
+            <div className="w-full flex-1 flex flex-col justify-end gap-6 sm:gap-7">
+              {/* Block 1: Hero Content */}
+              <div>
                 <p className="font-mono text-xs tracking-[0.35em] text-emerald-400 uppercase mb-2 font-medium">
                   {t.hero.role}
                 </p>
@@ -522,7 +574,7 @@ export default function App() {
                 </h1>
 
                 {/* Action Buttons */}
-                <div className="flex flex-wrap items-center gap-3 mt-7">
+                <div className="flex flex-wrap items-center gap-3 mt-6 sm:mt-7">
                   <a
                     href="#contact"
                     onClick={(e) => {
@@ -556,14 +608,14 @@ export default function App() {
                 </div>
               </div>
 
-              {/* About Content Block */}
-              <div className="pt-8 sm:pt-10 border-t border-white/10 story-reveal">
+              {/* Block 2: About Narrative */}
+              <div className="story-reveal">
                 <p className="font-mono text-xs tracking-[0.35em] text-emerald-400 uppercase mb-2 font-medium">
                   {t.about.tag}
                 </p>
                 <h2
                   ref={aboutTitleRef}
-                  className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-5 text-white w-fit"
+                  className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3 sm:mb-4 text-white w-fit"
                 >
                   {t.about.title} <span className="text-white/30">{t.about.titleSub}</span>
                 </h2>
@@ -573,38 +625,57 @@ export default function App() {
                     width: aboutTitleWidth ? `${aboutTitleWidth}px` : undefined,
                     maxWidth: '100%',
                   }}
-                  className="space-y-4 text-sm text-white/70 leading-relaxed mb-8 text-justify [text-justify:inter-word]"
+                  className="text-sm text-white/70 leading-relaxed text-justify [text-justify:inter-word]"
                 >
                   <p>{t.about.p1}</p>
-                  <p>{t.about.p2}</p>
                 </div>
+              </div>
 
-                {/* Education */}
-                <div className="mb-3 story-reveal story-delay-1">
-                  <h3 className="font-mono text-[10px] tracking-[0.25em] text-white/40 mb-3 uppercase">
-                    {t.about.educationTitle}
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="border border-white/10 p-4 bg-white/[0.015]">
-                      <div className="text-sm font-bold text-white">{t.about.edu1School}</div>
-                      <div className="font-mono text-[10px] text-emerald-400/90 mt-1 uppercase">
-                        {t.about.edu1Degree}
+              {/* Block 3: Education Cards (Anchored to match Node Telemetry bottom baseline) */}
+              <div className="story-reveal story-delay-1 mb-0">
+                <h3 className="font-mono text-[10px] tracking-[0.25em] text-white/40 mb-2.5 sm:mb-3 uppercase">
+                  {t.about.educationTitle}
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="border border-white/10 p-3 sm:p-3.5 bg-white/[0.015] hover:border-white/25 hover:bg-white/[0.03] transition-all flex flex-col justify-between">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-xs sm:text-sm font-bold text-white tracking-wide truncate">
+                        {t.about.edu1School}
                       </div>
-                      <div className="text-xs text-white/50 mt-1.5">{t.about.edu1Major}</div>
-                      <div className="text-[11px] font-mono text-white/30 mt-1">
+                      <span className="font-mono text-[10px] text-white/35 shrink-0">
                         {t.about.edu1Location || t.about.edu1Dates}
-                      </div>
+                      </span>
                     </div>
 
-                    <div className="border border-white/10 p-4 bg-white/[0.015]">
-                      <div className="text-sm font-bold text-white">{t.about.edu2School}</div>
-                      <div className="font-mono text-[10px] text-emerald-400/90 mt-1 uppercase">
-                        {t.about.edu2Degree}
+                    <div className="flex items-center gap-1.5 mt-2 font-mono text-[11px] min-w-0">
+                      <span className="text-emerald-400 font-semibold tracking-wider uppercase shrink-0 text-[10px]">
+                        {t.about.edu1Degree}
+                      </span>
+                      <span className="text-white/20 shrink-0" aria-hidden="true">/</span>
+                      <span className="text-white/50 truncate text-[10.5px]">
+                        {t.about.edu1Major}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border border-white/10 p-3 sm:p-3.5 bg-white/[0.015] hover:border-white/25 hover:bg-white/[0.03] transition-all flex flex-col justify-between">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-xs sm:text-sm font-bold text-white tracking-wide truncate">
+                        {t.about.edu2School}
                       </div>
-                      <div className="text-xs text-white/50 mt-1.5">{t.about.edu2Major}</div>
-                      <div className="text-[11px] font-mono text-white/30 mt-1">
+                      <span className="font-mono text-[10px] text-white/35 shrink-0">
                         {t.about.edu2Location || t.about.edu2Dates}
-                      </div>
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 mt-2 font-mono text-[11px] min-w-0">
+                      <span className="text-emerald-400 font-semibold tracking-wider uppercase shrink-0 text-[10px]">
+                        {t.about.edu2Degree}
+                      </span>
+                      <span className="text-white/20 shrink-0" aria-hidden="true">/</span>
+                      <span className="text-white/50 truncate text-[10.5px]">
+                        {t.about.edu2Major}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -615,7 +686,7 @@ export default function App() {
           {/* ========== 02 - TECHNICAL STACK ========== */}
           <section
             id="skills"
-            className="relative pt-20 sm:pt-24 lg:pt-24 pb-20 sm:pb-24 lg:pb-24 px-6 sm:px-10 lg:px-14 flex flex-col border-t border-white/5 scroll-mt-28 sm:scroll-mt-32"
+            className="relative pt-20 sm:pt-24 lg:pt-24 pb-20 sm:pb-24 lg:pb-24 px-6 sm:px-10 lg:px-14 flex flex-col scroll-mt-28 sm:scroll-mt-32"
           >
             {/* Alias anchor for any links expecting #tech-stack */}
             <div id="tech-stack" className="absolute -top-28 sm:-top-32" />
@@ -644,36 +715,40 @@ export default function App() {
               )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 story-reveal story-delay-1">
-                {t.skills.categories.map((group, idx) => (
-                  <div
-                    key={group.title}
-                    className={`p-4 sm:p-5 border border-white/10 bg-white/[0.02] hover:border-white/20 transition-all flex flex-col justify-between ${
-                      idx === t.skills.categories.length - 1 ? 'sm:col-span-2' : ''
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between pb-2.5 mb-3.5 border-b border-white/10">
-                        <h3 className="font-mono text-xs tracking-wider text-white font-semibold uppercase">
-                          {group.title}
-                        </h3>
-                        <span className="font-mono text-[10px] text-emerald-400 font-medium">
-                          0{idx + 1}
-                        </span>
-                      </div>
+                {t.skills.categories.map((group, idx) => {
+                  const isFullWidth = Boolean(group.fullWidth)
 
-                      <div className="flex flex-wrap gap-2">
-                        {group.skills.map((s) => (
-                          <span
-                            key={s}
-                            className="font-mono text-xs px-3 py-1.5 border border-white/15 bg-white/[0.03] text-white/85 hover:border-emerald-400/40 hover:text-emerald-400 transition-colors"
-                          >
-                            {s}
+                  return (
+                    <div
+                      key={group.title}
+                      className={`p-4 sm:p-5 border border-white/10 bg-white/[0.02] hover:border-white/20 transition-all flex flex-col justify-between ${
+                        isFullWidth ? 'sm:col-span-2' : ''
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between pb-2.5 mb-3.5 border-b border-white/10">
+                          <h3 className="font-mono text-xs tracking-wider text-white font-semibold uppercase">
+                            {group.title}
+                          </h3>
+                          <span className="font-mono text-[10px] text-emerald-400 font-medium">
+                            0{idx + 1}
                           </span>
-                        ))}
+                        </div>
+
+                        <div className={group.gridClass}>
+                          {group.skills.map((s) => (
+                            <span
+                              key={s}
+                              className="font-mono text-[11px] sm:text-xs px-2.5 sm:px-3 py-2 border border-white/15 bg-white/[0.03] text-white/85 hover:border-emerald-400/40 hover:text-emerald-400 transition-colors flex items-center justify-center text-center"
+                            >
+                              {s}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -692,7 +767,7 @@ export default function App() {
             return (
               <section
                 id="work"
-                className="relative pt-20 sm:pt-24 lg:pt-24 pb-20 sm:pb-24 lg:pb-24 px-6 sm:px-10 lg:px-14 border-t border-white/5 flex flex-col scroll-mt-28 sm:scroll-mt-32"
+                className="relative pt-20 sm:pt-24 lg:pt-24 pb-20 sm:pb-24 lg:pb-24 px-6 sm:px-10 lg:px-14 flex flex-col scroll-mt-28 sm:scroll-mt-32"
               >
                 <div id="experience" className="absolute -top-28 sm:-top-32" />
                 <div id="projects" className="absolute -top-28 sm:-top-32" />
@@ -920,7 +995,7 @@ export default function App() {
           {/* ========== 04 - BLOG ========== */}
           <section
             id="blog"
-            className="relative pt-20 sm:pt-24 lg:pt-24 pb-20 sm:pb-24 lg:pb-24 px-6 sm:px-10 lg:px-14 border-t border-white/5 flex flex-col scroll-mt-28 sm:scroll-mt-32"
+            className="relative pt-20 sm:pt-24 lg:pt-24 pb-20 sm:pb-24 lg:pb-24 px-6 sm:px-10 lg:px-14 flex flex-col scroll-mt-28 sm:scroll-mt-32"
           >
             <div className="w-full text-left story-reveal">
               <p className="font-mono text-xs tracking-[0.35em] text-emerald-400 uppercase mb-2 font-medium">
@@ -996,23 +1071,12 @@ export default function App() {
                               {post.title}
                             </h3>
 
-                            <p className="text-xs text-white/60 leading-relaxed mb-3 line-clamp-2">
+                            <p className="text-xs text-white/60 leading-relaxed mb-3 truncate line-clamp-1">
                               {post.summary}
                             </p>
 
-                            <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-white/10">
-                              <div className="flex flex-wrap gap-1.5">
-                                {post.tags.slice(0, 3).map((tag) => (
-                                  <span
-                                    key={tag}
-                                    className="font-mono text-[9.5px] px-2 py-0.5 border border-white/10 text-white/55 bg-white/[0.02]"
-                                  >
-                                    {tag}
-                                  </span>
-                                ))}
-                              </div>
-
-                              <span className="font-mono text-[11px] text-emerald-400 group-hover:translate-x-1 transition-transform flex items-center gap-1 font-medium shrink-0">
+                            <div className="flex items-center justify-end pt-2.5 border-t border-white/10">
+                              <span className="font-mono text-[11px] text-emerald-400 group-hover:translate-x-1 transition-transform flex items-center gap-1 font-medium">
                                 {t.blog.readNote}
                               </span>
                             </div>
@@ -1109,7 +1173,7 @@ export default function App() {
           {/* ========== 05 - CONTACT ========== */}
           <section
             id="contact"
-            className="relative pt-20 sm:pt-24 lg:pt-24 pb-12 sm:pb-16 lg:pb-16 px-6 sm:px-10 lg:px-14 flex flex-col justify-between border-t border-white/5 scroll-mt-28 sm:scroll-mt-32"
+            className="relative pt-20 sm:pt-24 lg:pt-24 pb-12 sm:pb-16 lg:pb-16 px-6 sm:px-10 lg:px-14 flex flex-col justify-between scroll-mt-28 sm:scroll-mt-32"
           >
             <div className="w-full text-left story-reveal">
               <p className="font-mono text-xs tracking-[0.35em] text-emerald-400 uppercase mb-2 font-medium">
@@ -1238,17 +1302,68 @@ export default function App() {
         </aside>
       </main>
 
-      {/* Back to top button */}
-      {showTopBtn && (
+      {/* Bottom Floating Bar: Journey Bar + Move on Top Button (Spans from Terminal Left Edge to Move on Top) */}
+      <div
+        className={`fixed bottom-6 right-0 w-full lg:w-1/2 pr-6 sm:pr-10 lg:pr-14 pl-6 sm:pl-10 lg:pl-4 xl:pl-6 2xl:pl-8 z-40 flex items-center gap-2 transition-all duration-300 pointer-events-none ${
+          showTopBtn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+        }`}
+      >
+        {/* Journey Bar - Stretches from Terminal Left Edge to Move on Top Button */}
+        <nav
+          aria-label="Story Journey Navigation"
+          className="flex-1 min-w-0 h-10 sm:h-11 pointer-events-auto p-1 bg-black/90 border border-white/20 shadow-2xl backdrop-blur-md flex items-center justify-between gap-1 font-mono select-none"
+        >
+          <div className="flex-1 grid grid-cols-5 gap-1 min-w-0 h-full">
+            {[
+              { id: 'about', num: '01', label: t.nav.about },
+              { id: 'skills', num: '02', label: t.nav.skills },
+              { id: 'work', num: '03', label: workTab === 'experience' ? t.nav.experience : t.nav.projects },
+              { id: 'blog', num: '04', label: t.nav.blog },
+              { id: 'contact', num: '05', label: t.nav.contact },
+            ].map((step) => {
+              const isActive = activeSection === step.id
+              return (
+                <button
+                  key={step.id}
+                  type="button"
+                  onClick={() => scrollTo(`#${step.id}`)}
+                  className={`h-full px-1 border transition-all cursor-pointer flex items-center justify-center text-xs truncate ${
+                    isActive
+                      ? 'border-emerald-400/80 bg-emerald-400/15 text-emerald-300 font-semibold shadow-[0_0_10px_rgba(52,211,153,0.15)]'
+                      : 'border-transparent text-white/50 hover:text-white hover:bg-white/5'
+                  }`}
+                  title={`Jump to ${step.label}`}
+                >
+                  <span className={`text-[10px] font-bold ${isActive ? 'text-emerald-300' : 'text-emerald-400/80'} mr-1 shrink-0`}>
+                    {step.num}
+                  </span>
+                  <span className="hidden sm:inline text-[10px] xl:text-[10.5px] tracking-wider uppercase truncate">
+                    {step.label}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="h-4 w-[1px] bg-white/15 mx-1.5 shrink-0 hidden md:block" aria-hidden="true" />
+
+          {/* Progress Percent (Fixed width + tabular-nums prevents width jump when hitting 100%) */}
+          <span className="w-12 text-right pr-2 text-[10.5px] text-emerald-400 font-mono font-bold tracking-wider shrink-0 hidden md:inline-block tabular-nums">
+            {scrollProgress}%
+          </span>
+        </nav>
+
+        {/* Move on Top Button */}
         <button
+          type="button"
           onClick={() => scrollTo(0)}
           aria-label="Back to top"
           title="Back to top"
-          className="fixed bottom-6 right-6 z-40 p-3 bg-black/90 border border-white/20 text-white/70 hover:text-white hover:border-white transition-all shadow-2xl backdrop-blur-sm cursor-pointer"
+          className="pointer-events-auto h-10 w-10 sm:h-11 sm:w-11 bg-black/90 border border-white/20 text-white/70 hover:text-white hover:border-white transition-all shadow-2xl backdrop-blur-md cursor-pointer flex items-center justify-center shrink-0"
         >
-          <ArrowUpIcon className="w-4 h-4" />
+          <ArrowUpIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </button>
-      )}
+      </div>
 
       {/* Blog Post Detail Modal */}
       {(() => {

@@ -1,11 +1,21 @@
 <!doctype html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>nhatprx. | Software Engineer</title>
     <meta name="description" content="Portfolio of nhatprx - Software Engineer specializing in backend resilience, cloud infrastructure, and distributed systems." />
+    <script>
+      // Force initial load and refresh to always anchor at Hero section
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+      }
+      if (window.location.hash && window.location.hash !== '#admin') {
+        history.replaceState(null, '', window.location.pathname);
+      }
+      window.scrollTo(0, 0);
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
