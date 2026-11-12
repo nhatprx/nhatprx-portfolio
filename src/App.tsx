@@ -647,13 +647,13 @@ export default function App() {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-4xl">
                 {/* Education Card 1: FPT University */}
-                <div className="min-w-0 border border-white/10 hover:border-white/25 bg-white/[0.02] p-4 transition-colors flex flex-col justify-between">
+                <div className="min-w-0 border border-white/10 hover:border-white/25 p-4 transition-colors flex flex-col justify-between">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-semibold text-white tracking-tight truncate">
                       {t.about.edu1School}
                     </span>
-                    <span className="font-mono text-[9px] text-emerald-400/90 flex items-center gap-1 shrink-0 uppercase">
-                      <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="font-mono text-[9px] text-white/50 flex items-center gap-1.5 shrink-0 uppercase">
+                      <span className="w-1 h-1 rounded-full bg-white/40" />
                       {t.about.edu1Degree}
                     </span>
                   </div>
@@ -664,13 +664,13 @@ export default function App() {
                 </div>
 
                 {/* Education Card 2: Multimedia University */}
-                <div className="min-w-0 border border-white/10 hover:border-white/25 bg-white/[0.02] p-4 transition-colors flex flex-col justify-between">
+                <div className="min-w-0 border border-white/10 hover:border-white/25 p-4 transition-colors flex flex-col justify-between">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-semibold text-white tracking-tight truncate">
                       {t.about.edu2School}
                     </span>
-                    <span className="font-mono text-[9px] text-cyan-400/90 flex items-center gap-1 shrink-0 uppercase">
-                      <span className="w-1 h-1 rounded-full bg-cyan-400" />
+                    <span className="font-mono text-[9px] text-white/50 flex items-center gap-1.5 shrink-0 uppercase">
+                      <span className="w-1 h-1 rounded-full bg-white/40" />
                       {t.about.edu2Degree}
                     </span>
                   </div>
@@ -705,14 +705,14 @@ export default function App() {
               {t.skills.categories.map((group, gIdx) => (
                 <div
                   key={group.title}
-                  className="border border-white/10 bg-white/[0.02] hover:border-white/25 hover:bg-white/[0.035] transition-all p-5 flex flex-col justify-between"
+                  className="border border-white/10 hover:border-white/25 transition-all p-5 flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between pb-3 mb-3.5 border-b border-white/10">
                       <h3 className="font-mono text-xs tracking-[0.2em] text-white/90 font-semibold truncate pr-2 uppercase">
                         {group.title}
                       </h3>
-                      <span className="font-mono text-[10px] text-emerald-400/80 shrink-0">
+                      <span className="font-mono text-[10px] text-white/40 shrink-0">
                         // 0{gIdx + 1}
                       </span>
                     </div>
@@ -721,9 +721,9 @@ export default function App() {
                       {group.skills.map((s) => (
                         <div
                           key={s}
-                          className="flex items-start gap-2 font-mono text-[11px] leading-snug text-white/75 hover:text-white px-2.5 py-1.5 bg-white/[0.02] border border-white/5 hover:border-white/20 transition-colors"
+                          className="flex items-start gap-2 font-mono text-[11px] leading-snug text-white/75 hover:text-white px-2.5 py-1.5 border border-white/5 hover:border-white/20 transition-colors"
                         >
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 mt-1" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-white/40 shrink-0 mt-1" />
                           <span title={s} className="truncate sm:whitespace-normal">
                             {s}
                           </span>
