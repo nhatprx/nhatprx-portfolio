@@ -758,18 +758,12 @@ export default function App() {
                       {isExp ? t.experience.tag : t.projects.tag}
                     </p>
 
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3">
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
                       {isExp ? t.experience.title : t.projects.title}{' '}
                       <span className="text-white/30">
                         {isExp ? t.experience.titleSub : t.projects.titleSub}
                       </span>
                     </h2>
-
-                    {(isExp ? t.experience.desc : t.projects.desc) && (
-                      <p className="text-sm sm:text-base text-white/50 leading-relaxed max-w-2xl mb-4">
-                        {isExp ? t.experience.desc : t.projects.desc}
-                      </p>
-                    )}
 
                     <div className="flex items-center gap-3 pt-1">
                       <div className="inline-flex p-1 border border-white/20 bg-white/[0.04]">
@@ -1021,14 +1015,9 @@ export default function App() {
         <section id="blog" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-3">{t.blog.tag}</p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-8">
               {t.blog.title} <span className="text-white/30">{t.blog.titleSub}</span>
             </h2>
-            {t.blog.desc && (
-              <p className="text-sm sm:text-base text-white/50 leading-relaxed max-w-2xl mb-8">
-                {t.blog.desc}
-              </p>
-            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {t.blog.posts.map((post) => (
