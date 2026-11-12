@@ -186,9 +186,9 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
     nav: {
       liveLab: 'LIVE LAB',
       about: 'ABOUT',
+      skills: 'TECH STACK',
       experience: 'EXPERIENCE',
       projects: 'PROJECTS',
-      skills: 'SKILLS',
       blog: 'BLOG',
       contact: 'CONTACT',
     },
@@ -224,7 +224,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       languages: ['English (Fluent)', 'Vietnamese (Native)', 'Japanese (Basic)', 'French (Familiar)'],
     },
     experience: {
-      tag: '02 - EXPERIENCE',
+      tag: '03 - EXPERIENCE',
       title: "Where I've",
       titleSub: 'shipped code.',
       items: [
@@ -271,7 +271,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     projects: {
-      tag: '03 - PROJECTS',
+      tag: '04 - PROJECTS',
       title: 'Featured',
       titleSub: 'systems.',
       items: [
@@ -303,7 +303,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     skills: {
-      tag: '04 - SKILLS',
+      tag: '02 - TECH STACK',
       title: 'Technical',
       titleSub: 'stack.',
       categories: [
@@ -499,9 +499,9 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
     nav: {
       liveLab: 'MÁY CHỦ THỰC TẾ',
       about: 'GIỚI THIỆU',
+      skills: 'TECH STACK',
       experience: 'KINH NGHIỆM',
       projects: 'DỰ ÁN',
-      skills: 'KỸ NĂNG',
       blog: 'BÀI VIẾT',
       contact: 'LIÊN HỆ',
     },
@@ -537,7 +537,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       languages: ['Tiếng Anh (Thành thạo)', 'Tiếng Việt (Bản ngữ)', 'Tiếng Nhật (Cơ bản)', 'Tiếng Pháp (Giao tiếp cơ bản)'],
     },
     experience: {
-      tag: '02 - KINH NGHIỆM',
+      tag: '03 - KINH NGHIỆM',
       title: 'Nơi tôi từng',
       titleSub: 'làm việc & cống hiến.',
       items: [
@@ -584,7 +584,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     projects: {
-      tag: '03 - DỰ ÁN',
+      tag: '04 - DỰ ÁN',
       title: 'Hệ thống',
       titleSub: 'tiêu biểu.',
       items: [
@@ -616,7 +616,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     skills: {
-      tag: '04 - KỸ NĂNG',
+      tag: '02 - TECH STACK',
       title: 'Ngăn xếp',
       titleSub: 'công nghệ.',
       categories: [
@@ -812,9 +812,9 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
     nav: {
       liveLab: 'SERVEUR EN DIRECT',
       about: 'À PROPOS',
+      skills: 'COMPÉTENCES',
       experience: 'EXPÉRIENCE',
       projects: 'PROJETS',
-      skills: 'COMPÉTENCES',
       blog: 'BLOG',
       contact: 'CONTACT',
     },
@@ -850,7 +850,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       languages: ['Anglais (Courant)', 'Vietnamien (Langue maternelle)', 'Japonais (Notions)', 'Français (Familier)'],
     },
     experience: {
-      tag: '02 - EXPÉRIENCE',
+      tag: '03 - EXPÉRIENCE',
       title: 'Parcours',
       titleSub: 'professionnel.',
       items: [
@@ -897,7 +897,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     projects: {
-      tag: '03 - PROJETS',
+      tag: '04 - PROJETS',
       title: 'Projets',
       titleSub: 'phares.',
       items: [
@@ -929,7 +929,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     skills: {
-      tag: '04 - COMPÉTENCES',
+      tag: '02 - COMPÉTENCES',
       title: 'Stack',
       titleSub: 'technique.',
       categories: [
@@ -1122,9 +1122,9 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
     nav: {
       liveLab: '実機サーバー',
       about: '概要',
+      skills: 'スキル',
       experience: '職務経歴',
       projects: '実績',
-      skills: 'スキル',
       blog: '技術ノート',
       contact: 'お問い合わせ',
     },
@@ -1160,7 +1160,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       languages: ['英語 (流暢)', 'ベトナム語 (母国語)', '日本語 (基礎)', 'フランス語 (初級)'],
     },
     experience: {
-      tag: '02 - 職務経歴',
+      tag: '03 - 職務経歴',
       title: 'これまでの',
       titleSub: '開発・参画実績。',
       items: [
@@ -1207,7 +1207,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     projects: {
-      tag: '03 - 実績',
+      tag: '04 - 実績',
       title: '主要な',
       titleSub: '開発成果物。',
       items: [
@@ -1239,7 +1239,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     skills: {
-      tag: '04 - スキル',
+      tag: '02 - スキル',
       title: '技術',
       titleSub: 'スタック。',
       categories: [

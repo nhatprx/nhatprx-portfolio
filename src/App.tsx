@@ -327,9 +327,9 @@ export default function App() {
         const total = horizontalRunwayRef.current.offsetHeight - window.innerHeight
         const stepMap: Record<string, number> = {
           '#about': 0,
-          '#experience': 0.25,
-          '#projects': 0.5,
-          '#skills': 0.75,
+          '#skills': 0.25,
+          '#experience': 0.5,
+          '#projects': 0.75,
           '#blog': 1.0,
         }
         const targetY = runwayTop + (stepMap[target] ?? 0) * total
@@ -376,9 +376,9 @@ export default function App() {
           } else {
             setIsNavVertical(true)
             if (p < 0.125) setActiveSection('#about')
-            else if (p < 0.375) setActiveSection('#experience')
-            else if (p < 0.625) setActiveSection('#projects')
-            else if (p < 0.875) setActiveSection('#skills')
+            else if (p < 0.375) setActiveSection('#skills')
+            else if (p < 0.625) setActiveSection('#experience')
+            else if (p < 0.875) setActiveSection('#projects')
             else setActiveSection('#blog')
           }
         }
@@ -523,6 +523,16 @@ export default function App() {
               {t.nav.about}
             </a>
             <a
+              href="#skills"
+              onClick={(e) => {
+                e.preventDefault()
+                scrollTo('#skills')
+              }}
+              className="hover:text-white transition-colors"
+            >
+              {t.nav.skills}
+            </a>
+            <a
               href="#experience"
               onClick={(e) => {
                 e.preventDefault()
@@ -541,16 +551,6 @@ export default function App() {
               className="hover:text-white transition-colors"
             >
               {t.nav.projects}
-            </a>
-            <a
-              href="#skills"
-              onClick={(e) => {
-                e.preventDefault()
-                scrollTo('#skills')
-              }}
-              className="hover:text-white transition-colors"
-            >
-              {t.nav.skills}
             </a>
             <a
               href="#blog"
@@ -666,9 +666,9 @@ export default function App() {
             {[
               { id: '#hero', label: t.nav.liveLab, num: '00' },
               { id: '#about', label: t.nav.about, num: '01' },
-              { id: '#experience', label: t.nav.experience, num: '02' },
-              { id: '#projects', label: t.nav.projects, num: '03' },
-              { id: '#skills', label: t.nav.skills, num: '04' },
+              { id: '#skills', label: t.nav.skills, num: '02' },
+              { id: '#experience', label: t.nav.experience, num: '03' },
+              { id: '#projects', label: t.nav.projects, num: '04' },
               { id: '#blog', label: t.nav.blog, num: '05' },
               { id: '#contact', label: t.nav.contact, num: '06' },
             ].map((item) => {
@@ -825,46 +825,6 @@ export default function App() {
           }}
         >
           <div className="sticky top-0 h-screen overflow-hidden">
-            {/* Horizontal Track Indicator / Pills */}
-            <div className="absolute top-20 sm:top-24 left-4 sm:left-10 lg:left-64 xl:left-72 right-4 sm:right-10 lg:right-14 z-30 flex items-center justify-between pointer-events-none">
-              <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto overflow-x-auto no-scrollbar py-1">
-                {[
-                  { id: '#about', label: '01 ABOUT' },
-                  { id: '#experience', label: '02 EXPERIENCE' },
-                  { id: '#projects', label: '03 PROJECTS' },
-                  { id: '#skills', label: '04 SKILLS' },
-                  { id: '#blog', label: '05 BLOG' },
-                ].map((sec, idx) => {
-                  const isActive = Math.min(4, Math.max(0, Math.round(horizontalProgress * 4))) === idx
-                  return (
-                    <button
-                      key={sec.id}
-                      type="button"
-                      onClick={() => scrollTo(sec.id)}
-                      className={`font-mono text-[10px] tracking-widest px-2.5 py-1 border transition-all cursor-pointer whitespace-nowrap ${
-                        isActive
-                          ? 'border-white bg-white text-black font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)]'
-                          : 'border-white/10 text-white/40 hover:text-white/70 hover:border-white/30 bg-black/70 backdrop-blur-md'
-                      }`}
-                    >
-                      {sec.label}
-                    </button>
-                  )
-                })}
-              </div>
-
-              <div className="hidden md:flex items-center gap-3 font-mono text-[10px] text-white/40 pointer-events-auto bg-black/70 backdrop-blur-md border border-white/10 px-3 py-1">
-                <span className="tracking-widest">HORIZONTAL JOURNEY</span>
-                <div className="w-16 h-1 bg-white/10 relative overflow-hidden">
-                  <div
-                    className="h-full bg-white transition-all duration-150"
-                    style={{ width: `${horizontalProgress * 100}%` }}
-                  />
-                </div>
-                <span>{Math.round(horizontalProgress * 100)}%</span>
-              </div>
-            </div>
-
             {/* Horizontal Track containing the 5 sections */}
             <div
               className="flex h-screen will-change-transform transition-transform duration-75 ease-out"
@@ -920,7 +880,42 @@ export default function App() {
           </div>
         </div>
 
-        {/* ========== 02 - EXPERIENCE (3-CARD INFINITE LOOP STAGE) ========== */}
+        {/* ========== 02 - TECH STACK ========== */}
+        <div
+          id="skills"
+          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:pl-64 xl:pl-72 lg:pr-16 py-24 overflow-y-auto"
+        >
+          <div className="w-full text-left">
+            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.skills.tag}</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
+              {t.skills.title}
+              <br />
+              <span className="text-white/30">{t.skills.titleSub}</span>
+            </h2>
+
+            <div className="divide-y divide-white/10 border-t border-b border-white/10">
+              {t.skills.categories.map((group) => (
+                <div key={group.title} className="py-5 sm:grid sm:grid-cols-12 sm:gap-4 items-start">
+                  <h3 className="sm:col-span-3 font-mono text-[10px] tracking-[0.25em] text-white/30 mb-2 sm:mb-0 pt-2">
+                    {group.title}
+                  </h3>
+                  <div className={`sm:col-span-9 ${group.gridClass}`}>
+                    {group.skills.map((s) => (
+                      <span
+                        key={s}
+                        className="flex items-center justify-start text-left font-mono text-xs px-3 h-9 bg-white/[0.03] border border-white/10 text-white/80 hover:text-white hover:border-white/30 transition-colors w-full whitespace-nowrap"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ========== 03 - EXPERIENCE (3-CARD INFINITE LOOP STAGE) ========== */}
         {(() => {
           const items = t.experience.items
           const N = items.length
@@ -1107,7 +1102,7 @@ export default function App() {
           )
         })()}
 
-        {/* ========== 03 - PROJECTS ========== */}
+        {/* ========== 04 - PROJECTS ========== */}
         <div
           id="projects"
           className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:pl-64 xl:pl-72 lg:pr-16 py-24 overflow-y-auto"
@@ -1160,41 +1155,6 @@ export default function App() {
                     ))}
                   </div>
                 </article>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ========== 04 - SKILLS ========== */}
-        <div
-          id="skills"
-          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:pl-64 xl:pl-72 lg:pr-16 py-24 overflow-y-auto"
-        >
-          <div className="w-full text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.skills.tag}</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
-              {t.skills.title}
-              <br />
-              <span className="text-white/30">{t.skills.titleSub}</span>
-            </h2>
-
-            <div className="divide-y divide-white/10 border-t border-b border-white/10">
-              {t.skills.categories.map((group) => (
-                <div key={group.title} className="py-5 sm:grid sm:grid-cols-12 sm:gap-4 items-start">
-                  <h3 className="sm:col-span-3 font-mono text-[10px] tracking-[0.25em] text-white/30 mb-2 sm:mb-0 pt-2">
-                    {group.title}
-                  </h3>
-                  <div className={`sm:col-span-9 ${group.gridClass}`}>
-                    {group.skills.map((s) => (
-                      <span
-                        key={s}
-                        className="flex items-center justify-start text-left font-mono text-xs px-3 h-9 bg-white/[0.03] border border-white/10 text-white/80 hover:text-white hover:border-white/30 transition-colors w-full whitespace-nowrap"
-                      >
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                </div>
               ))}
             </div>
           </div>
