@@ -314,11 +314,12 @@ export default function App() {
         const rect = horizontalRunwayRef.current.getBoundingClientRect()
         const runwayTop = window.scrollY + rect.top
         const total = horizontalRunwayRef.current.offsetHeight - window.innerHeight
+        const ABOUT_HOLD = 0.14
         const stepMap: Record<string, number> = {
-          '#about': 0,
-          '#skills': 0.25,
-          '#experience': 0.5,
-          '#projects': 0.75,
+          '#about': 0.05,
+          '#skills': ABOUT_HOLD + 0.25 * (1 - ABOUT_HOLD),
+          '#experience': ABOUT_HOLD + 0.5 * (1 - ABOUT_HOLD),
+          '#projects': ABOUT_HOLD + 0.75 * (1 - ABOUT_HOLD),
           '#blog': 1.0,
         }
         const targetY = runwayTop + (stepMap[target] ?? 0) * total
@@ -399,6 +400,13 @@ export default function App() {
   // Header gradually fades out as user scrolls down from hero section
   const headerOpacity = Math.max(0, Math.min(1, 1 - scrollY / 200))
   const isHeaderHidden = headerOpacity <= 0.01
+
+  // Scroll hold buffer at About so user can read before horizontal translation begins
+  const ABOUT_HOLD = 0.14
+  const trackProgress = horizontalProgress <= ABOUT_HOLD
+    ? 0
+    : Math.min(1, (horizontalProgress - ABOUT_HOLD) / (1 - ABOUT_HOLD))
+  const activeRunwayIdx = Math.min(4, Math.max(0, Math.round(trackProgress * 4)))
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -694,7 +702,7 @@ export default function App() {
         <div
           ref={horizontalRunwayRef}
           id="horizontal-runway"
-          className="relative h-[500vh]"
+          className="relative h-[550vh]"
           onWheel={(e) => {
             if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 15) {
               if (lenisRef.current) {
@@ -706,9 +714,9 @@ export default function App() {
           }}
         >
           <div className="sticky top-0 h-screen overflow-hidden">
-            {/* Horizontal Track Indicator / Pills */}
-            <div className="absolute top-20 sm:top-24 left-4 sm:left-10 lg:left-14 right-4 sm:right-10 lg:right-14 z-30 flex items-center justify-between pointer-events-none">
-              <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto overflow-x-auto no-scrollbar py-1">
+            {/* Horizontal Track Indicator / Sub Nav docked at Bottom */}
+            <div className="absolute bottom-6 sm:bottom-8 left-4 sm:left-10 lg:left-14 right-4 sm:right-10 lg:right-14 z-30 flex items-center justify-start sm:justify-center pointer-events-none">
+              <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto overflow-x-auto no-scrollbar py-1 px-1.5 bg-black/85 backdrop-blur-md border border-white/10 shadow-2xl">
                 {[
                   { id: '#about', label: '01 ABOUT' },
                   { id: '#skills', label: '02 TECH STACK' },
@@ -716,33 +724,22 @@ export default function App() {
                   { id: '#projects', label: '04 PROJECTS' },
                   { id: '#blog', label: '05 BLOG' },
                 ].map((sec, idx) => {
-                  const isActive = Math.min(4, Math.max(0, Math.round(horizontalProgress * 4))) === idx
+                  const isActive = activeRunwayIdx === idx
                   return (
                     <button
                       key={sec.id}
                       type="button"
                       onClick={() => scrollTo(sec.id)}
-                      className={`font-mono text-[10px] tracking-widest px-2.5 py-1 border transition-all cursor-pointer whitespace-nowrap ${
+                      className={`font-mono text-[10px] tracking-widest px-2.5 sm:px-3 py-1 border transition-all cursor-pointer whitespace-nowrap ${
                         isActive
-                          ? 'border-white bg-white text-black font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)]'
-                          : 'border-white/10 text-white/40 hover:text-white/70 hover:border-white/30 bg-black/70 backdrop-blur-md'
+                          ? 'border-white bg-white text-black font-semibold shadow-[0_0_20px_rgba(255,255,255,0.25)]'
+                          : 'border-white/5 text-white/40 hover:text-white/80 hover:border-white/20 hover:bg-white/5'
                       }`}
                     >
                       {sec.label}
                     </button>
                   )
                 })}
-              </div>
-
-              <div className="hidden md:flex items-center gap-3 font-mono text-[10px] text-white/40 pointer-events-auto bg-black/70 backdrop-blur-md border border-white/10 px-3 py-1">
-                <span className="tracking-widest">HORIZONTAL JOURNEY</span>
-                <div className="w-16 h-1 bg-white/10 relative overflow-hidden">
-                  <div
-                    className="h-full bg-white transition-all duration-150"
-                    style={{ width: `${horizontalProgress * 100}%` }}
-                  />
-                </div>
-                <span>{Math.round(horizontalProgress * 100)}%</span>
               </div>
             </div>
 
@@ -751,13 +748,13 @@ export default function App() {
               className="flex h-screen will-change-transform transition-transform duration-75 ease-out"
               style={{
                 width: '500vw',
-                transform: `translateX(-${horizontalProgress * 400}vw)`,
+                transform: `translateX(-${trackProgress * 400}vw)`,
               }}
             >
               {/* ========== 01 - ABOUT ========== */}
               <div
                 id="about"
-                className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-24 overflow-y-auto"
+                className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-16 pb-24 overflow-y-auto"
               >
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.about.tag}</p>
@@ -804,31 +801,49 @@ export default function App() {
         {/* ========== 02 - TECH STACK / SKILLS ========== */}
         <div
           id="skills"
-          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-24 overflow-y-auto"
+          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-16 pb-24 overflow-y-auto"
         >
           <div className="w-full text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.skills.tag}</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
-              {t.skills.title}
-              <br />
-              <span className="text-white/30">{t.skills.titleSub}</span>
+            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-4">{t.skills.tag}</p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
+              {t.skills.title} <span className="text-white/30">{t.skills.titleSub}</span>
             </h2>
 
-            <div className="divide-y divide-white/10 border-t border-b border-white/10">
-              {t.skills.categories.map((group) => (
-                <div key={group.title} className="py-5 sm:grid sm:grid-cols-12 sm:gap-4 items-start">
-                  <h3 className="sm:col-span-3 font-mono text-[10px] tracking-[0.25em] text-white/30 mb-2 sm:mb-0 pt-2">
-                    {group.title}
-                  </h3>
-                  <div className={`sm:col-span-9 ${group.gridClass}`}>
-                    {group.skills.map((s) => (
-                      <span
-                        key={s}
-                        className="flex items-center justify-start text-left font-mono text-xs px-3 h-9 bg-white/[0.03] border border-white/10 text-white/80 hover:text-white hover:border-white/30 transition-colors w-full whitespace-nowrap"
-                      >
-                        {s}
+            {/* Horizontal Modular Card Grid for Widescreen Layout */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5 sm:gap-4 items-stretch">
+              {t.skills.categories.map((group, gIdx) => (
+                <div
+                  key={group.title}
+                  className="border border-white/10 bg-white/[0.02] hover:border-white/25 hover:bg-white/[0.035] transition-all p-4 sm:p-5 flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between pb-3 mb-3.5 border-b border-white/10">
+                      <h3 className="font-mono text-xs tracking-[0.2em] text-white/90 font-semibold truncate pr-2 uppercase">
+                        {group.title}
+                      </h3>
+                      <span className="font-mono text-[10px] text-emerald-400/80 shrink-0">
+                        // 0{gIdx + 1}
                       </span>
-                    ))}
+                    </div>
+
+                    <div className="space-y-1.5">
+                      {group.skills.map((s) => (
+                        <div
+                          key={s}
+                          className="flex items-start gap-2 font-mono text-[11px] leading-snug text-white/75 hover:text-white px-2.5 py-1.5 bg-white/[0.02] border border-white/5 hover:border-white/20 transition-colors"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 mt-1" />
+                          <span title={s} className="truncate sm:whitespace-normal">
+                            {s}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-white/30">
+                    <span>STACK</span>
+                    <span>{group.skills.length} MODULES</span>
                   </div>
                 </div>
               ))}
@@ -857,7 +872,7 @@ export default function App() {
           return (
             <div
               id="experience"
-              className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-24 overflow-y-auto"
+              className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-16 pb-24 overflow-y-auto"
             >
               <div className="w-full text-left">
                 {/* Header & Story progress indicator */}
@@ -1026,7 +1041,7 @@ export default function App() {
         {/* ========== 04 - PROJECTS ========== */}
         <div
           id="projects"
-          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-24 overflow-y-auto"
+          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-16 pb-24 overflow-y-auto"
         >
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.projects.tag}</p>
@@ -1085,7 +1100,7 @@ export default function App() {
         {/* ========== 05 - BLOG ========== */}
         <div
           id="blog"
-          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-24 overflow-y-auto"
+          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-16 pb-24 overflow-y-auto"
         >
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.blog.tag}</p>
