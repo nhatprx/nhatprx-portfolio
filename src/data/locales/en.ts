@@ -444,6 +444,12 @@ export const en: TranslationDict = {
       sendingBtn: 'SENDING...',
       successMsg: '✓ Message sent! Thank you, I will reply to your email soon.',
       errorMsg: 'Network error. Please try emailing me directly at nhatprx@gmail.com.',
+      directEmail: 'nhatprx@gmail.com',
+      directPhone: '+84 879 888 965',
+      githubUrl: 'https://github.com/nhatprx',
+      linkedinUrl: 'https://www.linkedin.com/in/nhatprx/',
+      availabilityLocation: 'Ho Chi Minh City, Vietnam',
+      isAvailableForRoles: true,
     },
     footer: {
       rights: 'All rights reserved.',

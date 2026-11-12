@@ -11,8 +11,7 @@ export default function CharCounter({ current, max }: { current: number; max: nu
             : 'text-white/30'
       }`}
     >
-      {current}/{max}
+      {current}/{max}{isOver ? ' (OVER LIMIT)' : ''}
     </span>
   )
 }
-

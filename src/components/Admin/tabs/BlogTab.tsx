@@ -1,19 +1,14 @@
 import { useState } from 'react'
 import type { AdminTabProps } from '../types'
-import type { LocalizedBlogPost, SupportedLang, TranslationDict } from '../../../services/contentStorage'
+import type { LocalizedBlogPost } from '../../../services/contentStorage'
 import BlogEditModal from '../modals/BlogEditModal'
-
-interface BlogTabProps extends AdminTabProps {
-  allTranslations: Record<SupportedLang, TranslationDict>
-}
 
 export default function BlogTab({
   currentDict,
   selectedLang,
-  allTranslations,
   updateCurrentDict,
   showToast,
-}: BlogTabProps) {
+}: AdminTabProps) {
   const [editingBlogIndex, setEditingBlogIndex] = useState<number | null>(null)
   const [blogDraft, setBlogDraft] = useState<LocalizedBlogPost | null>(null)
 
@@ -28,19 +23,27 @@ export default function BlogTab({
       return { ...d, blog: { ...d.blog, posts } }
     })
     setBlogDraft(null)
-    showToast('Blog post updated!')
+    showToast('Blog post saved')
   }
 
   return (
-    <div className="space-y-6 font-mono">
-      <div className="flex items-center justify-between border-b border-white/10 pb-3">
-        <div>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-white">
-            Engineering Notes / Blog ({selectedLang.toUpperCase()})
-          </h2>
-          <p className="text-[10px] text-white/40">Manage blog articles displayed in the modal viewer</p>
+    <div className="space-y-4 font-mono">
+      {/* Header Bar */}
+      <div className="border border-white/10 bg-white/[0.015] p-3.5 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-white uppercase tracking-widest">
+            05 · Engineering Notes / Blogs
+          </span>
+          <span className="text-[10px] text-emerald-400 font-bold">
+            ({selectedLang.toUpperCase()})
+          </span>
+          <span className="text-[10px] text-white/40">
+            · {currentDict.blog.posts.length} POSTS
+          </span>
         </div>
+
         <button
+          type="button"
           onClick={() => {
             setEditingBlogIndex(null)
             setBlogDraft({
@@ -65,35 +68,43 @@ export default function BlogTab({
               },
             })
           }}
-          className="px-3 py-1.5 bg-white text-black text-xs font-semibold hover:bg-white/80 transition-colors cursor-pointer"
+          className="px-3 py-1.5 bg-white text-black text-xs font-bold hover:bg-white/85 transition-colors cursor-pointer"
         >
           + ADD BLOG POST
         </button>
       </div>
 
       {/* Blog Post List */}
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {currentDict.blog.posts.map((post, idx) => (
-          <div key={post.slug} className="border border-white/15 p-4 bg-white/[0.02] flex items-start justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
+          <div
+            key={post.slug}
+            className="border border-white/10 p-3.5 bg-black/40 flex items-start justify-between gap-4 hover:border-white/20 transition-colors"
+          >
+            <div className="space-y-1.5 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-bold text-xs text-white">{post.title}</span>
-                <span className="text-[10px] text-white/30 border border-white/10 px-1.5 py-0.5 font-mono">
+                <span className="text-[9.5px] text-emerald-400 border border-emerald-500/20 px-1.5 py-0.2 bg-emerald-500/5">
                   {post.slug}
                 </span>
-                <span className="text-white/40 text-[10px]">{post.date}</span>
+                <span className="text-[9.5px] text-white/40">{post.date}</span>
               </div>
-              <p className="text-xs text-white/60">{post.summary}</p>
-              <div className="flex flex-wrap gap-1 pt-1">
+              <p className="text-xs text-white/70 line-clamp-2">{post.summary}</p>
+              <div className="flex flex-wrap gap-1 pt-0.5">
                 {post.tags.map((t, tIdx) => (
-                  <span key={tIdx} className="text-[9px] text-white/40 border border-white/10 px-1.5 py-0.2">
+                  <span
+                    key={tIdx}
+                    className="text-[9.5px] text-white/40 border border-white/10 px-1.5 py-0.2 bg-white/[0.02]"
+                  >
                     {t}
                   </span>
                 ))}
               </div>
             </div>
+
             <div className="flex items-center gap-2 shrink-0">
               <button
+                type="button"
                 onClick={() => {
                   setEditingBlogIndex(idx)
                   setBlogDraft(JSON.parse(JSON.stringify(post)))
@@ -103,6 +114,7 @@ export default function BlogTab({
                 EDIT
               </button>
               <button
+                type="button"
                 onClick={() => {
                   if (confirm(`Delete blog post: ${post.title}?`)) {
                     updateCurrentDict((d) => ({
@@ -129,12 +141,8 @@ export default function BlogTab({
         isEditing={editingBlogIndex !== null}
         blogDraft={blogDraft}
         setBlogDraft={setBlogDraft}
-        selectedLang={selectedLang}
-        allTranslations={allTranslations}
-        editingBlogIndex={editingBlogIndex}
         onSave={handleSavePost}
         onClose={() => setBlogDraft(null)}
-        showToast={showToast}
       />
     </div>
   )

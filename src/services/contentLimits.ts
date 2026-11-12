@@ -21,7 +21,7 @@ export const CONTENT_LIMITS = {
   },
   work: {
     title: 48,
-    company: 42,
+    company: 60,
     period: 25,
     summary: 200,
     bullet: 240,

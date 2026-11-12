@@ -1,6 +1,7 @@
 import type { TranslationDict } from '../../../../data/translations'
 import CharCounter from '../../CharCounter'
 import { saveFileToIndexedDB } from '../../../../services/fileStorage'
+import { getInputValidationClass } from '../../utils/validation'
 
 interface HeroClusterProps {
   currentDict: TranslationDict
@@ -24,53 +25,45 @@ export default function HeroCluster({
         ...d,
         hero: { ...d.hero, resumeUrl: blobUrl, resumeFileName: file.name },
       }))
-      showToast(`Loaded and safely stored: ${file.name}`)
+      showToast(`Resume stored: ${file.name}`)
     } catch {
       updateCurrentDict((d) => ({
         ...d,
         hero: { ...d.hero, resumeUrl: `/${file.name}`, resumeFileName: file.name },
       }))
-      showToast(`Saved reference: ${file.name}`)
+      showToast(`Resume saved: ${file.name}`)
     }
   }
 
+  const handleResetDefaultResume = () => {
+    updateCurrentDict((d) => ({
+      ...d,
+      hero: {
+        ...d.hero,
+        resumeUrl: '/[nhatprx] PERSONAL RESUME.pdf',
+        resumeFileName: '[nhatprx] PERSONAL RESUME.pdf',
+      },
+    }))
+    showToast('Reset to default resume')
+  }
+
   return (
-    <div className="border border-white/10 bg-black/40 overflow-hidden transition-colors">
+    <div className="border border-white/10 bg-black/40 overflow-hidden transition-colors font-mono">
       <button
         type="button"
         onClick={onToggle}
-        className="w-full p-4 flex items-center justify-between text-left hover:bg-white/[0.02] cursor-pointer transition-colors"
+        className="w-full p-3.5 flex items-center text-left hover:bg-white/[0.02] cursor-pointer transition-colors"
       >
         <div className="flex items-center gap-3 min-w-0">
           <span className="text-xs font-mono text-emerald-400 font-bold">01</span>
-          <div className="min-w-0">
-            <span className="text-xs font-bold tracking-wider text-white uppercase block">
-              Hero Profile & Resume
-            </span>
-            <span className="text-[10px] text-white/40 font-mono truncate block mt-0.5">
-              Role: <span className="text-white/70">{currentDict.hero.role || '—'}</span> · CV:{' '}
-              <span className="text-white/70">
-                {currentDict.hero.resumeFileName ||
-                  (currentDict.hero.resumeUrl ? 'Custom File' : 'Default PDF')}
-              </span>
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <span
-            className={`text-[10px] font-mono px-2 py-0.5 border transition-colors ${
-              isOpen
-                ? 'border-emerald-500/40 text-emerald-300 bg-emerald-500/10'
-                : 'border-white/15 text-white/70 hover:text-white'
-            }`}
-          >
-            {isOpen ? '▲ CLOSE' : '▼ EDIT'}
+          <span className="text-xs font-bold tracking-wider text-white uppercase block truncate">
+            Hero Profile & Resume
           </span>
         </div>
       </button>
 
       {isOpen && (
-        <div className="p-4 pt-1 border-t border-white/10 space-y-3 bg-white/[0.01]">
+        <div className="p-4 pt-1 border-t border-white/10 space-y-3.5 bg-white/[0.01]">
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="text-[10px] text-white/40 uppercase">Role Subtitle</label>
@@ -83,14 +76,28 @@ export default function HeroCluster({
               onChange={(e) =>
                 updateCurrentDict((d) => ({ ...d, hero: { ...d.hero, role: e.target.value } }))
               }
-              className="w-full bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none"
+              className={`w-full bg-white/[0.03] border p-2 text-xs focus:outline-none transition-colors ${getInputValidationClass(
+                currentDict.hero.role
+              )}`}
             />
           </div>
 
           <div>
-            <label className="block text-[10px] text-white/40 uppercase mb-1">
-              Resume / CV File (PDF / Link / Local File)
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[10px] text-white/40 uppercase">
+                Resume / CV Document
+              </label>
+              {currentDict.hero.resumeUrl && (
+                <button
+                  type="button"
+                  onClick={handleResetDefaultResume}
+                  className="text-[9.5px] text-white/40 hover:text-white underline cursor-pointer"
+                >
+                  Reset Default
+                </button>
+              )}
+            </div>
+
             <div className="flex gap-2">
               <input
                 type="text"
@@ -105,7 +112,7 @@ export default function HeroCluster({
                 className="flex-1 bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:border-white focus:outline-none font-mono text-[11px]"
               />
               <label className="px-3 py-2 border border-white/20 text-[10px] text-white/80 hover:text-white hover:border-white cursor-pointer bg-white/[0.04] flex items-center shrink-0">
-                <span>CHOOSE</span>
+                <span>CHOOSE FILE</span>
                 <input
                   type="file"
                   accept=".pdf,.doc,.docx"
@@ -117,10 +124,23 @@ export default function HeroCluster({
                 />
               </label>
             </div>
+
             {currentDict.hero.resumeFileName && (
-              <p className="text-[10px] text-emerald-400 mt-1 font-mono">
-                Active file: {currentDict.hero.resumeFileName}
-              </p>
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[10px] text-emerald-400 font-mono">
+                  ● Active: {currentDict.hero.resumeFileName}
+                </span>
+                {currentDict.hero.resumeUrl && (
+                  <a
+                    href={currentDict.hero.resumeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[10px] text-white/50 hover:text-white underline"
+                  >
+                    Preview File ↗
+                  </a>
+                )}
+              </div>
             )}
           </div>
         </div>

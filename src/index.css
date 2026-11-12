@@ -44,11 +44,13 @@ body {
 }
 
 /* Hide scrollbar for Terminal */
-.terminal-scroll {
+.terminal-scroll,
+.scrollbar-none {
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
 }
-.terminal-scroll::-webkit-scrollbar {
+.terminal-scroll::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
   width: 0px !important;
   height: 0px !important;
   display: none !important;
@@ -150,4 +152,12 @@ body {
     transform: none !important;
     transition: none !important;
   }
+}
+
+/* Ensure all content sections are immediately visible inside Live Preview */
+.live-preview-content .story-reveal,
+[data-live-preview] .story-reveal {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: opacity 0.3s ease-out !important;
 }

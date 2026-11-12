@@ -136,6 +136,12 @@ export interface TranslationDict {
     sendingBtn: string
     successMsg: string
     errorMsg: string
+    directEmail?: string
+    directPhone?: string
+    githubUrl?: string
+    linkedinUrl?: string
+    availabilityLocation?: string
+    isAvailableForRoles?: boolean
   }
   footer: {
     rights: string

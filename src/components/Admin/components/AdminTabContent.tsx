@@ -58,7 +58,6 @@ export default function AdminTabContent({
         <ExperienceTab
           currentDict={currentDict}
           selectedLang={selectedLang}
-          allTranslations={translations}
           updateCurrentDict={updateCurrentDict}
           showToast={showToast}
         />
@@ -68,7 +67,6 @@ export default function AdminTabContent({
         <ProjectsTab
           currentDict={currentDict}
           selectedLang={selectedLang}
-          allTranslations={translations}
           updateCurrentDict={updateCurrentDict}
           showToast={showToast}
         />
@@ -78,7 +76,6 @@ export default function AdminTabContent({
         <BlogTab
           currentDict={currentDict}
           selectedLang={selectedLang}
-          allTranslations={translations}
           updateCurrentDict={updateCurrentDict}
           showToast={showToast}
         />
@@ -101,6 +98,7 @@ export default function AdminTabContent({
         />
       )
     case 'system':
+    case 'settings':
       return (
         <SystemTab
           translations={translations}

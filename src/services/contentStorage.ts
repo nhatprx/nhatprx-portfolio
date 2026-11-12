@@ -33,33 +33,38 @@ export function getStoredTranslations(): Record<SupportedLang, TranslationDict> 
             languagesTitle: custom.about?.languagesTitle || base.about.languagesTitle,
             tag: base.about.tag,
           },
-          skills: { ...base.skills, ...(custom.skills || {}), tag: base.skills.tag },
+          skills: {
+            ...base.skills,
+            ...(custom.skills || {}),
+            tag: base.skills.tag,
+            categories: base.skills.categories.map((baseCat, idx) => {
+              const customCat = custom.skills?.categories?.[idx]
+              if (!customCat) return baseCat
+              return {
+                ...baseCat,
+                ...customCat,
+                title: customCat.title ?? baseCat.title,
+                skills: Array.isArray(customCat.skills) ? customCat.skills : baseCat.skills,
+                gridClass: baseCat.gridClass,
+                fullWidth: baseCat.fullWidth,
+              }
+            }),
+          },
           experience: {
             ...base.experience,
             ...(custom.experience || {}),
             tag: base.experience.tag,
-            items: base.experience.items.map((baseItem, idx) => {
-              const customItem = custom.experience?.items?.[idx]
-              if (!customItem) return baseItem
-              return {
-                ...customItem,
-                tech: baseItem.tech.length === 0 ? [] : (customItem.tech || baseItem.tech),
-              }
-            }),
+            items: Array.isArray(custom.experience?.items)
+              ? custom.experience.items
+              : base.experience.items,
           },
           projects: {
             ...base.projects,
             ...(custom.projects || {}),
             tag: base.projects.tag,
-            items: base.projects.items.map((baseItem, idx) => {
-              const customItem = custom.projects?.items?.[idx]
-              if (!customItem) return baseItem
-              return {
-                ...baseItem,
-                ...customItem,
-                tech: customItem.tech && customItem.tech.length > 0 ? customItem.tech : baseItem.tech,
-              }
-            }),
+            items: Array.isArray(custom.projects?.items)
+              ? custom.projects.items
+              : base.projects.items,
           },
           blog: { ...base.blog, ...customBlog, tag: base.blog.tag, posts },
           contact: { ...base.contact, ...(custom.contact || {}), tag: base.contact.tag },
