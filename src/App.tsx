@@ -244,7 +244,9 @@ export default function App() {
     if (typeof window === 'undefined') return false
     return window.location.hash === '#admin' || window.location.pathname === '/admin'
   })
+  const [workTab, setWorkTab] = useState<'experience' | 'projects'>('experience')
   const [activeExp, setActiveExp] = useState(0)
+  const [activeProj, setActiveProj] = useState(0)
   const [windowWidth, setWindowWidth] = useState(() => (typeof window !== 'undefined' ? window.innerWidth : 1000))
   const [touchStartX, setTouchStartX] = useState<number | null>(null)
 
@@ -430,16 +432,6 @@ export default function App() {
 
           <nav className="hidden lg:flex items-center gap-6 text-xs font-mono tracking-wider text-white/40">
             <a
-              href="#terminal"
-              onClick={(e) => {
-                e.preventDefault()
-                scrollTo('#terminal')
-              }}
-              className="hover:text-white transition-colors"
-            >
-              {t.nav.liveLab}
-            </a>
-            <a
               href="#about"
               onClick={(e) => {
                 e.preventDefault()
@@ -450,30 +442,22 @@ export default function App() {
               {t.nav.about}
             </a>
             <a
-              href="#skills"
+              href="#work"
               onClick={(e) => {
                 e.preventDefault()
-                scrollTo('#skills')
-              }}
-              className="hover:text-white transition-colors"
-            >
-              {t.nav.skills}
-            </a>
-            <a
-              href="#experience"
-              onClick={(e) => {
-                e.preventDefault()
-                scrollTo('#experience')
+                setWorkTab('experience')
+                scrollTo('#work')
               }}
               className="hover:text-white transition-colors"
             >
               {t.nav.experience}
             </a>
             <a
-              href="#projects"
+              href="#work"
               onClick={(e) => {
                 e.preventDefault()
-                scrollTo('#projects')
+                setWorkTab('projects')
+                scrollTo('#work')
               }}
               className="hover:text-white transition-colors"
             >
@@ -627,8 +611,8 @@ export default function App() {
           </div>
         </section>
 
-        {/* ========== 01 - ABOUT ========== */}
-        <section id="about" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14">
+        {/* ========== 01 - ABOUT & TECH STACK (UNIFIED) ========== */}
+        <section id="about" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-3">{t.about.tag}</p>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-6">
@@ -687,102 +671,133 @@ export default function App() {
                 </span>
               ))}
             </div>
-          </div>
-        </section>
 
-        {/* ========== 02 - TECH STACK / SKILLS ========== */}
-        <section id="skills" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 flex items-center">
-          <div className="w-full text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-3">{t.skills.tag}</p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3">
-              {t.skills.title} <span className="text-white/30">{t.skills.titleSub}</span>
-            </h2>
-            {t.skills.desc && (
-              <p className="text-sm sm:text-base text-white/50 leading-relaxed max-w-2xl mb-8">
-                {t.skills.desc}
-              </p>
-            )}
+            {/* Embedded Tech Stack Sub-section */}
+            <div id="skills" className="pt-14 mt-14 border-t border-white/10 scroll-mt-20">
+              <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-3">{t.skills.tag}</p>
+              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight mb-3">
+                {t.skills.title} <span className="text-white/30">{t.skills.titleSub}</span>
+              </h3>
+              {t.skills.desc && (
+                <p className="text-sm sm:text-base text-white/50 leading-relaxed max-w-2xl mb-8">
+                  {t.skills.desc}
+                </p>
+              )}
 
-            {/* Modular Card Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 items-stretch">
-              {t.skills.categories.map((group, gIdx) => (
-                <div
-                  key={group.title}
-                  className="border border-white/10 hover:border-white/25 transition-all p-5 flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-center justify-between pb-3 mb-3.5 border-b border-white/10">
-                      <h3 className="font-mono text-xs tracking-[0.2em] text-white/90 font-semibold truncate pr-2 uppercase">
-                        {group.title}
-                      </h3>
-                      <span className="font-mono text-[10px] text-white/40 shrink-0">
-                        // 0{gIdx + 1}
-                      </span>
+              {/* Modular Card Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 items-stretch">
+                {t.skills.categories.map((group, gIdx) => (
+                  <div
+                    key={group.title}
+                    className="border border-white/10 hover:border-white/25 transition-all p-5 flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between pb-3 mb-3.5 border-b border-white/10">
+                        <h4 className="font-mono text-xs tracking-[0.2em] text-white/90 font-semibold truncate pr-2 uppercase">
+                          {group.title}
+                        </h4>
+                        <span className="font-mono text-[10px] text-white/40 shrink-0">
+                          // 0{gIdx + 1}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        {group.skills.map((s) => (
+                          <div
+                            key={s}
+                            className="flex items-start gap-2 font-mono text-[11px] leading-snug text-white/75 hover:text-white px-2.5 py-1.5 border border-white/5 hover:border-white/20 transition-colors"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-white/40 shrink-0 mt-1" />
+                            <span title={s} className="truncate sm:whitespace-normal">
+                              {s}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
-                    <div className="space-y-1.5">
-                      {group.skills.map((s) => (
-                        <div
-                          key={s}
-                          className="flex items-start gap-2 font-mono text-[11px] leading-snug text-white/75 hover:text-white px-2.5 py-1.5 border border-white/5 hover:border-white/20 transition-colors"
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-white/40 shrink-0 mt-1" />
-                          <span title={s} className="truncate sm:whitespace-normal">
-                            {s}
-                          </span>
-                        </div>
-                      ))}
+                    <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-white/30">
+                      <span>STACK</span>
+                      <span>{group.skills.length} MODULES</span>
                     </div>
                   </div>
-
-                  <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-white/30">
-                    <span>STACK</span>
-                    <span>{group.skills.length} MODULES</span>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
-        {/* ========== 03 - EXPERIENCE (3-CARD INFINITE LOOP STAGE) ========== */}
+        {/* ========== 02 - WORK: EXPERIENCE & PROJECTS (TABBED 3-CARD INFINITE LOOP STAGE) ========== */}
         {(() => {
-          const items = t.experience.items
-          const N = items.length
-          const realIndex = ((activeExp % N) + N) % N
+          const isExp = workTab === 'experience'
+          const expItems = t.experience.items
+          const projItems = t.projects.items
+          const N = isExp ? expItems.length : projItems.length
+          const currentActive = isExp ? activeExp : activeProj
+          const setCurrentActive = isExp ? setActiveExp : setActiveProj
+          const realIndex = ((currentActive % N) + N) % N
           const cardWidth = Math.min(windowWidth - 48, 560)
           const gap = windowWidth < 640 ? 16 : 28
 
-          // 5 slots around activeExp: 2 left, 1 center, 2 right for seamless infinite transition
-          const slots = [activeExp - 2, activeExp - 1, activeExp, activeExp + 1, activeExp + 2]
+          // 5 slots around currentActive: 2 left, 1 center, 2 right for seamless infinite transition
+          const slots = [currentActive - 2, currentActive - 1, currentActive, currentActive + 1, currentActive + 2]
 
           const jumpToChapter = (targetIdx: number) => {
             let diff = targetIdx - realIndex
             if (diff > 1) diff -= N
             if (diff < -1) diff += N
-            setActiveExp((prev) => prev + diff)
+            setCurrentActive((prev) => prev + diff)
           }
 
           return (
             <section
-              id="experience"
-              className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 flex items-center justify-center overflow-hidden"
+              id="work"
+              className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 flex items-center justify-center overflow-hidden relative"
             >
+              <div id="experience" className="absolute -top-10" />
+              <div id="projects" className="absolute -top-10" />
+
               <div className="w-full text-left">
-                {/* Header & Story progress indicator */}
-                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 px-2 sm:px-4">
+                {/* Header & Tab Switcher */}
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-6 px-2 sm:px-4">
                   <div>
-                    <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-2">{t.experience.tag}</p>
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-2">
-                      {t.experience.title} <span className="text-white/30">{t.experience.titleSub}</span>
-                    </h2>
-                    {t.experience.desc && (
-                      <p className="text-sm text-white/50 leading-relaxed max-w-2xl">
-                        {t.experience.desc}
-                      </p>
-                    )}
+                    <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-2">
+                      {isExp ? t.experience.tag : t.projects.tag}
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-3 mb-3">
+                      <div className="inline-flex p-1 border border-white/20 bg-white/[0.04]">
+                        <button
+                          type="button"
+                          onClick={() => setWorkTab('experience')}
+                          className={`px-4 py-2 font-mono text-xs tracking-wider transition-all cursor-pointer ${
+                            isExp
+                              ? 'bg-white text-black font-semibold shadow-sm'
+                              : 'text-white/50 hover:text-white'
+                          }`}
+                        >
+                          {t.experience.title} ({expItems.length})
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setWorkTab('projects')}
+                          className={`px-4 py-2 font-mono text-xs tracking-wider transition-all cursor-pointer ${
+                            !isExp
+                              ? 'bg-white text-black font-semibold shadow-sm'
+                              : 'text-white/50 hover:text-white'
+                          }`}
+                        >
+                          {t.projects.title} ({projItems.length})
+                        </button>
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-white/50 leading-relaxed max-w-2xl">
+                      {isExp ? t.experience.desc : t.projects.desc}
+                    </p>
                   </div>
 
+                  {/* Progress & Chevron Navigation */}
                   <div className="flex items-center gap-3 font-mono text-xs text-white/40 shrink-0">
                     <span>
                       CH. 0{realIndex + 1} / 0{N}
@@ -796,16 +811,16 @@ export default function App() {
                     <div className="flex items-center gap-1">
                       <button
                         type="button"
-                        onClick={() => setActiveExp((prev) => prev - 1)}
-                        aria-label="Previous chapter (infinite loop)"
+                        onClick={() => setCurrentActive((prev) => prev - 1)}
+                        aria-label="Previous item (infinite loop)"
                         className="p-1.5 border border-white/10 hover:border-white/30 text-white hover:bg-white/5 transition-colors cursor-pointer"
                       >
                         <ChevronLeftIcon className="w-4 h-4" />
                       </button>
                       <button
                         type="button"
-                        onClick={() => setActiveExp((prev) => prev + 1)}
-                        aria-label="Next chapter (infinite loop)"
+                        onClick={() => setCurrentActive((prev) => prev + 1)}
+                        aria-label="Next item (infinite loop)"
                         className="p-1.5 border border-white/10 hover:border-white/30 text-white hover:bg-white/5 transition-colors cursor-pointer"
                       >
                         <ChevronRightIcon className="w-4 h-4" />
@@ -816,21 +831,27 @@ export default function App() {
 
                 {/* Timeline Chapter Pills */}
                 <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 mb-6 px-2 sm:px-4">
-                  {items.map((exp, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => jumpToChapter(idx)}
-                      className={`font-mono text-[10px] tracking-wider px-3 py-1.5 border transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${realIndex === idx
-                        ? 'border-white bg-white text-black font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)]'
-                        : 'border-white/10 text-white/40 hover:text-white/70 hover:border-white/30 bg-white/[0.02]'
+                  {(isExp ? expItems : projItems).map((item, idx) => {
+                    const label = isExp
+                      ? ('role' in item ? item.role.split('·')[0].split('&')[0].trim() : '')
+                      : ('title' in item ? item.title : '')
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => jumpToChapter(idx)}
+                        className={`font-mono text-[10px] tracking-wider px-3 py-1.5 border transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
+                          realIndex === idx
+                            ? 'border-white bg-white text-black font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)]'
+                            : 'border-white/10 text-white/40 hover:text-white/70 hover:border-white/30 bg-white/[0.02]'
                         }`}
-                    >
-                      <span>0{idx + 1}</span>
-                      <span className="opacity-40">|</span>
-                      <span className="truncate max-w-[130px] sm:max-w-none">{exp.role.split('·')[0].split('&')[0].trim()}</span>
-                    </button>
-                  ))}
+                      >
+                        <span>0{idx + 1}</span>
+                        <span className="opacity-40">|</span>
+                        <span className="truncate max-w-[140px] sm:max-w-none">{label}</span>
+                      </button>
+                    )
+                  })}
                 </div>
 
                 {/* 3-Card Stage with Infinite Loop */}
@@ -840,10 +861,10 @@ export default function App() {
                   onKeyDown={(e) => {
                     if (e.key === 'ArrowRight') {
                       e.preventDefault()
-                      setActiveExp((prev) => prev + 1)
+                      setCurrentActive((prev) => prev + 1)
                     } else if (e.key === 'ArrowLeft') {
                       e.preventDefault()
-                      setActiveExp((prev) => prev - 1)
+                      setCurrentActive((prev) => prev - 1)
                     }
                   }}
                   onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
@@ -851,25 +872,97 @@ export default function App() {
                     if (touchStartX === null) return
                     const diff = touchStartX - e.changedTouches[0].clientX
                     if (diff > 40) {
-                      setActiveExp((prev) => prev + 1)
+                      setCurrentActive((prev) => prev + 1)
                     } else if (diff < -40) {
-                      setActiveExp((prev) => prev - 1)
+                      setCurrentActive((prev) => prev - 1)
                     }
                     setTouchStartX(null)
                   }}
                   role="region"
-                  aria-label="3-card experience infinite stage"
+                  aria-label="3-card interactive infinite stage"
                 >
                   {slots.map((slot) => {
                     const itemIndex = ((slot % N) + N) % N
-                    const exp = items[itemIndex]
-                    const offset = slot - activeExp // -2, -1, 0, 1, 2
+                    const offset = slot - currentActive // -2, -1, 0, 1, 2
                     const isCenter = offset === 0
 
+                    if (isExp) {
+                      const exp = expItems[itemIndex]
+                      return (
+                        <div
+                          key={`exp-${slot}`}
+                          onClick={() => Math.abs(offset) === 1 && setCurrentActive((prev) => prev + offset)}
+                          style={{
+                            width: `${cardWidth}px`,
+                            transform: `translateX(calc(-50% + ${offset * (cardWidth + gap)}px)) scale(${isCenter ? 1 : 0.94})`,
+                            left: '50%',
+                            opacity: isCenter ? 1 : Math.abs(offset) === 1 ? 0.38 : 0,
+                            zIndex: isCenter ? 20 : 10 - Math.abs(offset),
+                            pointerEvents: Math.abs(offset) > 1 ? 'none' : 'auto',
+                            transition: 'transform 500ms cubic-bezier(0.16, 1, 0.3, 1), opacity 500ms ease',
+                          }}
+                          className={`absolute top-0 bottom-0 select-none ${
+                            Math.abs(offset) === 1 ? 'cursor-pointer hover:opacity-60' : ''
+                          }`}
+                        >
+                          <article
+                            className={`h-full flex flex-col justify-between p-6 sm:p-8 border transition-all duration-300 ${
+                              isCenter
+                                ? 'border-white/30 bg-white/[0.04] shadow-[0_0_50px_rgba(255,255,255,0.06)]'
+                                : 'border-white/10 bg-white/[0.01]'
+                            }`}
+                          >
+                            <div>
+                              <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-white/10">
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                                      isCenter ? 'bg-emerald-400 animate-pulse' : 'bg-white/20'
+                                    }`}
+                                  />
+                                  <span className="font-mono text-[10px] tracking-[0.25em] text-white/50 uppercase">
+                                    CHAPTER 0{itemIndex + 1} // CAREER STORY
+                                  </span>
+                                </div>
+                                <span className="font-mono text-[10px] text-white/40 border border-white/10 px-2 py-0.5">
+                                  {exp.period}
+                                </span>
+                              </div>
+
+                              <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-2">
+                                <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white">{exp.role}</h3>
+                              </div>
+                              <p className="text-xs font-mono text-emerald-400/90 mb-4">{exp.company}</p>
+                              <p className="text-sm text-white/60 leading-relaxed mb-4">
+                                {exp.summary}
+                              </p>
+                              <ul className="space-y-2 text-sm text-white/50 leading-relaxed mb-6">
+                                {exp.bullets.map((b, bIdx) => (
+                                  <li key={bIdx}>• {b}</li>
+                                ))}
+                              </ul>
+                            </div>
+                            <div className="mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
+                              {exp.tech.map((tech) => (
+                                <span
+                                  key={tech}
+                                  className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30 bg-white/[0.02]"
+                                >
+                                  {tech}
+                                </span>
+                              ))}
+                            </div>
+                          </article>
+                        </div>
+                      )
+                    }
+
+                    // Render Project Card
+                    const proj = projItems[itemIndex]
                     return (
                       <div
-                        key={slot}
-                        onClick={() => Math.abs(offset) === 1 && setActiveExp((prev) => prev + offset)}
+                        key={`proj-${slot}`}
+                        onClick={() => Math.abs(offset) === 1 && setCurrentActive((prev) => prev + offset)}
                         style={{
                           width: `${cardWidth}px`,
                           transform: `translateX(calc(-50% + ${offset * (cardWidth + gap)}px)) scale(${isCenter ? 1 : 0.94})`,
@@ -879,46 +972,63 @@ export default function App() {
                           pointerEvents: Math.abs(offset) > 1 ? 'none' : 'auto',
                           transition: 'transform 500ms cubic-bezier(0.16, 1, 0.3, 1), opacity 500ms ease',
                         }}
-                        className={`absolute top-0 bottom-0 select-none ${Math.abs(offset) === 1 ? 'cursor-pointer hover:opacity-60' : ''
-                          }`}
+                        className={`absolute top-0 bottom-0 select-none ${
+                          Math.abs(offset) === 1 ? 'cursor-pointer hover:opacity-60' : ''
+                        }`}
                       >
                         <article
-                          className={`h-full flex flex-col justify-between p-6 sm:p-8 border transition-all duration-300 ${isCenter
-                            ? 'border-white/30 bg-white/[0.04] shadow-[0_0_50px_rgba(255,255,255,0.06)]'
-                            : 'border-white/10 bg-white/[0.01]'
-                            }`}
+                          className={`h-full flex flex-col justify-between p-6 sm:p-8 border transition-all duration-300 ${
+                            isCenter
+                              ? 'border-white/30 bg-white/[0.04] shadow-[0_0_50px_rgba(255,255,255,0.06)]'
+                              : 'border-white/10 bg-white/[0.01]'
+                          }`}
                         >
                           <div>
                             <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-white/10">
                               <div className="flex items-center gap-2">
                                 <span
-                                  className={`w-1.5 h-1.5 rounded-full transition-colors ${isCenter ? 'bg-emerald-400 animate-pulse' : 'bg-white/20'
-                                    }`}
+                                  className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                                    isCenter ? 'bg-emerald-400 animate-pulse' : 'bg-white/20'
+                                  }`}
                                 />
                                 <span className="font-mono text-[10px] tracking-[0.25em] text-white/50 uppercase">
-                                  CHAPTER 0{itemIndex + 1} // STORY
+                                  PROJECT 0{itemIndex + 1} // ARCHITECTURE
                                 </span>
                               </div>
-                              <span className="font-mono text-[10px] text-white/40 border border-white/10 px-2 py-0.5">
-                                {exp.period}
-                              </span>
+                              <div className="flex items-center gap-3">
+                                {proj.repoUrl && (
+                                  <a
+                                    href={proj.repoUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="View source code on GitHub"
+                                    title="View source on GitHub"
+                                    className="text-white/40 hover:text-white transition-colors"
+                                  >
+                                    <GithubIcon className="w-4 h-4" />
+                                  </a>
+                                )}
+                                <span className="font-mono text-[10px] text-white/40 border border-white/10 px-2 py-0.5">
+                                  {proj.period}
+                                </span>
+                              </div>
                             </div>
 
                             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-2">
-                              <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white">{exp.role}</h3>
+                              <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white">{proj.title}</h3>
                             </div>
-                            <p className="text-xs font-mono text-emerald-400/90 mb-4">{exp.company}</p>
+                            <p className="text-xs font-mono text-emerald-400/90 mb-4">{proj.meta}</p>
                             <p className="text-sm text-white/60 leading-relaxed mb-4">
-                              {exp.summary}
+                              {proj.desc}
                             </p>
                             <ul className="space-y-2 text-sm text-white/50 leading-relaxed mb-6">
-                              {exp.bullets.map((b, bIdx) => (
+                              {proj.bullets.map((b, bIdx) => (
                                 <li key={bIdx}>• {b}</li>
                               ))}
                             </ul>
                           </div>
                           <div className="mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
-                            {exp.tech.map((tech) => (
+                            {proj.tech.map((tech) => (
                               <span
                                 key={tech}
                                 className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30 bg-white/[0.02]"
@@ -936,64 +1046,6 @@ export default function App() {
             </section>
           )
         })()}
-
-        {/* ========== 04 - PROJECTS ========== */}
-        <section id="projects" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">
-          <div className="w-full text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-3">{t.projects.tag}</p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3">
-              {t.projects.title} <span className="text-white/30">{t.projects.titleSub}</span>
-            </h2>
-            {t.projects.desc && (
-              <p className="text-sm sm:text-base text-white/50 leading-relaxed max-w-2xl mb-8">
-                {t.projects.desc}
-              </p>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {t.projects.items.map((proj, idx) => (
-                <article key={idx} className="border border-white/10 p-6 sm:p-7 hover:border-white/25 transition-all flex flex-col justify-between min-h-[380px]">
-                  <div>
-                    <div className="flex items-baseline justify-between gap-4 mb-2">
-                      <h3 className="text-lg font-bold">{proj.title}</h3>
-                      <div className="flex items-center gap-3">
-                        {proj.repoUrl && (
-                          <a
-                            href={proj.repoUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="View source code on GitHub"
-                            title="View source on GitHub"
-                            className="text-white/40 hover:text-white transition-colors"
-                          >
-                            <GithubIcon className="w-4 h-4" />
-                          </a>
-                        )}
-                        <span className="font-mono text-[10px] text-white/30 shrink-0">{proj.period}</span>
-                      </div>
-                    </div>
-                    <p className="text-xs font-mono text-white/30 mb-4">{proj.meta}</p>
-                    <p className="text-sm text-white/50 leading-relaxed mb-4">
-                      {proj.desc}
-                    </p>
-                    <ul className="space-y-2 text-sm text-white/40 mb-6">
-                      {proj.bullets.map((b, bIdx) => (
-                        <li key={bIdx}>• {b}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
-                    {proj.tech.map((tech) => (
-                      <span key={tech} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* ========== 05 - BLOG ========== */}
         <section id="blog" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">

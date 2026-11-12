@@ -28,7 +28,13 @@ export function getStoredTranslations(): Record<SupportedLang, TranslationDict> 
           ...custom,
           skills: { ...base.skills, ...(custom.skills || {}) },
           experience: { ...base.experience, ...(custom.experience || {}) },
-          projects: { ...base.projects, ...(custom.projects || {}) },
+          projects: {
+            ...base.projects,
+            ...(custom.projects || {}),
+            items: (custom.projects?.items?.length ?? 0) >= base.projects.items.length
+              ? custom.projects.items
+              : base.projects.items,
+          },
           blog: { ...base.blog, ...customBlog, posts },
         }
       }

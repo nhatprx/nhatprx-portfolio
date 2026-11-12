@@ -53,10 +53,10 @@ export default function BlogPostModal({
       onClick={onClose}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 md:p-12 bg-black/55 backdrop-blur-[2px] overscroll-contain"
     >
-      {/* Floating Modal Window Card Overlay */}
+      {/* Floating Modal Window Card Overlay (at least 70vw on desktop) */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-3xl max-h-[82vh] bg-black/95 border border-white/25 flex flex-col shadow-[0_25px_70px_rgba(0,0,0,0.9)] overflow-hidden text-left font-sans animate-modal-pop"
+        className="w-[94vw] md:w-[85vw] lg:w-[75vw] xl:w-[72vw] max-w-7xl max-h-[88vh] bg-black/95 border border-white/25 flex flex-col shadow-[0_25px_70px_rgba(0,0,0,0.9)] overflow-hidden text-left font-sans animate-modal-pop"
       >
         {/* Window Chrome Title Bar */}
         <div className="flex items-center justify-between px-6 py-3.5 border-b border-white/10 bg-white/[0.03] shrink-0">
