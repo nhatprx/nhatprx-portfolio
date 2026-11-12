@@ -730,11 +730,10 @@ export default function App() {
                       key={sec.id}
                       type="button"
                       onClick={() => scrollTo(sec.id)}
-                      className={`font-mono text-[10px] tracking-widest px-2.5 sm:px-3 py-1 border transition-all cursor-pointer whitespace-nowrap ${
-                        isActive
+                      className={`font-mono text-[10px] tracking-widest px-2.5 sm:px-3 py-1 border transition-all cursor-pointer whitespace-nowrap ${isActive
                           ? 'border-white bg-white text-black font-semibold shadow-[0_0_20px_rgba(255,255,255,0.25)]'
                           : 'border-white/5 text-white/40 hover:text-white/80 hover:border-white/20 hover:bg-white/5'
-                      }`}
+                        }`}
                     >
                       {sec.label}
                     </button>
@@ -756,398 +755,419 @@ export default function App() {
                 id="about"
                 className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-16 pb-24 overflow-y-auto"
               >
-          <div className="w-full text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.about.tag}</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
-              {t.about.title}
-              <br />
-              <span className="text-white/30">{t.about.titleSub}</span>
-            </h2>
-            <div className="space-y-4 text-sm text-white/60 leading-relaxed max-w-4xl">
-              <p>{t.about.p1}</p>
-              <p>{t.about.p2}</p>
-            </div>
+                <div className="w-full text-left">
+                  <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.about.tag}</p>
+                  <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
+                    {t.about.title}
+                    <br />
+                    <span className="text-white/30">{t.about.titleSub}</span>
+                  </h2>
+                  <div className="space-y-4 text-sm text-white/60 leading-relaxed max-w-4xl">
+                    <p>{t.about.p1}</p>
+                    <p>{t.about.p2}</p>
+                  </div>
 
-            <div className="mt-10">
-              <h3 className="font-mono text-[10px] tracking-[0.25em] text-white/30 mb-4 uppercase">
-                {t.about.educationTitle}
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="border border-white/10 p-5">
-                  <div className="text-lg font-bold">{t.about.edu1School}</div>
-                  <div className="font-mono text-[10px] text-white/30 mt-1">{t.about.edu1Degree}</div>
-                  <div className="text-xs text-white/50 mt-2">{t.about.edu1Major}</div>
-                  <div className="text-[11px] text-white/30 mt-1">{t.about.edu1Dates}</div>
-                </div>
-                <div className="border border-white/10 p-5">
-                  <div className="text-lg font-bold">{t.about.edu2School}</div>
-                  <div className="font-mono text-[10px] text-white/30 mt-1">{t.about.edu2Degree}</div>
-                  <div className="text-xs text-white/50 mt-2">{t.about.edu2Major}</div>
-                  <div className="text-[11px] text-white/30 mt-1">{t.about.edu2Dates}</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 flex flex-wrap gap-2">
-              {t.about.languages.map((langItem) => (
-                <span key={langItem} className="font-mono text-[10px] px-3 py-1.5 border border-white/10 text-white/40">
-                  {langItem}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ========== 02 - TECH STACK / SKILLS ========== */}
-        <div
-          id="skills"
-          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-16 pb-24 overflow-y-auto"
-        >
-          <div className="w-full text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-4">{t.skills.tag}</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
-              {t.skills.title} <span className="text-white/30">{t.skills.titleSub}</span>
-            </h2>
-
-            {/* Horizontal Modular Card Grid for Widescreen Layout */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5 sm:gap-4 items-stretch">
-              {t.skills.categories.map((group, gIdx) => (
-                <div
-                  key={group.title}
-                  className="border border-white/10 bg-white/[0.02] hover:border-white/25 hover:bg-white/[0.035] transition-all p-4 sm:p-5 flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-center justify-between pb-3 mb-3.5 border-b border-white/10">
-                      <h3 className="font-mono text-xs tracking-[0.2em] text-white/90 font-semibold truncate pr-2 uppercase">
-                        {group.title}
-                      </h3>
-                      <span className="font-mono text-[10px] text-emerald-400/80 shrink-0">
-                        // 0{gIdx + 1}
-                      </span>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      {group.skills.map((s) => (
-                        <div
-                          key={s}
-                          className="flex items-start gap-2 font-mono text-[11px] leading-snug text-white/75 hover:text-white px-2.5 py-1.5 bg-white/[0.02] border border-white/5 hover:border-white/20 transition-colors"
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 mt-1" />
-                          <span title={s} className="truncate sm:whitespace-normal">
-                            {s}
+                  <div className="mt-6">
+                    <h3 className="font-mono text-[10px] tracking-[0.25em] text-white/30 mb-2.5 uppercase">
+                      {t.about.educationTitle}
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2.5 sm:gap-3 max-w-4xl">
+                      {/* Education Card 1: FPT University */}
+                      <div className="min-w-0 border border-white/10 hover:border-white/25 bg-white/[0.02] px-3 py-2 sm:px-4 sm:py-2.5 transition-colors flex flex-col justify-between">
+                        <div className="flex items-center justify-between gap-1.5 sm:gap-2">
+                          <span className="text-xs sm:text-sm font-semibold text-white tracking-tight truncate">
+                            {t.about.edu1School}
+                          </span>
+                          <span className="font-mono text-[8px] sm:text-[9px] text-emerald-400/90 flex items-center gap-1 shrink-0 uppercase">
+                            <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+                            {t.about.edu1Degree}
                           </span>
                         </div>
-                      ))}
+                        <div className="flex items-center justify-between gap-1.5 sm:gap-2 mt-1 font-mono text-[10px] sm:text-[11px] text-white/50">
+                          <span className="truncate">{t.about.edu1Major}</span>
+                          <span className="text-white/30 text-[9px] sm:text-[10px] shrink-0">{t.about.edu1Location || t.about.edu1Dates}</span>
+                        </div>
+                      </div>
+
+                      {/* Education Card 2: Multimedia University */}
+                      <div className="min-w-0 border border-white/10 hover:border-white/25 bg-white/[0.02] px-3 py-2 sm:px-4 sm:py-2.5 transition-colors flex flex-col justify-between">
+                        <div className="flex items-center justify-between gap-1.5 sm:gap-2">
+                          <span className="text-xs sm:text-sm font-semibold text-white tracking-tight truncate">
+                            {t.about.edu2School}
+                          </span>
+                          <span className="font-mono text-[8px] sm:text-[9px] text-cyan-400/90 flex items-center gap-1 shrink-0 uppercase">
+                            <span className="w-1 h-1 rounded-full bg-cyan-400" />
+                            {t.about.edu2Degree}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-1.5 sm:gap-2 mt-1 font-mono text-[10px] sm:text-[11px] text-white/50">
+                          <span className="truncate">{t.about.edu2Major}</span>
+                          <span className="text-white/30 text-[9px] sm:text-[10px] shrink-0">{t.about.edu2Location || t.about.edu2Dates}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-white/30">
-                    <span>STACK</span>
-                    <span>{group.skills.length} MODULES</span>
+                  <div className="mt-8 flex flex-wrap gap-2">
+                    {t.about.languages.map((langItem) => (
+                      <span key={langItem} className="font-mono text-[10px] px-3 py-1.5 border border-white/10 text-white/40">
+                        {langItem}
+                      </span>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
+              </div>
 
-        {/* ========== 03 - EXPERIENCE (3-CARD INFINITE LOOP STAGE) ========== */}
-        {(() => {
-          const items = t.experience.items
-          const N = items.length
-          const realIndex = ((activeExp % N) + N) % N
-          const cardWidth = Math.min(windowWidth - 48, 560)
-          const gap = windowWidth < 640 ? 16 : 28
+              {/* ========== 02 - TECH STACK / SKILLS ========== */}
+              <div
+                id="skills"
+                className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-16 pb-24 overflow-y-auto"
+              >
+                <div className="w-full text-left">
+                  <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-4">{t.skills.tag}</p>
+                  <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
+                    {t.skills.title} <span className="text-white/30">{t.skills.titleSub}</span>
+                  </h2>
 
-          // 5 slots around activeExp: 2 left, 1 center, 2 right for seamless infinite transition
-          const slots = [activeExp - 2, activeExp - 1, activeExp, activeExp + 1, activeExp + 2]
-
-          const jumpToChapter = (targetIdx: number) => {
-            let diff = targetIdx - realIndex
-            if (diff > 1) diff -= N
-            if (diff < -1) diff += N
-            setActiveExp((prev) => prev + diff)
-          }
-
-          return (
-            <div
-              id="experience"
-              className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-16 pb-24 overflow-y-auto"
-            >
-              <div className="w-full text-left">
-                {/* Header & Story progress indicator */}
-                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 px-2 sm:px-4">
-                  <div>
-                    <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-2">{t.experience.tag}</p>
-                    <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
-                      {t.experience.title} <span className="text-white/30">{t.experience.titleSub}</span>
-                    </h2>
-                  </div>
-
-                  <div className="flex items-center gap-3 font-mono text-xs text-white/40 shrink-0">
-                    <span>
-                      CH. 0{realIndex + 1} / 0{N}
-                    </span>
-                    <div className="w-20 sm:w-24 h-1 bg-white/10 relative overflow-hidden">
+                  {/* Horizontal Modular Card Grid for Widescreen Layout */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5 sm:gap-4 items-stretch">
+                    {t.skills.categories.map((group, gIdx) => (
                       <div
-                        className="h-full bg-white transition-all duration-300"
-                        style={{ width: `${((realIndex + 1) / N) * 100}%` }}
-                      />
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => setActiveExp((prev) => prev - 1)}
-                        aria-label="Previous chapter (infinite loop)"
-                        className="p-1.5 border border-white/10 hover:border-white/30 text-white hover:bg-white/5 transition-colors cursor-pointer"
+                        key={group.title}
+                        className="border border-white/10 bg-white/[0.02] hover:border-white/25 hover:bg-white/[0.035] transition-all p-4 sm:p-5 flex flex-col justify-between"
                       >
-                        <ChevronLeftIcon className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActiveExp((prev) => prev + 1)}
-                        aria-label="Next chapter (infinite loop)"
-                        className="p-1.5 border border-white/10 hover:border-white/30 text-white hover:bg-white/5 transition-colors cursor-pointer"
-                      >
-                        <ChevronRightIcon className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                        <div>
+                          <div className="flex items-center justify-between pb-3 mb-3.5 border-b border-white/10">
+                            <h3 className="font-mono text-xs tracking-[0.2em] text-white/90 font-semibold truncate pr-2 uppercase">
+                              {group.title}
+                            </h3>
+                            <span className="font-mono text-[10px] text-emerald-400/80 shrink-0">
+                        // 0{gIdx + 1}
+                            </span>
+                          </div>
 
-                {/* Timeline Chapter Pills */}
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 mb-6 px-2 sm:px-4">
-                  {items.map((exp, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => jumpToChapter(idx)}
-                      className={`font-mono text-[10px] tracking-wider px-3 py-1.5 border transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${realIndex === idx
-                        ? 'border-white bg-white text-black font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)]'
-                        : 'border-white/10 text-white/40 hover:text-white/70 hover:border-white/30 bg-white/[0.02]'
-                        }`}
-                    >
-                      <span>0{idx + 1}</span>
-                      <span className="opacity-40">|</span>
-                      <span className="truncate max-w-[130px] sm:max-w-none">{exp.role.split('·')[0].split('&')[0].trim()}</span>
-                    </button>
-                  ))}
-                </div>
-
-                {/* 3-Card Stage with Infinite Loop */}
-                <div
-                  className="relative w-full h-[540px] sm:h-[490px] overflow-hidden outline-none"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'ArrowRight') {
-                      e.preventDefault()
-                      setActiveExp((prev) => prev + 1)
-                    } else if (e.key === 'ArrowLeft') {
-                      e.preventDefault()
-                      setActiveExp((prev) => prev - 1)
-                    }
-                  }}
-                  onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
-                  onTouchEnd={(e) => {
-                    if (touchStartX === null) return
-                    const diff = touchStartX - e.changedTouches[0].clientX
-                    if (diff > 40) {
-                      setActiveExp((prev) => prev + 1)
-                    } else if (diff < -40) {
-                      setActiveExp((prev) => prev - 1)
-                    }
-                    setTouchStartX(null)
-                  }}
-                  role="region"
-                  aria-label="3-card experience infinite stage"
-                >
-                  {slots.map((slot) => {
-                    const itemIndex = ((slot % N) + N) % N
-                    const exp = items[itemIndex]
-                    const offset = slot - activeExp // -2, -1, 0, 1, 2
-                    const isCenter = offset === 0
-
-                    return (
-                      <div
-                        key={slot}
-                        onClick={() => Math.abs(offset) === 1 && setActiveExp((prev) => prev + offset)}
-                        style={{
-                          width: `${cardWidth}px`,
-                          transform: `translateX(calc(-50% + ${offset * (cardWidth + gap)}px)) scale(${isCenter ? 1 : 0.94})`,
-                          left: '50%',
-                          opacity: isCenter ? 1 : Math.abs(offset) === 1 ? 0.38 : 0,
-                          zIndex: isCenter ? 20 : 10 - Math.abs(offset),
-                          pointerEvents: Math.abs(offset) > 1 ? 'none' : 'auto',
-                          transition: 'transform 500ms cubic-bezier(0.16, 1, 0.3, 1), opacity 500ms ease',
-                        }}
-                        className={`absolute top-0 bottom-0 select-none ${Math.abs(offset) === 1 ? 'cursor-pointer hover:opacity-60' : ''
-                          }`}
-                      >
-                        <article
-                          className={`h-full flex flex-col justify-between p-6 sm:p-8 border transition-all duration-300 ${isCenter
-                            ? 'border-white/30 bg-white/[0.04] shadow-[0_0_50px_rgba(255,255,255,0.06)]'
-                            : 'border-white/10 bg-white/[0.01]'
-                            }`}
-                        >
-                          <div>
-                            <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-white/10">
-                              <div className="flex items-center gap-2">
-                                <span
-                                  className={`w-1.5 h-1.5 rounded-full transition-colors ${isCenter ? 'bg-emerald-400 animate-pulse' : 'bg-white/20'
-                                    }`}
-                                />
-                                <span className="font-mono text-[10px] tracking-[0.25em] text-white/50 uppercase">
-                                  CHAPTER 0{itemIndex + 1} // STORY
+                          <div className="space-y-1.5">
+                            {group.skills.map((s) => (
+                              <div
+                                key={s}
+                                className="flex items-start gap-2 font-mono text-[11px] leading-snug text-white/75 hover:text-white px-2.5 py-1.5 bg-white/[0.02] border border-white/5 hover:border-white/20 transition-colors"
+                              >
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 mt-1" />
+                                <span title={s} className="truncate sm:whitespace-normal">
+                                  {s}
                                 </span>
                               </div>
-                              <span className="font-mono text-[10px] text-white/40 border border-white/10 px-2 py-0.5">
-                                {exp.period}
-                              </span>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-2">
-                              <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white">{exp.role}</h3>
-                            </div>
-                            <p className="text-xs font-mono text-emerald-400/90 mb-4">{exp.company}</p>
-                            <p className="text-sm text-white/60 leading-relaxed mb-4">
-                              {exp.summary}
-                            </p>
-                            <ul className="space-y-2 text-sm text-white/50 leading-relaxed mb-6">
-                              {exp.bullets.map((b, bIdx) => (
-                                <li key={bIdx}>• {b}</li>
-                              ))}
-                            </ul>
-                          </div>
-                          <div className="mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
-                            {exp.tech.map((tech) => (
-                              <span
-                                key={tech}
-                                className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30 bg-white/[0.02]"
-                              >
-                                {tech}
-                              </span>
                             ))}
                           </div>
-                        </article>
+                        </div>
+
+                        <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-white/30">
+                          <span>STACK</span>
+                          <span>{group.skills.length} MODULES</span>
+                        </div>
                       </div>
-                    )
-                  })}
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* ========== 03 - EXPERIENCE (3-CARD INFINITE LOOP STAGE) ========== */}
+              {(() => {
+                const items = t.experience.items
+                const N = items.length
+                const realIndex = ((activeExp % N) + N) % N
+                const cardWidth = Math.min(windowWidth - 48, 560)
+                const gap = windowWidth < 640 ? 16 : 28
+
+                // 5 slots around activeExp: 2 left, 1 center, 2 right for seamless infinite transition
+                const slots = [activeExp - 2, activeExp - 1, activeExp, activeExp + 1, activeExp + 2]
+
+                const jumpToChapter = (targetIdx: number) => {
+                  let diff = targetIdx - realIndex
+                  if (diff > 1) diff -= N
+                  if (diff < -1) diff += N
+                  setActiveExp((prev) => prev + diff)
+                }
+
+                return (
+                  <div
+                    id="experience"
+                    className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-16 pb-24 overflow-y-auto"
+                  >
+                    <div className="w-full text-left">
+                      {/* Header & Story progress indicator */}
+                      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 px-2 sm:px-4">
+                        <div>
+                          <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-2">{t.experience.tag}</p>
+                          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
+                            {t.experience.title} <span className="text-white/30">{t.experience.titleSub}</span>
+                          </h2>
+                        </div>
+
+                        <div className="flex items-center gap-3 font-mono text-xs text-white/40 shrink-0">
+                          <span>
+                            CH. 0{realIndex + 1} / 0{N}
+                          </span>
+                          <div className="w-20 sm:w-24 h-1 bg-white/10 relative overflow-hidden">
+                            <div
+                              className="h-full bg-white transition-all duration-300"
+                              style={{ width: `${((realIndex + 1) / N) * 100}%` }}
+                            />
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => setActiveExp((prev) => prev - 1)}
+                              aria-label="Previous chapter (infinite loop)"
+                              className="p-1.5 border border-white/10 hover:border-white/30 text-white hover:bg-white/5 transition-colors cursor-pointer"
+                            >
+                              <ChevronLeftIcon className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setActiveExp((prev) => prev + 1)}
+                              aria-label="Next chapter (infinite loop)"
+                              className="p-1.5 border border-white/10 hover:border-white/30 text-white hover:bg-white/5 transition-colors cursor-pointer"
+                            >
+                              <ChevronRightIcon className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Timeline Chapter Pills */}
+                      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 mb-6 px-2 sm:px-4">
+                        {items.map((exp, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => jumpToChapter(idx)}
+                            className={`font-mono text-[10px] tracking-wider px-3 py-1.5 border transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${realIndex === idx
+                              ? 'border-white bg-white text-black font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)]'
+                              : 'border-white/10 text-white/40 hover:text-white/70 hover:border-white/30 bg-white/[0.02]'
+                              }`}
+                          >
+                            <span>0{idx + 1}</span>
+                            <span className="opacity-40">|</span>
+                            <span className="truncate max-w-[130px] sm:max-w-none">{exp.role.split('·')[0].split('&')[0].trim()}</span>
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* 3-Card Stage with Infinite Loop */}
+                      <div
+                        className="relative w-full h-[480px] overflow-hidden outline-none"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'ArrowRight') {
+                            e.preventDefault()
+                            setActiveExp((prev) => prev + 1)
+                          } else if (e.key === 'ArrowLeft') {
+                            e.preventDefault()
+                            setActiveExp((prev) => prev - 1)
+                          }
+                        }}
+                        onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
+                        onTouchEnd={(e) => {
+                          if (touchStartX === null) return
+                          const diff = touchStartX - e.changedTouches[0].clientX
+                          if (diff > 40) {
+                            setActiveExp((prev) => prev + 1)
+                          } else if (diff < -40) {
+                            setActiveExp((prev) => prev - 1)
+                          }
+                          setTouchStartX(null)
+                        }}
+                        role="region"
+                        aria-label="3-card experience infinite stage"
+                      >
+                        {slots.map((slot) => {
+                          const itemIndex = ((slot % N) + N) % N
+                          const exp = items[itemIndex]
+                          const offset = slot - activeExp // -2, -1, 0, 1, 2
+                          const isCenter = offset === 0
+
+                          return (
+                            <div
+                              key={slot}
+                              onClick={() => Math.abs(offset) === 1 && setActiveExp((prev) => prev + offset)}
+                              style={{
+                                width: `${cardWidth}px`,
+                                transform: `translateX(calc(-50% + ${offset * (cardWidth + gap)}px)) scale(${isCenter ? 1 : 0.94})`,
+                                left: '50%',
+                                opacity: isCenter ? 1 : Math.abs(offset) === 1 ? 0.38 : 0,
+                                zIndex: isCenter ? 20 : 10 - Math.abs(offset),
+                                pointerEvents: Math.abs(offset) > 1 ? 'none' : 'auto',
+                                transition: 'transform 500ms cubic-bezier(0.16, 1, 0.3, 1), opacity 500ms ease',
+                              }}
+                              className={`absolute top-0 bottom-0 select-none ${Math.abs(offset) === 1 ? 'cursor-pointer hover:opacity-60' : ''
+                                }`}
+                            >
+                              <article
+                                className={`h-full flex flex-col justify-between p-6 sm:p-8 border transition-all duration-300 ${isCenter
+                                  ? 'border-white/30 bg-white/[0.04] shadow-[0_0_50px_rgba(255,255,255,0.06)]'
+                                  : 'border-white/10 bg-white/[0.01]'
+                                  }`}
+                              >
+                                <div>
+                                  <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-white/10">
+                                    <div className="flex items-center gap-2">
+                                      <span
+                                        className={`w-1.5 h-1.5 rounded-full transition-colors ${isCenter ? 'bg-emerald-400 animate-pulse' : 'bg-white/20'
+                                          }`}
+                                      />
+                                      <span className="font-mono text-[10px] tracking-[0.25em] text-white/50 uppercase">
+                                        CHAPTER 0{itemIndex + 1} // STORY
+                                      </span>
+                                    </div>
+                                    <span className="font-mono text-[10px] text-white/40 border border-white/10 px-2 py-0.5">
+                                      {exp.period}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-2">
+                                    <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white">{exp.role}</h3>
+                                  </div>
+                                  <p className="text-xs font-mono text-emerald-400/90 mb-4">{exp.company}</p>
+                                  <p className="text-sm text-white/60 leading-relaxed mb-4">
+                                    {exp.summary}
+                                  </p>
+                                  <ul className="space-y-2 text-sm text-white/50 leading-relaxed mb-6">
+                                    {exp.bullets.map((b, bIdx) => (
+                                      <li key={bIdx}>• {b}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                <div className="mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
+                                  {exp.tech.map((tech) => (
+                                    <span
+                                      key={tech}
+                                      className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30 bg-white/[0.02]"
+                                    >
+                                      {tech}
+                                    </span>
+                                  ))}
+                                </div>
+                              </article>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()}
+
+              {/* ========== 04 - PROJECTS ========== */}
+              <div
+                id="projects"
+                className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-16 pb-24 overflow-y-auto"
+              >
+                <div className="w-full text-left">
+                  <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.projects.tag}</p>
+                  <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
+                    {t.projects.title}
+                    <br />
+                    <span className="text-white/30">{t.projects.titleSub}</span>
+                  </h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {t.projects.items.map((proj, idx) => (
+                      <article key={idx} className="border border-white/10 p-6 hover:border-white/30 transition-colors flex flex-col justify-between h-[480px]">
+                        <div>
+                          <div className="flex items-baseline justify-between gap-4 mb-2">
+                            <h3 className="text-lg font-bold">{proj.title}</h3>
+                            <div className="flex items-center gap-3">
+                              {proj.repoUrl && (
+                                <a
+                                  href={proj.repoUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  aria-label="View source code on GitHub"
+                                  title="View source on GitHub"
+                                  className="text-white/40 hover:text-white transition-colors"
+                                >
+                                  <GithubIcon className="w-4 h-4" />
+                                </a>
+                              )}
+                              <span className="font-mono text-[10px] text-white/30 shrink-0">{proj.period}</span>
+                            </div>
+                          </div>
+                          <p className="text-xs font-mono text-white/30 mb-4">{proj.meta}</p>
+                          <p className="text-sm text-white/50 leading-relaxed mb-4">
+                            {proj.desc}
+                          </p>
+                          <ul className="space-y-2 text-sm text-white/40 mb-6">
+                            {proj.bullets.map((b, bIdx) => (
+                              <li key={bIdx}>• {b}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
+                          {proj.tech.map((tech) => (
+                            <span key={tech} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+
+              {/* ========== 05 - BLOG ========== */}
+              <div
+                id="blog"
+                className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-16 pb-24 overflow-y-auto"
+              >
+                <div className="w-full text-left">
+                  <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.blog.tag}</p>
+                  <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
+                    {t.blog.title}
+                    <br />
+                    <span className="text-white/30">{t.blog.titleSub}</span>
+                  </h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {t.blog.posts.map((post) => (
+                      <article
+                        key={post.slug}
+                        onClick={() => setSelectedPostSlug(post.slug)}
+                        className="border border-white/10 p-6 hover:border-white/30 transition-all cursor-pointer group bg-white/[0.01] flex flex-col justify-between h-[480px]"
+                      >
+                        <div>
+                          <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+                            <span className="font-mono text-[10px] text-white/40 tracking-wider">
+                              {post.date} · {post.readTime}
+                            </span>
+                            <span className="font-mono text-[10px] text-white/40 group-hover:text-white transition-colors">
+                              {t.blog.readNote}
+                            </span>
+                          </div>
+                          <h3 className="text-lg font-bold tracking-tight mb-3 text-white group-hover:text-white/90">
+                            {post.title}
+                          </h3>
+                          <p className="text-sm text-white/50 leading-relaxed mb-4">
+                            {post.summary}
+                          </p>
+                        </div>
+                        <div className="pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
+                          {post.tags.map((tag) => (
+                            <span key={tag} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </article>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          )
-        })()}
-
-        {/* ========== 04 - PROJECTS ========== */}
-        <div
-          id="projects"
-          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-16 pb-24 overflow-y-auto"
-        >
-          <div className="w-full text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.projects.tag}</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
-              {t.projects.title}
-              <br />
-              <span className="text-white/30">{t.projects.titleSub}</span>
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {t.projects.items.map((proj, idx) => (
-                <article key={idx} className="border border-white/10 p-6 hover:border-white/30 transition-colors flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-baseline justify-between gap-4 mb-2">
-                      <h3 className="text-lg font-bold">{proj.title}</h3>
-                      <div className="flex items-center gap-3">
-                        {proj.repoUrl && (
-                          <a
-                            href={proj.repoUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="View source code on GitHub"
-                            title="View source on GitHub"
-                            className="text-white/40 hover:text-white transition-colors"
-                          >
-                            <GithubIcon className="w-4 h-4" />
-                          </a>
-                        )}
-                        <span className="font-mono text-[10px] text-white/30 shrink-0">{proj.period}</span>
-                      </div>
-                    </div>
-                    <p className="text-xs font-mono text-white/30 mb-4">{proj.meta}</p>
-                    <p className="text-sm text-white/50 leading-relaxed mb-4">
-                      {proj.desc}
-                    </p>
-                    <ul className="space-y-2 text-sm text-white/40 mb-6">
-                      {proj.bullets.map((b, bIdx) => (
-                        <li key={bIdx}>• {b}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
-                    {proj.tech.map((tech) => (
-                      <span key={tech} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                </article>
-              ))}
-            </div>
           </div>
         </div>
-
-
-        {/* ========== 05 - BLOG ========== */}
-        <div
-          id="blog"
-          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:px-16 pt-16 pb-24 overflow-y-auto"
-        >
-          <div className="w-full text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.blog.tag}</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
-              {t.blog.title}
-              <br />
-              <span className="text-white/30">{t.blog.titleSub}</span>
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {t.blog.posts.map((post) => (
-                <article
-                  key={post.slug}
-                  onClick={() => setSelectedPostSlug(post.slug)}
-                  className="border border-white/10 p-6 hover:border-white/30 transition-all cursor-pointer group bg-white/[0.01] flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
-                      <span className="font-mono text-[10px] text-white/40 tracking-wider">
-                        {post.date} · {post.readTime}
-                      </span>
-                      <span className="font-mono text-[10px] text-white/40 group-hover:text-white transition-colors">
-                        {t.blog.readNote}
-                      </span>
-                    </div>
-                    <h3 className="text-lg font-bold tracking-tight mb-3 text-white group-hover:text-white/90">
-                      {post.title}
-                    </h3>
-                    <p className="text-sm text-white/50 leading-relaxed mb-4">
-                      {post.summary}
-                    </p>
-                  </div>
-                  <div className="pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
-                    {post.tags.map((tag) => (
-                      <span key={tag} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
         {/* ========== 06 - CONTACT ========== */}
         <section id="contact" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14">
