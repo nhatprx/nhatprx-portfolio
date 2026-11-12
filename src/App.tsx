@@ -1074,7 +1074,7 @@ export default function App() {
                 <article
                   key={post.slug}
                   onClick={() => setSelectedPostSlug(post.slug)}
-                  className="border border-white/10 p-6 sm:p-7 hover:border-white/25 transition-all cursor-pointer group bg-transparent flex flex-col justify-between min-h-[360px]"
+                  className="border border-white/10 p-6 hover:border-white/30 transition-all cursor-pointer group bg-white/[0.01] flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
