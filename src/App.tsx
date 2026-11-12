@@ -822,7 +822,7 @@ export default function App() {
 
                 {/* 3-Card Stage with Infinite Loop */}
                 <div
-                  className="relative w-full h-[480px] overflow-hidden outline-none"
+                  className="relative w-full h-[580px] sm:h-[600px] overflow-hidden outline-none"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === 'ArrowRight') {
@@ -878,7 +878,7 @@ export default function App() {
                                 : 'border-white/10 bg-white/[0.01]'
                             }`}
                           >
-                            <div>
+                            <div className="flex-1 min-h-0 overflow-y-auto pr-1">
                               <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-white/10">
                                 <div className="flex items-center gap-2">
                                   <span
@@ -909,11 +909,11 @@ export default function App() {
                               </ul>
                             </div>
                             {exp.tech && exp.tech.length > 0 && (
-                              <div className="mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
+                              <div className="shrink-0 mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
                                 {exp.tech.map((tech) => (
                                   <span
                                     key={tech}
-                                    className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30 bg-white/[0.02]"
+                                    className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/40 bg-white/[0.02]"
                                   >
                                     {tech}
                                   </span>
@@ -951,7 +951,7 @@ export default function App() {
                               : 'border-white/10 bg-white/[0.01]'
                           }`}
                         >
-                          <div>
+                          <div className="flex-1 min-h-0 overflow-y-auto pr-1">
                             <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-white/10">
                               <div className="flex items-center gap-2">
                                 <span
@@ -996,11 +996,11 @@ export default function App() {
                             </ul>
                           </div>
                           {proj.tech && proj.tech.length > 0 && (
-                            <div className="mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
+                            <div className="shrink-0 mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
                               {proj.tech.map((tech) => (
                                 <span
                                   key={tech}
-                                  className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30 bg-white/[0.02]"
+                                  className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/40 bg-white/[0.02]"
                                 >
                                   {tech}
                                 </span>

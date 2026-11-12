@@ -45,9 +45,15 @@ export function getStoredTranslations(): Record<SupportedLang, TranslationDict> 
             ...base.projects,
             ...(custom.projects || {}),
             tag: base.projects.tag,
-            items: (custom.projects?.items?.length ?? 0) >= base.projects.items.length
-              ? custom.projects.items
-              : base.projects.items,
+            items: base.projects.items.map((baseItem, idx) => {
+              const customItem = custom.projects?.items?.[idx]
+              if (!customItem) return baseItem
+              return {
+                ...baseItem,
+                ...customItem,
+                tech: customItem.tech && customItem.tech.length > 0 ? customItem.tech : baseItem.tech,
+              }
+            }),
           },
           blog: { ...base.blog, ...customBlog, tag: base.blog.tag, posts },
           contact: { ...base.contact, ...(custom.contact || {}), tag: base.contact.tag },
