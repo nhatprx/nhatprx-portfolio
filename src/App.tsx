@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import Ec2Terminal from './components/Ec2Terminal'
+import ServerTelemetry from './components/ServerTelemetry'
 import { TRANSLATIONS, type SupportedLang } from './data/translations'
 import BlogPostModal from './components/BlogPostModal'
 import CustomCursor from './components/CustomCursor'
@@ -223,6 +224,20 @@ function ContactForm({
           >
             <LinkedinIcon className="w-4 h-4" />
           </a>
+        </div>
+      </div>
+
+      <div className="pt-6 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono text-white/50">
+        <div>
+          <span className="block text-[10px] tracking-widest text-white/30 uppercase mb-1">DIRECT REACH</span>
+          <span className="text-white/80">nhatprx@gmail.com</span>
+        </div>
+        <div>
+          <span className="block text-[10px] tracking-widest text-white/30 uppercase mb-1">AVAILABILITY</span>
+          <span className="text-emerald-400/90 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            Open for Engineering Roles
+          </span>
         </div>
       </div>
     </form>
@@ -611,123 +626,137 @@ export default function App() {
           </div>
         </section>
 
-        {/* ========== 01 - ABOUT & TECH STACK (UNIFIED) ========== */}
-        <section id="about" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">
+        {/* ========== 01 - ABOUT & TECH STACK (2-COLUMN UNIFIED) ========== */}
+        <section id="about" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 flex items-center">
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-3">{t.about.tag}</p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-6">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-8">
               {t.about.title} <span className="text-white/30">{t.about.titleSub}</span>
             </h2>
-            <div className="space-y-4 text-sm sm:text-base text-white/60 leading-relaxed max-w-3xl">
-              <p>{t.about.p1}</p>
-              <p>{t.about.p2}</p>
-            </div>
 
-            <div className="mt-8">
-              <h3 className="font-mono text-[10px] tracking-[0.25em] text-white/30 mb-3 uppercase">
-                {t.about.educationTitle}
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-4xl">
-                {/* Education Card 1: FPT University */}
-                <div className="min-w-0 border border-white/10 hover:border-white/25 p-4 transition-colors flex flex-col justify-between">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-semibold text-white tracking-tight truncate">
-                      {t.about.edu1School}
-                    </span>
-                    <span className="font-mono text-[9px] text-white/50 flex items-center gap-1.5 shrink-0 uppercase">
-                      <span className="w-1 h-1 rounded-full bg-white/40" />
-                      {t.about.edu1Degree}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between gap-2 mt-2 font-mono text-xs text-white/50">
-                    <span className="truncate">{t.about.edu1Major}</span>
-                    <span className="text-white/30 text-[10px] shrink-0">{t.about.edu1Location || t.about.edu1Dates}</span>
-                  </div>
+            {/* 2-Column Grid: Left About & Education, Right Tech Stack */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 xl:gap-12 items-start">
+              {/* Left Column: Bio, Education, Languages */}
+              <div className="lg:col-span-5 space-y-8">
+                <div className="space-y-4 text-sm sm:text-base text-white/70 leading-relaxed">
+                  <p>{t.about.p1}</p>
+                  <p>{t.about.p2}</p>
                 </div>
 
-                {/* Education Card 2: Multimedia University */}
-                <div className="min-w-0 border border-white/10 hover:border-white/25 p-4 transition-colors flex flex-col justify-between">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-semibold text-white tracking-tight truncate">
-                      {t.about.edu2School}
-                    </span>
-                    <span className="font-mono text-[9px] text-white/50 flex items-center gap-1.5 shrink-0 uppercase">
-                      <span className="w-1 h-1 rounded-full bg-white/40" />
-                      {t.about.edu2Degree}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between gap-2 mt-2 font-mono text-xs text-white/50">
-                    <span className="truncate">{t.about.edu2Major}</span>
-                    <span className="text-white/30 text-[10px] shrink-0">{t.about.edu2Location || t.about.edu2Dates}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 flex flex-wrap gap-2">
-              {t.about.languages.map((langItem) => (
-                <span key={langItem} className="font-mono text-[10px] px-3 py-1.5 border border-white/10 text-white/40">
-                  {langItem}
-                </span>
-              ))}
-            </div>
-
-            {/* Tech Stack Modules within About Section */}
-            <div id="skills" className="pt-12 mt-12 border-t border-white/10 scroll-mt-20">
-              <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-6">
                 <div>
-                  <h3 className="font-mono text-xs tracking-[0.25em] text-white/80 uppercase">
-                    {t.nav.skills} // ARCHITECTURAL STACK & TOOLS
+                  <h3 className="font-mono text-[10px] tracking-[0.25em] text-white/40 mb-3 uppercase">
+                    {t.about.educationTitle}
                   </h3>
-                  {t.skills.desc && (
-                    <p className="text-xs font-mono text-white/40 mt-1 max-w-2xl">
-                      {t.skills.desc}
-                    </p>
-                  )}
-                </div>
-                <span className="font-mono text-[10px] text-white/30 shrink-0">
-                  {t.skills.categories.length} CORE MODULES
-                </span>
-              </div>
-
-              {/* Modular Card Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 items-stretch">
-                {t.skills.categories.map((group, gIdx) => (
-                  <div
-                    key={group.title}
-                    className="border border-white/10 hover:border-white/25 transition-all p-5 flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between pb-3 mb-3.5 border-b border-white/10">
-                        <h4 className="font-mono text-xs tracking-[0.2em] text-white/90 font-semibold truncate pr-2 uppercase">
-                          {group.title}
-                        </h4>
-                        <span className="font-mono text-[10px] text-white/40 shrink-0">
-                          // 0{gIdx + 1}
+                  <div className="space-y-3">
+                    {/* Education Card 1: FPT University */}
+                    <div className="border border-white/10 hover:border-white/25 p-4 transition-colors flex flex-col justify-between">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-semibold text-white tracking-tight truncate">
+                          {t.about.edu1School}
+                        </span>
+                        <span className="font-mono text-[9px] text-white/50 flex items-center gap-1.5 shrink-0 uppercase">
+                          <span className="w-1 h-1 rounded-full bg-white/40" />
+                          {t.about.edu1Degree}
                         </span>
                       </div>
-
-                      <div className="space-y-1.5">
-                        {group.skills.map((s) => (
-                          <div
-                            key={s}
-                            className="flex items-start gap-2 font-mono text-[11px] leading-snug text-white/75 hover:text-white px-2.5 py-1.5 border border-white/5 hover:border-white/20 transition-colors"
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-white/40 shrink-0 mt-1" />
-                            <span title={s} className="truncate sm:whitespace-normal">
-                              {s}
-                            </span>
-                          </div>
-                        ))}
+                      <div className="flex items-center justify-between gap-2 mt-2 font-mono text-xs text-white/50">
+                        <span className="truncate">{t.about.edu1Major}</span>
+                        <span className="text-white/30 text-[10px] shrink-0">{t.about.edu1Location || t.about.edu1Dates}</span>
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-white/30">
-                      <span>STACK</span>
-                      <span>{group.skills.length} MODULES</span>
+                    {/* Education Card 2: Multimedia University */}
+                    <div className="border border-white/10 hover:border-white/25 p-4 transition-colors flex flex-col justify-between">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-semibold text-white tracking-tight truncate">
+                          {t.about.edu2School}
+                        </span>
+                        <span className="font-mono text-[9px] text-white/50 flex items-center gap-1.5 shrink-0 uppercase">
+                          <span className="w-1 h-1 rounded-full bg-white/40" />
+                          {t.about.edu2Degree}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-2 mt-2 font-mono text-xs text-white/50">
+                        <span className="truncate">{t.about.edu2Major}</span>
+                        <span className="text-white/30 text-[10px] shrink-0">{t.about.edu2Location || t.about.edu2Dates}</span>
+                      </div>
                     </div>
                   </div>
-                ))}
+                </div>
+
+                <div>
+                  <span className="block font-mono text-[10px] tracking-[0.25em] text-white/40 mb-2 uppercase">
+                    LANGUAGES
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {t.about.languages.map((langItem) => (
+                      <span key={langItem} className="font-mono text-[10px] px-3 py-1.5 border border-white/10 text-white/50 bg-white/[0.02]">
+                        {langItem}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Tech Stack Modular Cards */}
+              <div id="skills" className="lg:col-span-7 scroll-mt-24">
+                <div className="flex items-center justify-between pb-3 mb-4 border-b border-white/10">
+                  <div>
+                    <h3 className="font-mono text-xs tracking-[0.25em] text-white/90 uppercase font-semibold">
+                      {t.nav.skills} // ARCHITECTURAL STACK
+                    </h3>
+                    {t.skills.desc && (
+                      <p className="text-xs font-mono text-white/40 mt-1 max-w-xl">
+                        {t.skills.desc}
+                      </p>
+                    )}
+                  </div>
+                  <span className="font-mono text-[10px] text-white/30 shrink-0">
+                    {t.skills.categories.length} MODULES
+                  </span>
+                </div>
+
+                {/* Modular Card Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 items-stretch">
+                  {t.skills.categories.map((group, gIdx) => (
+                    <div
+                      key={group.title}
+                      className={`border border-white/10 hover:border-white/25 transition-all p-4.5 flex flex-col justify-between ${
+                        gIdx === 4 ? 'sm:col-span-2' : ''
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-white/10">
+                          <h4 className="font-mono text-xs tracking-[0.2em] text-white/90 font-semibold truncate pr-2 uppercase">
+                            {group.title}
+                          </h4>
+                          <span className="font-mono text-[10px] text-white/40 shrink-0">
+                            // 0{gIdx + 1}
+                          </span>
+                        </div>
+
+                        <div className={gIdx === 4 ? 'grid grid-cols-1 sm:grid-cols-2 gap-1.5' : 'space-y-1.5'}>
+                          {group.skills.map((s) => (
+                            <div
+                              key={s}
+                              className="flex items-start gap-2 font-mono text-[11px] leading-snug text-white/75 hover:text-white px-2.5 py-1.5 border border-white/5 hover:border-white/20 transition-colors"
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-white/40 shrink-0 mt-1" />
+                              <span title={s} className="truncate sm:whitespace-normal">
+                                {s}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="mt-3.5 pt-2.5 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-white/30">
+                        <span>STACK</span>
+                        <span>{group.skills.length} MODULES</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -1111,19 +1140,28 @@ export default function App() {
           </div>
         </section>
 
-        {/* ========== 06 - CONTACT ========== */}
-        <section id="contact" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14">
+        {/* ========== 04 - CONTACT & LIVE TELEMETRY (2-COLUMN) ========== */}
+        <section id="contact" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 flex items-center">
           <div className="w-full text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-3">{t.contact.tag}</p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3">
-              {t.contact.title} <span className="text-white/30">{t.contact.titleSub}</span>
-            </h2>
-            <p className="text-sm text-white/50 leading-relaxed mb-10 max-w-2xl">
-              {t.contact.desc}
-            </p>
+            <div className="mb-8 lg:mb-10">
+              <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-2">{t.contact.tag}</p>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3">
+                {t.contact.title} <span className="text-white/30">{t.contact.titleSub}</span>
+              </h2>
+              <p className="text-sm sm:text-base text-white/60 leading-relaxed max-w-2xl">
+                {t.contact.desc}
+              </p>
+            </div>
 
-            <div className="max-w-2xl">
-              <ContactForm t={t} />
+            {/* 2-Column Grid: Left Contact Form, Right Live Telemetry */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 xl:gap-12 items-stretch">
+              <div className="lg:col-span-7 flex flex-col justify-between">
+                <ContactForm t={t} />
+              </div>
+
+              <div className="lg:col-span-5 h-[480px] sm:h-[500px] lg:h-full min-h-[460px] flex flex-col">
+                <ServerTelemetry />
+              </div>
             </div>
           </div>
         </section>
