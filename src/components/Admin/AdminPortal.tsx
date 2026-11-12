@@ -113,7 +113,7 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
           <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-xs font-bold tracking-widest text-white uppercase">AUTH://PORTAL</span>
+              <span className="text-xs font-bold tracking-widest text-white uppercase">AUTH · PORTAL</span>
             </div>
           </div>
 
@@ -175,7 +175,7 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
       <header className="border-b border-white/10 bg-black/80 backdrop-blur-md px-4 sm:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4 shrink-0">
         <div className="flex items-center gap-3">
           <span className="w-2 h-2 rounded-full bg-emerald-400" />
-          <span className="font-bold text-xs tracking-widest text-white uppercase">NHATPRX // ADMIN DASHBOARD</span>
+          <span className="font-bold text-xs tracking-widest text-white uppercase">NHATPRX · ADMIN DASHBOARD</span>
           <span className="text-[10px] text-white/30 px-2 py-0.5 border border-white/10 hidden sm:inline">LIVE CMS</span>
         </div>
 

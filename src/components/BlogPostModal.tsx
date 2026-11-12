@@ -62,7 +62,7 @@ export default function BlogPostModal({
         <div className="flex items-center justify-between px-6 py-3.5 border-b border-white/10 bg-white/[0.03] shrink-0">
           <div className="flex items-center gap-2">
             <span className="font-mono text-[11px] text-white/50 tracking-wider truncate max-w-[220px] sm:max-w-md">
-              note://{post.slug}.md
+              notes/{post.slug}.md
             </span>
           </div>
 

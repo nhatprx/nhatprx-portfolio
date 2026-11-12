@@ -409,7 +409,7 @@ export default function App() {
             </div>
 
             <div className="flex items-center justify-between text-[10px] text-white/30 tracking-widest pt-1">
-              <span>SYS://PORTFOLIO</span>
+              <span>SYS · PORTFOLIO</span>
               <span>NHATPRX · 2026</span>
             </div>
           </div>
@@ -602,7 +602,7 @@ export default function App() {
                 {t.server.tag}
               </p>
               <span className="text-[10px] font-mono text-white/30 tracking-widest hidden sm:inline">
-                LIVE CLOUD NODE // AP-SOUTHEAST-1
+                LIVE CLOUD NODE · AP-SOUTHEAST-1
               </span>
             </div>
             <div className="h-[290px] sm:h-[330px] md:h-[360px] lg:h-[390px] xl:h-[420px] w-full">
@@ -683,7 +683,7 @@ export default function App() {
               <div id="skills" className="lg:col-span-6 flex flex-col justify-between scroll-mt-24">
                 <div className="flex items-center justify-between pb-2 mb-3 border-b border-white/10">
                   <h3 className="font-mono text-xs tracking-[0.25em] text-white/90 uppercase font-semibold">
-                    {t.nav.skills} // ARCHITECTURAL STACK
+                    {t.nav.skills} · ARCHITECTURAL STACK
                   </h3>
                   <span className="font-mono text-[10px] text-white/40 shrink-0">
                     {t.skills.categories.length} MODULES
@@ -887,7 +887,7 @@ export default function App() {
                                     }`}
                                   />
                                   <span className="font-mono text-[10px] tracking-[0.25em] text-white/50 uppercase">
-                                    0{itemIndex + 1} // EXPERIENCE
+                                    0{itemIndex + 1} · EXPERIENCE
                                   </span>
                                 </div>
                                 <span className="font-mono text-[10px] text-white/40 border border-white/10 px-2 py-0.5">
@@ -960,7 +960,7 @@ export default function App() {
                                   }`}
                                 />
                                 <span className="font-mono text-[10px] tracking-[0.25em] text-white/50 uppercase">
-                                  0{itemIndex + 1} // PROJECT
+                                  0{itemIndex + 1} · PROJECT
                                 </span>
                               </div>
                               <div className="flex items-center gap-3">
