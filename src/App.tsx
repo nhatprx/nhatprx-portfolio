@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import Ec2Terminal from './components/Ec2Terminal'
-import ServerTelemetry from './components/ServerTelemetry'
 import { TRANSLATIONS, type SupportedLang } from './data/translations'
 import BlogPostModal from './components/BlogPostModal'
 import CustomCursor from './components/CustomCursor'
@@ -224,20 +223,6 @@ function ContactForm({
           >
             <LinkedinIcon className="w-4 h-4" />
           </a>
-        </div>
-      </div>
-
-      <div className="pt-6 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono text-white/50">
-        <div>
-          <span className="block text-[10px] tracking-widest text-white/30 uppercase mb-1">DIRECT REACH</span>
-          <span className="text-white/80">nhatprx@gmail.com</span>
-        </div>
-        <div>
-          <span className="block text-[10px] tracking-widest text-white/30 uppercase mb-1">AVAILABILITY</span>
-          <span className="text-emerald-400/90 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Open for Engineering Roles
-          </span>
         </div>
       </div>
     </form>
@@ -1081,27 +1066,48 @@ export default function App() {
           </div>
         </section>
 
-        {/* ========== 04 - CONTACT & LIVE TELEMETRY (2-COLUMN) ========== */}
+        {/* ========== 04 - CONTACT (SIDE-BY-SIDE ON SAME ROW) ========== */}
         <section id="contact" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 flex items-center">
           <div className="w-full text-left">
-            <div className="mb-8 lg:mb-10">
-              <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-2">{t.contact.tag}</p>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3">
-                {t.contact.title} <span className="text-white/30">{t.contact.titleSub}</span>
-              </h2>
-              <p className="text-sm sm:text-base text-white/60 leading-relaxed max-w-2xl">
-                {t.contact.desc}
-              </p>
-            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-start">
+              {/* Left: Tag, Header, Sub-header & Direct Reach */}
+              <div className="lg:col-span-5 flex flex-col justify-between space-y-6">
+                <div>
+                  <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-2">{t.contact.tag}</p>
+                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3">
+                    {t.contact.title} <span className="text-white/30">{t.contact.titleSub}</span>
+                  </h2>
+                  <p className="text-sm sm:text-base text-white/60 leading-relaxed max-w-lg mb-6">
+                    {t.contact.desc}
+                  </p>
+                </div>
 
-            {/* 2-Column Grid: Left Contact Form, Right Live Telemetry */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 xl:gap-12 items-stretch">
-              <div className="lg:col-span-7 flex flex-col justify-between">
-                <ContactForm t={t} />
+                {/* Direct info cards */}
+                <div className="pt-6 border-t border-white/10 space-y-4 font-mono text-xs text-white/50">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <span className="block text-[10px] tracking-widest text-white/30 uppercase mb-1">DIRECT REACH</span>
+                      <a href="mailto:nhatprx@gmail.com" className="text-white hover:underline transition-all">nhatprx@gmail.com</a>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] tracking-widest text-white/30 uppercase mb-1">PHONE</span>
+                      <a href="tel:+84879888965" className="text-white hover:underline transition-all">+84 879 888 965</a>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="block text-[10px] tracking-widest text-white/30 uppercase mb-1.5">LOCATION & STATUS</span>
+                    <span className="text-emerald-400/90 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Ho Chi Minh City, VN · Available for Full-Time & Contracts
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              <div className="lg:col-span-5 h-[480px] sm:h-[500px] lg:h-full min-h-[460px] flex flex-col">
-                <ServerTelemetry />
+              {/* Right: Input fields & Send Button */}
+              <div className="lg:col-span-7">
+                <ContactForm t={t} />
               </div>
             </div>
           </div>
