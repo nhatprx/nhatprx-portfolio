@@ -88,146 +88,7 @@ function ArrowUpIcon({ className = 'w-4 h-4' }: { className?: string }) {
   )
 }
 
-function ContactForm({
-  t,
-}: {
-  t: (typeof TRANSLATIONS)['en']
-}) {
-  const [email, setEmail] = useState('')
-  const [message, setMessage] = useState('')
-  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
-  const [errorMessage, setErrorMessage] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!email || !message) return
-
-    setStatus('sending')
-    setErrorMessage('')
-
-    try {
-      // shortcut: FormSubmit.co forwards messages to email without a backend; upgrade to custom domain API/Resend when custom domain email is live
-      const res = await fetch('https://formsubmit.co/ajax/nhatprx@gmail.com', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          _subject: `Portfolio Inquiry from ${email}`,
-          email,
-          message,
-        }),
-      })
-
-      if (res.ok) {
-        setStatus('success')
-        setEmail('')
-        setMessage('')
-      } else {
-        throw new Error('Failed to send message')
-      }
-    } catch {
-      setStatus('error')
-      setErrorMessage(t.contact.errorMsg)
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="mb-10 space-y-4">
-      <div>
-        <label htmlFor="contact-email" className="block font-mono text-[10px] tracking-widest text-white/40 mb-2">
-          {t.contact.emailLabel}
-        </label>
-        <input
-          id="contact-email"
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="name@example.com"
-          className="w-full bg-white/5 border border-white/10 px-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-white/40 transition-colors"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="contact-message" className="block font-mono text-[10px] tracking-widest text-white/40 mb-2">
-          {t.contact.msgLabel}
-        </label>
-        <textarea
-          id="contact-message"
-          required
-          rows={4}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder={t.contact.desc}
-          className="w-full bg-white/5 border border-white/10 px-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-white/40 transition-colors resize-none"
-        />
-      </div>
-
-      {status === 'success' && (
-        <div className="p-3 bg-white/10 border border-white/20 text-xs font-mono text-white/90">
-          {t.contact.successMsg}
-        </div>
-      )}
-
-      {status === 'error' && (
-        <div className="p-3 bg-red-950/30 border border-red-500/30 text-xs font-mono text-red-300">
-          {errorMessage}
-        </div>
-      )}
-
-      <div className="flex flex-wrap items-center gap-3 pt-2">
-        <button
-          type="submit"
-          disabled={status === 'sending'}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors disabled:opacity-50 cursor-pointer"
-        >
-          {status === 'sending' ? t.contact.sendingBtn : t.contact.sendBtn}
-        </button>
-
-        <div className="flex items-center gap-2">
-          <a
-            href="mailto:nhatprx@gmail.com"
-            aria-label="Email: nhatprx@gmail.com"
-            title="nhatprx@gmail.com"
-            className="p-3 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
-          >
-            <MailIcon className="w-4 h-4" />
-          </a>
-          <a
-            href="tel:+84879888965"
-            aria-label="Phone: +84 879 888 965"
-            title="+84 879 888 965"
-            className="p-3 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
-          >
-            <PhoneIcon className="w-4 h-4" />
-          </a>
-          <a
-            href="https://github.com/nhatprx"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="GitHub: nhatprx"
-            title="github.com/nhatprx"
-            className="p-3 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
-          >
-            <GithubIcon className="w-4 h-4" />
-          </a>
-          <a
-            href="https://www.linkedin.com/in/nhatprx/"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="LinkedIn: nhatprx"
-            title="linkedin.com/in/nhatprx"
-            className="p-3 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-colors"
-          >
-            <LinkedinIcon className="w-4 h-4" />
-          </a>
-        </div>
-      </div>
-    </form>
-  )
-}
 
 export default function App() {
   const [showTopBtn, setShowTopBtn] = useState(false)
@@ -1055,49 +916,103 @@ export default function App() {
           </div>
         </section>
 
-        {/* ========== 04 - CONTACT (SIDE-BY-SIDE ON SAME ROW) ========== */}
+        {/* ========== 04 - CONTACT ========== */}
         <section id="contact" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 flex items-center">
-          <div className="w-full text-left">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-start">
-              {/* Left: Tag, Header, Sub-header & Direct Reach */}
-              <div className="lg:col-span-5 flex flex-col justify-between space-y-6">
+          <div className="w-full text-left max-w-5xl">
+            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-2">{t.contact.tag}</p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
+              {t.contact.title} <span className="text-white/30">{t.contact.titleSub}</span>
+            </h2>
+            <p className="text-sm sm:text-base text-white/60 leading-relaxed max-w-2xl mb-10">
+              {t.contact.desc}
+            </p>
+
+            {/* Direct Channels Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <a
+                href="mailto:nhatprx@gmail.com"
+                className="group p-6 border border-white/10 hover:border-white/30 bg-white/[0.01] hover:bg-white/[0.03] transition-all flex flex-col justify-between"
+              >
                 <div>
-                  <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-2">{t.contact.tag}</p>
-                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3">
-                    {t.contact.title} <span className="text-white/30">{t.contact.titleSub}</span>
-                  </h2>
-                  <p className="text-sm sm:text-base text-white/60 leading-relaxed max-w-lg mb-6">
-                    {t.contact.desc}
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="font-mono text-[10px] tracking-widest text-white/40 uppercase">EMAIL</span>
+                    <MailIcon className="w-4 h-4 text-white/40 group-hover:text-white transition-colors" />
+                  </div>
+                  <p className="font-mono text-sm text-white font-medium group-hover:text-emerald-400 transition-colors truncate">
+                    nhatprx@gmail.com
                   </p>
                 </div>
+                <span className="font-mono text-[10px] text-white/40 group-hover:text-white mt-6 flex items-center gap-1 transition-colors">
+                  Open Mail Client →
+                </span>
+              </a>
 
-                {/* Direct info cards */}
-                <div className="pt-6 border-t border-white/10 space-y-4 font-mono text-xs text-white/50">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <span className="block text-[10px] tracking-widest text-white/30 uppercase mb-1">DIRECT REACH</span>
-                      <a href="mailto:nhatprx@gmail.com" className="text-white hover:underline transition-all">nhatprx@gmail.com</a>
-                    </div>
-                    <div>
-                      <span className="block text-[10px] tracking-widest text-white/30 uppercase mb-1">PHONE</span>
-                      <a href="tel:+84879888965" className="text-white hover:underline transition-all">+84 879 888 965</a>
-                    </div>
+              <a
+                href="tel:+84879888965"
+                className="group p-6 border border-white/10 hover:border-white/30 bg-white/[0.01] hover:bg-white/[0.03] transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="font-mono text-[10px] tracking-widest text-white/40 uppercase">PHONE</span>
+                    <PhoneIcon className="w-4 h-4 text-white/40 group-hover:text-white transition-colors" />
                   </div>
-
-                  <div>
-                    <span className="block text-[10px] tracking-widest text-white/30 uppercase mb-1.5">LOCATION & STATUS</span>
-                    <span className="text-emerald-400/90 flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      Ho Chi Minh City, VN · Available for Full-Time & Contracts
-                    </span>
-                  </div>
+                  <p className="font-mono text-sm text-white font-medium group-hover:text-emerald-400 transition-colors">
+                    +84 879 888 965
+                  </p>
                 </div>
-              </div>
+                <span className="font-mono text-[10px] text-white/40 group-hover:text-white mt-6 flex items-center gap-1 transition-colors">
+                  Direct Call / SMS →
+                </span>
+              </a>
 
-              {/* Right: Input fields & Send Button */}
-              <div className="lg:col-span-7">
-                <ContactForm t={t} />
-              </div>
+              <a
+                href="https://github.com/nhatprx"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group p-6 border border-white/10 hover:border-white/30 bg-white/[0.01] hover:bg-white/[0.03] transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="font-mono text-[10px] tracking-widest text-white/40 uppercase">GITHUB</span>
+                    <GithubIcon className="w-4 h-4 text-white/40 group-hover:text-white transition-colors" />
+                  </div>
+                  <p className="font-mono text-sm text-white font-medium group-hover:text-emerald-400 transition-colors">
+                    github.com/nhatprx
+                  </p>
+                </div>
+                <span className="font-mono text-[10px] text-white/40 group-hover:text-white mt-6 flex items-center gap-1 transition-colors">
+                  View Repositories →
+                </span>
+              </a>
+
+              <a
+                href="https://www.linkedin.com/in/nhatprx/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group p-6 border border-white/10 hover:border-white/30 bg-white/[0.01] hover:bg-white/[0.03] transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="font-mono text-[10px] tracking-widest text-white/40 uppercase">LINKEDIN</span>
+                    <LinkedinIcon className="w-4 h-4 text-white/40 group-hover:text-white transition-colors" />
+                  </div>
+                  <p className="font-mono text-sm text-white font-medium group-hover:text-emerald-400 transition-colors">
+                    Minh Nhat Pham
+                  </p>
+                </div>
+                <span className="font-mono text-[10px] text-white/40 group-hover:text-white mt-6 flex items-center gap-1 transition-colors">
+                  Connect on LinkedIn →
+                </span>
+              </a>
+            </div>
+
+            {/* Location & Status Bar */}
+            <div className="p-4 sm:p-5 border border-white/10 bg-white/[0.02] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 font-mono text-xs">
+              <span className="text-white/40 uppercase tracking-widest text-[10px]">CURRENT AVAILABILITY</span>
+              <span className="text-emerald-400/90 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                Ho Chi Minh City, Vietnam · Available for Full-Time Roles & Contracts
+              </span>
             </div>
           </div>
         </section>
