@@ -630,13 +630,11 @@ export default function App() {
         {/* ========== 01 - ABOUT ========== */}
         <section id="about" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14">
           <div className="w-full text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.about.tag}</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
-              {t.about.title}
-              <br />
-              <span className="text-white/30">{t.about.titleSub}</span>
+            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-3">{t.about.tag}</p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-6">
+              {t.about.title} <span className="text-white/30">{t.about.titleSub}</span>
             </h2>
-            <div className="space-y-4 text-sm text-white/60 leading-relaxed max-w-4xl">
+            <div className="space-y-4 text-sm sm:text-base text-white/60 leading-relaxed max-w-3xl">
               <p>{t.about.p1}</p>
               <p>{t.about.p2}</p>
             </div>
@@ -695,10 +693,15 @@ export default function App() {
         {/* ========== 02 - TECH STACK / SKILLS ========== */}
         <section id="skills" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 flex items-center">
           <div className="w-full text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-4">{t.skills.tag}</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
+            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-3">{t.skills.tag}</p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3">
               {t.skills.title} <span className="text-white/30">{t.skills.titleSub}</span>
             </h2>
+            {t.skills.desc && (
+              <p className="text-sm sm:text-base text-white/50 leading-relaxed max-w-2xl mb-8">
+                {t.skills.desc}
+              </p>
+            )}
 
             {/* Modular Card Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 items-stretch">
@@ -770,9 +773,14 @@ export default function App() {
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 px-2 sm:px-4">
                   <div>
                     <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-2">{t.experience.tag}</p>
-                    <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-2">
                       {t.experience.title} <span className="text-white/30">{t.experience.titleSub}</span>
                     </h2>
+                    {t.experience.desc && (
+                      <p className="text-sm text-white/50 leading-relaxed max-w-2xl">
+                        {t.experience.desc}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-3 font-mono text-xs text-white/40 shrink-0">
@@ -932,16 +940,19 @@ export default function App() {
         {/* ========== 04 - PROJECTS ========== */}
         <section id="projects" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">
           <div className="w-full text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.projects.tag}</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
-              {t.projects.title}
-              <br />
-              <span className="text-white/30">{t.projects.titleSub}</span>
+            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-3">{t.projects.tag}</p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3">
+              {t.projects.title} <span className="text-white/30">{t.projects.titleSub}</span>
             </h2>
+            {t.projects.desc && (
+              <p className="text-sm sm:text-base text-white/50 leading-relaxed max-w-2xl mb-8">
+                {t.projects.desc}
+              </p>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {t.projects.items.map((proj, idx) => (
-                <article key={idx} className="border border-white/10 p-6 hover:border-white/30 transition-colors flex flex-col justify-between">
+                <article key={idx} className="border border-white/10 p-6 sm:p-7 hover:border-white/25 transition-all flex flex-col justify-between min-h-[380px]">
                   <div>
                     <div className="flex items-baseline justify-between gap-4 mb-2">
                       <h3 className="text-lg font-bold">{proj.title}</h3>
@@ -987,19 +998,22 @@ export default function App() {
         {/* ========== 05 - BLOG ========== */}
         <section id="blog" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">
           <div className="w-full text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.blog.tag}</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-12">
-              {t.blog.title}
-              <br />
-              <span className="text-white/30">{t.blog.titleSub}</span>
+            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-3">{t.blog.tag}</p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3">
+              {t.blog.title} <span className="text-white/30">{t.blog.titleSub}</span>
             </h2>
+            {t.blog.desc && (
+              <p className="text-sm sm:text-base text-white/50 leading-relaxed max-w-2xl mb-8">
+                {t.blog.desc}
+              </p>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {t.blog.posts.map((post) => (
                 <article
                   key={post.slug}
                   onClick={() => setSelectedPostSlug(post.slug)}
-                  className="border border-white/10 p-6 hover:border-white/30 transition-all cursor-pointer group bg-white/[0.01] flex flex-col justify-between"
+                  className="border border-white/10 p-6 sm:p-7 hover:border-white/25 transition-all cursor-pointer group bg-transparent flex flex-col justify-between min-h-[360px]"
                 >
                   <div>
                     <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
@@ -1033,11 +1047,9 @@ export default function App() {
         {/* ========== 06 - CONTACT ========== */}
         <section id="contact" className="min-h-screen flex items-center py-24 p-6 sm:p-10 lg:p-14">
           <div className="w-full text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.contact.tag}</p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
-              {t.contact.title}
-              <br />
-              <span className="text-white/30">{t.contact.titleSub}</span>
+            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-3">{t.contact.tag}</p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3">
+              {t.contact.title} <span className="text-white/30">{t.contact.titleSub}</span>
             </h2>
             <p className="text-sm text-white/50 leading-relaxed mb-10 max-w-2xl">
               {t.contact.desc}

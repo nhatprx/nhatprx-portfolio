@@ -14,11 +14,30 @@ export function getStoredTranslations(): Record<SupportedLang, TranslationDict> 
     const raw = localStorage.getItem(CONTENT_STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
+      const mergeLang = (code: SupportedLang): TranslationDict => {
+        const base = TRANSLATIONS[code]
+        const custom = parsed[code] || {}
+        const customBlog = custom.blog || {}
+        // Ensure new default posts are never hidden by an older localStorage snapshot
+        const posts = (customBlog.posts?.length ?? 0) >= base.blog.posts.length
+          ? customBlog.posts
+          : base.blog.posts
+
+        return {
+          ...base,
+          ...custom,
+          skills: { ...base.skills, ...(custom.skills || {}) },
+          experience: { ...base.experience, ...(custom.experience || {}) },
+          projects: { ...base.projects, ...(custom.projects || {}) },
+          blog: { ...base.blog, ...customBlog, posts },
+        }
+      }
+
       return {
-        en: { ...TRANSLATIONS.en, ...parsed.en },
-        vi: { ...TRANSLATIONS.vi, ...parsed.vi },
-        fr: { ...TRANSLATIONS.fr, ...parsed.fr },
-        ja: { ...TRANSLATIONS.ja, ...parsed.ja },
+        en: mergeLang('en'),
+        vi: mergeLang('vi'),
+        fr: mergeLang('fr'),
+        ja: mergeLang('ja'),
       }
     }
   } catch (err) {

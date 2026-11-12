@@ -93,24 +93,28 @@ export interface TranslationDict {
     tag: string
     title: string
     titleSub: string
+    desc?: string
     items: ExperienceItem[]
   }
   projects: {
     tag: string
     title: string
     titleSub: string
+    desc?: string
     items: ProjectItem[]
   }
   skills: {
     tag: string
     title: string
     titleSub: string
+    desc?: string
     categories: SkillGroup[]
   }
   blog: {
     tag: string
     title: string
     titleSub: string
+    desc?: string
     readNote: string
     backToPortfolio: string
     modalNoteLabel: string
@@ -177,6 +181,49 @@ const CODE_SNIPPET_YAML = `services:
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=64m`
 
+const CODE_SNIPPET_REDIS = `// XFetch: Probabilistic early cache recomputation algorithm
+public String getWithProbabilisticRefresh(String key, long ttlSeconds, double beta) {
+    CacheEntry entry = redisTemplate.opsForValue().get(key);
+    if (entry == null) return refreshAndCache(key, ttlSeconds);
+
+    // Compute early expiration threshold: -beta * delta * ln(random)
+    double delta = entry.getComputeDurationMs();
+    double expiryThreshold = -beta * delta * Math.log(ThreadLocalRandom.current().nextDouble());
+
+    if (System.currentTimeMillis() - entry.getCreatedAt() + expiryThreshold >= ttlSeconds * 1000) {
+        asyncExecutor.submit(() -> refreshAndCache(key, ttlSeconds));
+    }
+    return entry.getValue();
+}`
+
+const CODE_SNIPPET_POSTGRES = `-- Safe, zero-downtime column addition with default in PostgreSQL
+BEGIN;
+  -- Set low lock timeout to avoid queueing blockers behind heavy read queries
+  SET LOCAL lock_timeout = '2s';
+
+  -- Add column without rewrite (instant in PG 11+)
+  ALTER TABLE order_events ADD COLUMN idempotency_key VARCHAR(64);
+COMMIT;
+
+-- Create index concurrently without locking table against writes
+CREATE INDEX CONCURRENTLY idx_order_events_idempotency 
+ON order_events (idempotency_key) 
+WHERE idempotency_key IS NOT NULL;`
+
+const CODE_SNIPPET_IOT = `// Event-driven reactive telemetry worker with backpressure
+@Bean
+public Consumer<Flux<SensorHeartbeat>> processTelemetry() {
+    return flux -> flux
+        .onBackpressureBuffer(10_000, BufferOverflowStrategy.DROP_OLDEST)
+        .parallel(4)
+        .runOn(Schedulers.boundedElastic())
+        .filter(SensorHeartbeat::isValid)
+        .flatMap(telemetryService::persistMetrics)
+        .sequential()
+        .doOnError(err -> log.error("Ingestion buffer error: {}", err.getMessage()))
+        .subscribe();
+}`
+
 export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
   // ==========================================
   // ENGLISH
@@ -227,6 +274,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       tag: '03 - EXPERIENCE',
       title: "Where I've",
       titleSub: 'shipped code.',
+      desc: 'Engineering roles across cloud infrastructure, multi-tenant SaaS, and hardware-edge platforms.',
       items: [
         {
           role: 'Cloud Infrastructure Intern',
@@ -274,6 +322,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       tag: '04 - PROJECTS',
       title: 'Featured',
       titleSub: 'systems.',
+      desc: 'End-to-end production systems, reverse-engineered frameworks, and scalable cloud applications.',
       items: [
         {
           title: 'LordNine Bot · Automation Framework',
@@ -306,6 +355,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       tag: '02 - TECH STACK',
       title: 'Technical',
       titleSub: 'stack.',
+      desc: 'Curated tools, production languages, cloud backends, and engineering patterns honed across distributed systems.',
       categories: [
         {
           title: 'LANGUAGES',
@@ -344,6 +394,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       tag: '05 - BLOG',
       title: 'Engineering',
       titleSub: 'notes.',
+      desc: 'Technical deep dives, architectural trade-offs, and lessons learned from shipping high-concurrency software.',
       readNote: 'READ NOTE →',
       backToPortfolio: '← BACK TO PORTFOLIO',
       modalNoteLabel: 'ENGINEERING NOTE',
@@ -471,6 +522,120 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
             ],
           },
         },
+        {
+          slug: 'redis-cache-stampede-mitigation',
+          title: 'Mitigating Cache Stampedes: Probabilistic Early Expiration vs Distributed Locks in Redis',
+          date: 'FEB 2026',
+          readTime: '5 MIN READ',
+          summary:
+            'How we solved high-load thundering herd problems in Spring Boot by implementing the XFetch optimal probabilistic early recomputation algorithm, slashing P99 database spikes by 84%.',
+          tags: ['Redis', 'Spring Boot', 'Distributed Systems', 'Caching'],
+          content: {
+            lead: 'When high-traffic cache keys expire, thousands of concurrent requests can simultaneously miss the cache and hammer backend relational databases. Here is how we evaluated distributed locks versus probabilistic early expiration to eliminate cache stampedes.',
+            sections: [
+              {
+                heading: '1. The Thundering Herd Problem',
+                body: [
+                  'In our multi-tenant SaaS backend, hot cache keys representing tenant catalog data would expire at peak traffic hours. A sudden burst of 5,000 requests per second attempting to recompute the same expensive aggregate query caused database connection pool exhaustion and severe latency spikes.',
+                  'Traditional mutual exclusion locks (using Redlock or Redis SETNX) created queuing bottlenecks and introduced complex failure modes when workers crashed mid-computation.',
+                ],
+              },
+              {
+                heading: '2. The XFetch Algorithm: Optimal Probabilistic Refresh',
+                body: [
+                  'Rather than waiting for absolute TTL expiry, we adopted the XFetch algorithm (Vattani et al.). A request performs background cache regeneration before the key actually expires, with probability increasing as time approaches TTL.',
+                  'By factoring in the time delta needed to recompute the query, background threads refresh the cache seamlessly while serving hot read traffic from memory with zero lock contention.',
+                ],
+                code: {
+                  language: 'java',
+                  snippet: CODE_SNIPPET_REDIS,
+                },
+              },
+              {
+                heading: '3. Measurable Production Outcomes',
+                body: [
+                  'Under sustained synthetic load testing at 8,000 req/s, P99 database response times dropped from 1,420ms down to 220ms (an 84% reduction), and database CPU utilization flattened out to a steady 28%.',
+                ],
+              },
+            ],
+          },
+        },
+        {
+          slug: 'zero-downtime-postgres-migrations',
+          title: 'Zero-Downtime PostgreSQL Schema Migrations on High-Throughput Tables',
+          date: 'NOV 2025',
+          readTime: '6 MIN READ',
+          summary:
+            'A field guide to safe column additions, lock timeouts, concurrent index creation, and avoiding table locks that silently bring down production databases under sustained traffic.',
+          tags: ['PostgreSQL', 'Database', 'DevOps', 'Reliability'],
+          content: {
+            lead: 'Running ALTER TABLE in a staging environment takes milliseconds. In production under sustained traffic, that same statement can acquire an ACCESS EXCLUSIVE lock, queuing all incoming queries behind it and starving connection pools.',
+            sections: [
+              {
+                heading: '1. The Danger of Silent Lock Queues',
+                body: [
+                  'PostgreSQL processes lock requests FIFO. If an ALTER TABLE statement is blocked waiting for a long-running analytical SELECT query to finish, all subsequent reads and writes on that table line up behind the ALTER request, cascading into an outage within seconds.',
+                  'To prevent this catastrophe, we mandate setting a strict lock_timeout (e.g. 2s) on every migration transaction.',
+                ],
+                code: {
+                  language: 'sql',
+                  snippet: CODE_SNIPPET_POSTGRES,
+                },
+              },
+              {
+                heading: '2. Indexing Millions of Rows with CREATE INDEX CONCURRENTLY',
+                body: [
+                  'Standard index creation locks the table against writes for the entire duration of the build. CREATE INDEX CONCURRENTLY runs two table scans and builds the index without blocking INSERT, UPDATE, or DELETE operations.',
+                  'If a concurrent build fails due to a unique constraint violation, it leaves an INVALID index that must be dropped and retried before re-running the migration pipeline.',
+                ],
+              },
+              {
+                heading: '3. Safe Column Additions and Rollback Strategies',
+                body: [
+                  'In PostgreSQL 11+, adding a column with a constant DEFAULT value is an instantaneous metadata-only operation. We enforce backward-compatible multi-phase schema changes: expand the schema first, deploy the application code, and contract old columns only after full verification.',
+                ],
+              },
+            ],
+          },
+        },
+        {
+          slug: 'event-driven-iot-spring-boot',
+          title: 'Building Resilient IoT Ingestion Pipelines: From MQTT Brokers to Event-Driven Workers',
+          date: 'JUL 2025',
+          readTime: '7 MIN READ',
+          summary:
+            'Architecting a fault-tolerant edge telemetry ingestion gateway handling 10,000+ sensor heartbeats per minute with zero message loss using backpressure and transactional outbox patterns.',
+          tags: ['IoT', 'Spring Boot', 'Architecture', 'Kafka'],
+          content: {
+            lead: 'Edge devices in the field frequently disconnect, reconnect in massive synchronized waves, and emit bursts of telemetry. Here is how we engineered an event-driven ingestion pipeline in Spring Boot that gracefully absorbs volatility.',
+            sections: [
+              {
+                heading: '1. Handling Sensor Connection Stampedes',
+                body: [
+                  'When regional cellular towers recovered after transient outages, thousands of smart waste sensors simultaneously reconnected and dumped accumulated telemetry. Synchronous REST endpoints were quickly overwhelmed.',
+                  'We decoupled sensor intake through an MQTT broker bridge feeding into a reactive Spring Boot message queue, applying backpressure to buffer spikes without dropping packets.',
+                ],
+                code: {
+                  language: 'java',
+                  snippet: CODE_SNIPPET_IOT,
+                },
+              },
+              {
+                heading: '2. Ensuring Exactly-Once Semantics with Idempotent Ingestion',
+                body: [
+                  'Because unstable edge connections frequently retry transmissions, network packets often duplicate. We introduced deterministic UUIDv5 message identifiers generated from device ID, timestamp, and metric sequence numbers.',
+                  'A Redis Bloom filter paired with PostgreSQL unique constraint indexing ensures duplicates are discarded in under 0.8ms without triggering database deadlocks.',
+                ],
+              },
+              {
+                heading: '3. Zero Data Loss via the Transactional Outbox Pattern',
+                body: [
+                  'To synchronize local edge states with downstream analytical workers, database mutations and event publications are wrapped in atomic transactional outbox tables, guaranteeing eventual consistency across all monitoring dashboards.',
+                ],
+              },
+            ],
+          },
+        },
       ],
     },
     contact: {
@@ -540,6 +705,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       tag: '03 - KINH NGHIỆM',
       title: 'Nơi tôi từng',
       titleSub: 'làm việc & cống hiến.',
+      desc: 'Hành trình kỹ thuật thực chiến qua hạ tầng đám mây AWS, nền tảng SaaS đa người dùng và tích hợp phần cứng edge IoT.',
       items: [
         {
           role: 'Thực tập sinh Hạ tầng Đám mây',
@@ -587,6 +753,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       tag: '04 - DỰ ÁN',
       title: 'Hệ thống',
       titleSub: 'tiêu biểu.',
+      desc: 'Các hệ thống phân tán, giải pháp tự động hóa hiệu năng cao và ứng dụng phần cứng được thiết kế từ con số 0.',
       items: [
         {
           title: 'LordNine Bot · Automation Framework',
@@ -619,6 +786,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       tag: '02 - TECH STACK',
       title: 'Ngăn xếp',
       titleSub: 'công nghệ.',
+      desc: 'Bộ công nghệ, ngôn ngữ lập trình, hệ thống đám mây và kiến trúc hướng đối tượng được ứng dụng thực chiến trong môi trường phân tán.',
       categories: [
         {
           title: 'NGÔN NGỮ LẬP TRÌNH',
@@ -657,6 +825,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       tag: '05 - BÀI VIẾT',
       title: 'Ghi chép',
       titleSub: 'kỹ thuật.',
+      desc: 'Ghi chép chuyên sâu về kiến trúc hệ thống, tối ưu hóa hiệu năng phần cứng và kinh nghiệm vận hành thực tế.',
       readNote: 'ĐỌC BÀI VIẾT →',
       backToPortfolio: '← QUAY LẠI TRANG CHỦ',
       modalNoteLabel: 'BÀI VIẾT KỸ THUẬT',
@@ -784,6 +953,120 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
             ],
           },
         },
+        {
+          slug: 'redis-cache-stampede-mitigation',
+          title: 'Xử lý Cache Stampede: Giải thuật hết hạn sớm xác suất (XFetch) và Khóa phân tán trong Redis',
+          date: '02/2026',
+          readTime: '5 PHÚT ĐỌC',
+          summary:
+            'Cách chúng tôi giải quyết vấn đề nghẽn đồng loạt (thundering herd) trong Spring Boot bằng giải thuật tính toán lại trước xác suất XFetch, giảm 84% thời gian phản hồi P99 của cơ sở dữ liệu.',
+          tags: ['Redis', 'Spring Boot', 'Hệ thống phân tán', 'Caching'],
+          content: {
+            lead: 'Khi các key cache có lưu lượng truy cập cao bị hết hạn TTL, hàng nghìn request đồng thời sẽ cùng lúc bị cache miss và dồn dập truy vấn trực tiếp vào cơ sở dữ liệu quan hệ phía sau. Dưới đây là cách chúng tôi so sánh giữa khóa phân tán và giải thuật hết hạn sớm theo xác suất để loại bỏ hoàn toàn hiện tượng cache stampede.',
+            sections: [
+              {
+                heading: '1. Vấn đề Thundering Herd trong thực tế',
+                body: [
+                  'Trong backend SaaS đa người dùng của chúng tôi, các key cache chứa dữ liệu danh mục của khách hàng thường hết hạn đúng vào khung giờ cao điểm. Đợt bùng nổ 5.000 request mỗi giây cùng lúc tính toán lại một câu truy vấn aggregate nặng nề làm cạn kiệt connection pool của database và khiến độ trễ tăng vọt.',
+                  'Giải pháp khóa loại trừ truyền thống (sử dụng Redlock hoặc Redis SETNX) tạo ra nút thắt cổ chai xếp hàng và dễ rơi vào trạng thái lỗi phức tạp khi worker bị crash giữa chừng.',
+                ],
+              },
+              {
+                heading: '2. Giải thuật XFetch: Tái tạo Cache sớm theo xác suất tối ưu',
+                body: [
+                  'Thay vì đợi key hết hạn cứng theo TTL, chúng tôi áp dụng giải thuật XFetch (Vattani và cộng sự). Request sẽ kích hoạt tiến trình chạy nền để làm mới cache trước khi key thực sự hết hạn, với xác suất tăng dần khi thời gian trôi dần về mốc TTL.',
+                  'Bằng cách tính toán thêm thời gian cần thiết để thực thi câu truy vấn, các worker chạy ngầm cập nhật lại cache một cách mượt mà trong khi luồng đọc chính vẫn nhận dữ liệu tức thì từ bộ nhớ RAM với độ trễ 0ms.',
+                ],
+                code: {
+                  language: 'java',
+                  snippet: CODE_SNIPPET_REDIS,
+                },
+              },
+              {
+                heading: '3. Hiệu quả đo lường trên môi trường Production',
+                body: [
+                  'Dưới thử nghiệm tải nhân tạo 8.000 req/s liên tục, thời gian phản hồi P99 của cơ sở dữ liệu giảm ngoạn mục từ 1.420ms xuống chỉ còn 220ms (giảm 84%), và mức tải CPU của cụm database giữ ổn định ở mức 28%.',
+                ],
+              },
+            ],
+          },
+        },
+        {
+          slug: 'zero-downtime-postgres-migrations',
+          title: 'Chiến lược Migration lược đồ PostgreSQL không gián đoạn dịch vụ (Zero-Downtime) trên bảng dữ liệu lớn',
+          date: '11/2025',
+          readTime: '6 PHÚT ĐỌC',
+          summary:
+            'Hướng dẫn thực chiến về thêm cột an toàn, thiết lập lock timeout, đánh chỉ mục song song (CREATE INDEX CONCURRENTLY) và tránh khóa bảng đột ngột làm sập hệ thống trong giờ cao điểm.',
+          tags: ['PostgreSQL', 'Cơ sở dữ liệu', 'DevOps', 'Độ tin cậy'],
+          content: {
+            lead: 'Chạy lệnh ALTER TABLE trên môi trường dev chỉ mất vài mili-giây. Nhưng trên môi trường production với hàng nghìn truy vấn đồng thời, chính câu lệnh đó có thể chiếm quyền khóa độc quyền (ACCESS EXCLUSIVE lock), dồn ứ toàn bộ truy vấn phía sau và làm cạn kiệt connection pool chỉ trong vài giây.',
+            sections: [
+              {
+                heading: '1. Hiểm họa từ hàng đợi khóa ngầm (Lock Queue)',
+                body: [
+                  'PostgreSQL xử lý hàng đợi yêu cầu lock theo cơ chế FIFO. Nếu câu lệnh ALTER TABLE bị kẹt đợi một câu SELECT phân tích đang chạy dở, toàn bộ các lệnh đọc và ghi phát sinh sau đó trên bảng sẽ phải xếp hàng chờ đợi, gây tê liệt hệ thống gần như ngay lập tức.',
+                  'Để ngăn chặn thảm họa này, chúng tôi bắt buộc phải cấu hình biến lock_timeout nghiêm ngặt (ví dụ: 2s) trong mỗi transaction migration.',
+                ],
+                code: {
+                  language: 'sql',
+                  snippet: CODE_SNIPPET_POSTGRES,
+                },
+              },
+              {
+                heading: '2. Đánh chỉ mục hàng triệu bản ghi với CREATE INDEX CONCURRENTLY',
+                body: [
+                  'Cách tạo index thông thường sẽ khóa bảng ngăn chặn toàn bộ thao tác ghi cho đến khi index tạo xong. Lệnh CREATE INDEX CONCURRENTLY quét bảng 2 lần và xây dựng index hoàn toàn ngầm mà không hề chặn các thao tác INSERT, UPDATE hay DELETE của người dùng.',
+                  'Nếu tiến trình concurrent build bị lỗi do trùng lặp dữ liệu, nó sẽ để lại một index ở trạng thái INVALID cần được drop và xử lý trước khi chạy lại pipeline.',
+                ],
+              },
+              {
+                heading: '3. Chiến lược thêm cột an toàn và quy trình thu gọn lược đồ',
+                body: [
+                  'Từ PostgreSQL 11+, việc thêm một cột mới với giá trị DEFAULT hằng số là một thao tác cập nhật metadata tức thì (instant metadata operation). Chúng tôi tuân thủ quy trình đổi schema nhiều giai đoạn: mở rộng schema trước, deploy mã nguồn tương thích cả hai phiên bản, và chỉ xóa các cột cũ sau khi đã xác thực an toàn tuyệt đối.',
+                ],
+              },
+            ],
+          },
+        },
+        {
+          slug: 'event-driven-iot-spring-boot',
+          title: 'Xây dựng kiến trúc xử lý luồng dữ liệu IoT hướng sự kiện: Từ Broker MQTT đến Reactive Workers',
+          date: '07/2025',
+          readTime: '7 PHÚT ĐỌC',
+          summary:
+            'Thiết kế cổng thu thập telemetry tại biên có khả năng chịu lỗi cao, xử lý hơn 10.000 tín hiệu cảm biến mỗi phút với cơ chế Backpressure và mẫu thiết kế Transactional Outbox.',
+          tags: ['IoT', 'Spring Boot', 'Kiến trúc hệ thống', 'Kafka'],
+          content: {
+            lead: 'Các thiết bị cảm biến ngoài hiện trường thường xuyên mất kết nối, tái kết nối đồng loạt theo từng đợt sóng lớn và gửi dữ liệu dồn ứ bất thường. Dưới đây là cách chúng tôi xây dựng đường ống tiếp nhận dữ liệu hướng sự kiện bằng Spring Boot để hấp thụ biến động lưu lượng một cách bền bỉ.',
+            sections: [
+              {
+                heading: '1. Kiểm soát các đợt sóng tái kết nối đồng loạt',
+                body: [
+                  'Khi các trạm phát sóng di động 4G tại địa phương phục hồi sau sự cố chập chờn, hàng nghìn cảm biến thùng rác thông minh đồng loạt kết nối lại và đẩy dữ liệu tích lũy. Các endpoint REST đồng bộ thông thường sẽ sập ngay tức khắc.',
+                  'Chúng tôi phân tách cổng nhận dữ liệu qua cầu nối broker MQTT nạp vào hàng đợi reactive trong Spring Boot, áp dụng cơ chế Backpressure để đệm các xung lưu lượng mà không đánh rơi bất kỳ gói tin nào.',
+                ],
+                code: {
+                  language: 'java',
+                  snippet: CODE_SNIPPET_IOT,
+                },
+              },
+              {
+                heading: '2. Đảm bảo ngữ nghĩa Exactly-Once với cơ chế nạp bất biến (Idempotent)',
+                body: [
+                  'Do đường truyền mạng tại biên không ổn định hay gửi lại gói tin, dữ liệu thường xuyên bị duplicate. Chúng tôi sử dụng định danh xác định UUIDv5 sinh từ ID thiết bị, timestamp và số sequence của phép đo.',
+                  'Bộ lọc Redis Bloom filter kết hợp ràng buộc UNIQUE trên PostgreSQL giúp loại bỏ trùng lặp trong chưa đầy 0.8ms mà không gây deadlock database.',
+                ],
+              },
+              {
+                heading: '3. Bảo toàn dữ liệu với Transactional Outbox Pattern',
+                body: [
+                  'Để đồng bộ trạng thái giữa thiết bị biên và các worker phân tích dữ liệu, các thao tác ghi DB và phát sự kiện được bọc nguyên tử trong bảng transactional outbox, đảm bảo tính nhất quán cuối cùng trên toàn bộ dashboard giám sát.',
+                ],
+              },
+            ],
+          },
+        },
       ],
     },
     contact: {
@@ -853,6 +1136,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       tag: '03 - EXPÉRIENCE',
       title: 'Parcours',
       titleSub: 'professionnel.',
+      desc: 'Rôles d’ingénierie à travers l’infrastructure cloud, le SaaS multi-tenant et les plateformes IoT.',
       items: [
         {
           role: 'Stagiaire Infrastructure Cloud',
@@ -900,6 +1184,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       tag: '04 - PROJETS',
       title: 'Projets',
       titleSub: 'phares.',
+      desc: 'Systèmes de production de bout en bout, frameworks d’automatisation et applications cloud évolutives.',
       items: [
         {
           title: 'LordNine Bot · Automation Framework',
@@ -932,6 +1217,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       tag: '02 - COMPÉTENCES',
       title: 'Stack',
       titleSub: 'technique.',
+      desc: 'Outils sélectionnés, langages de production, backends cloud et architectures éprouvés sur des systèmes distribués.',
       categories: [
         {
           title: 'LANGAGES',
@@ -970,6 +1256,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       tag: '05 - BLOG',
       title: 'Notes',
       titleSub: "d'ingénierie.",
+      desc: 'Analyses techniques approfondies, compromis d’architecture et retours d’expérience sur la production logicielle.',
       readNote: "LIRE L'ARTICLE →",
       backToPortfolio: '← RETOUR AU PORTFOLIO',
       modalNoteLabel: "NOTE D'INGÉNIERIE",
@@ -1094,6 +1381,114 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
             ],
           },
         },
+        {
+          slug: 'redis-cache-stampede-mitigation',
+          title: 'Atténuation des Cache Stampedes : Expiration probabiliste anticipée (XFetch) vs Verrous Redis',
+          date: 'FÉVR 2026',
+          readTime: '5 MIN DE LECTURE',
+          summary:
+            'Comment nous avons résolu les problèmes de thundering herd sous forte charge dans Spring Boot grâce à l’algorithme probabiliste XFetch, réduisant les pics de latence P99 de 84%.',
+          tags: ['Redis', 'Spring Boot', 'Systèmes Distribués', 'Caching'],
+          content: {
+            lead: 'Lorsqu’une clé de cache à fort trafic expire, des milliers de requêtes concurrentes interrogent simultanément la base de données. Voici notre comparatif entre verrous distribués et expiration probabiliste anticipée.',
+            sections: [
+              {
+                heading: '1. Le problème du Thundering Herd',
+                body: [
+                  'Dans notre backend multi-tenant, les clés de catalogue expiraient aux heures de pointe, provoquant des tempêtes de requêtes concurrentes qui saturaient le pool de connexions SQL.',
+                ],
+              },
+              {
+                heading: '2. Algorithme XFetch et rafraîchissement anticipé',
+                body: [
+                  'Au lieu d’attendre l’expiration totale du TTL, l’algorithme XFetch régénère le cache en arrière-plan avec une probabilité proportionnelle au temps restant et au coût de calcul de la donnée.',
+                ],
+                code: {
+                  language: 'java',
+                  snippet: CODE_SNIPPET_REDIS,
+                },
+              },
+              {
+                heading: '3. Résultats en production',
+                body: [
+                  'Sous un banc d’essai à 8 000 req/s, la latence P99 est passée de 1 420 ms à 220 ms (-84%) avec une charge CPU stabilisée à 28%.',
+                ],
+              },
+            ],
+          },
+        },
+        {
+          slug: 'zero-downtime-postgres-migrations',
+          title: 'Migrations de schéma PostgreSQL sans interruption (Zero-Downtime) sur tables volumineuses',
+          date: 'NOV 2025',
+          readTime: '6 MIN DE LECTURE',
+          summary:
+            'Guide pratique sur l’ajout sécurisé de colonnes, les verrous lock_timeout, la création d’index concurrents (CREATE INDEX CONCURRENTLY) et la prévention des blocages en production.',
+          tags: ['PostgreSQL', 'Base de données', 'DevOps', 'Fiabilité'],
+          content: {
+            lead: 'Exécuter un ALTER TABLE en préproduction prend quelques millisecondes. En production sous fort trafic, la même commande peut poser un verrou exclusif et saturer les pools de connexion.',
+            sections: [
+              {
+                heading: '1. Risques des files d’attente de verrous',
+                body: [
+                  'PostgreSQL traitant les verrous selon une file FIFO, une requête lente bloque l’ALTER TABLE qui bloque à son tour toutes les lectures/écritures suivantes. Configurer un lock_timeout de 2s est indispensable.',
+                ],
+                code: {
+                  language: 'sql',
+                  snippet: CODE_SNIPPET_POSTGRES,
+                },
+              },
+              {
+                heading: '2. Indexation concurrente sans blocage',
+                body: [
+                  'La commande CREATE INDEX CONCURRENTLY analyse la table en deux passes et construit l’index sans jamais interdire les opérations d’écriture clientes.',
+                ],
+              },
+              {
+                heading: '3. Stratégie multi-étapes',
+                body: [
+                  'Nous appliquons le pattern Expand & Contract pour garantir la rétrocompatibilité continue entre schémas de base de données et versions d’application.',
+                ],
+              },
+            ],
+          },
+        },
+        {
+          slug: 'event-driven-iot-spring-boot',
+          title: 'Conception de pipelines d’ingestion IoT événementiels : De MQTT aux Reactive Workers',
+          date: 'JUIL 2025',
+          readTime: '7 MIN DE LECTURE',
+          summary:
+            'Architecture d’une passerelle télémétrique tolérante aux pannes absorbant 10 000+ battements de cœur par minute sans aucune perte de message grâce au backpressure et au pattern outbox.',
+          tags: ['IoT', 'Spring Boot', 'Architecture', 'Kafka'],
+          content: {
+            lead: 'Les capteurs IoT sur le terrain se reconnectent souvent par vagues massives. Voici comment nous avons conçu une ingestion réactive sous Spring Boot capable d’absorber ces chocs.',
+            sections: [
+              {
+                heading: '1. Absorption des vagues de reconnexion',
+                body: [
+                  'Les flux de capteurs transitent par un broker MQTT connecté à des workers réactifs Spring Boot dotés de backpressure pour amortir les pointes sans perte.',
+                ],
+                code: {
+                  language: 'java',
+                  snippet: CODE_SNIPPET_IOT,
+                },
+              },
+              {
+                heading: '2. Sémantique Exactly-Once et idempotence',
+                body: [
+                  'Les identifiants déterministes UUIDv5 et les filtres de Bloom Redis permettent de dédupliquer les trames réseau en moins de 0,8 ms.',
+                ],
+              },
+              {
+                heading: '3. Garantie de livraison via Transactional Outbox',
+                body: [
+                  'Les événements sont enregistrés atomiquement avec les mutations de base de données, garantissant la cohérence globale des métriques analytiques.',
+                ],
+              },
+            ],
+          },
+        },
       ],
     },
     contact: {
@@ -1163,6 +1558,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       tag: '03 - 職務経歴',
       title: 'これまでの',
       titleSub: '開発・参画実績。',
+      desc: 'クラウドインフラ、マルチテナントSaaS、IoTエッジ連携の実践的なエンジニアリング経歴。',
       items: [
         {
           role: 'クラウドインフラ・インターン',
@@ -1210,6 +1606,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       tag: '04 - 実績',
       title: '主要な',
       titleSub: '開発成果物。',
+      desc: '設計から本番稼働まで、リバースエンジニアリングと高可用性を追求した主要開発プロジェクト。',
       items: [
         {
           title: 'LordNine Bot · Automation Framework',
@@ -1242,6 +1639,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       tag: '02 - スキル',
       title: '技術',
       titleSub: 'スタック。',
+      desc: '分散システムの実践で培った、厳選されたツール、言語、クラウド基盤、アーキテクチャパターン。',
       categories: [
         {
           title: 'プログラミング言語',
@@ -1280,6 +1678,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       tag: '05 - 技術ノート',
       title: '技術',
       titleSub: 'ノート。',
+      desc: '高負荷分散処理、プロトコル解析、本番運用から得たアーキテクチャの知見と技術考察。',
       readNote: '記事を読む →',
       backToPortfolio: '← ポートフォリオに戻る',
       modalNoteLabel: '技術ノート',
@@ -1397,6 +1796,114 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
                 heading: '3. ヘルスチェックと安全なコネクションドレイン',
                 body: [
                   'ローリングアップデート時のSIGTERM処理に15秒の猶予期間を設け、ALBコネクションドレインと連携させることで、通信中のリクエストを切断することなく安全に新旧入替を行います。',
+                ],
+              },
+            ],
+          },
+        },
+        {
+          slug: 'redis-cache-stampede-mitigation',
+          title: 'キャッシュスタンピード対策：Redisにおける確率的早期再計算（XFetch）と分散ロックの比較',
+          date: '2026年2月',
+          readTime: '所要時間：約5分',
+          summary:
+            'Spring Boot高負荷環境におけるThundering Herd問題をXFetch最適確率アルゴリズムによって解消し、DBのP99レイテンシを84%削減した検証記録。',
+          tags: ['Redis', 'Spring Boot', '分散システム', 'キャッシュ'],
+          content: {
+            lead: '高トラフィックなキャッシュキーが失効すると、数千のリクエストが同時にキャッシュミスを起こし、後段のデータベースへ殺到します。分散ロックと確率的早期計算の設計比較を解説します。',
+            sections: [
+              {
+                heading: '1. Thundering Herd（群集殺到）問題の本質',
+                body: [
+                  'マルチテナントSaaSにおいて、アクセス集中時間帯にカタログキャッシュがTTLを迎えると、秒間5,000クエリが同時に重い集計処理を実行し、DB接続プールが枯渇していました。',
+                ],
+              },
+              {
+                heading: '2. XFetchアルゴリズムによるバックグラウンド先行リフレッシュ',
+                body: [
+                  '厳密なTTL到達を待つのではなく、計算コストと残り時間に応じた確率関数に基づき、バックグラウンドスレッドがキー失効前に透過的に再計算を行います。',
+                ],
+                code: {
+                  language: 'java',
+                  snippet: CODE_SNIPPET_REDIS,
+                },
+              },
+              {
+                heading: '3. 本番負荷試験での検証結果',
+                body: [
+                  '秒間8,000リクエストの負荷試験において、P99応答時間は1,420msから220msへと84%激減し、CPU利用率は28%のフラットな推移に安定しました。',
+                ],
+              },
+            ],
+          },
+        },
+        {
+          slug: 'zero-downtime-postgres-migrations',
+          title: '高トラフィックPostgreSQLにおけるゼロダウンタイム・スキーマ移行の実践手法',
+          date: '2025年11月',
+          readTime: '所要時間：約6分',
+          summary:
+            '安全なカラム追加、lock_timeoutの設定、CREATE INDEX CONCURRENTLYによる非ブロッキングインデックス構築、本番障害を防ぐスキーマ設計ガイドライン。',
+          tags: ['PostgreSQL', 'データベース', 'DevOps', '信頼性'],
+          content: {
+            lead: 'ステージング環境でのALTER TABLEは数ミリ秒で完了しますが、本番環境のアクセス集中下では排他ロックを獲得し、後続のすべてのクエリをキューに溜め込んでサービスダウンを引き起こします。',
+            sections: [
+              {
+                heading: '1. ロック待ち行列によるカスケード障害',
+                body: [
+                  'PostgreSQLはロック要求をFIFOで処理するため、時間のかかるSELECT処理の後ろにALTER TABLEが並ぶと、後続のすべての読み書きが待たされます。これを防ぐため、移行トランザクションには必ずlock_timeout=2sを適用します。',
+                ],
+                code: {
+                  language: 'sql',
+                  snippet: CODE_SNIPPET_POSTGRES,
+                },
+              },
+              {
+                heading: '2. CREATE INDEX CONCURRENTLYによる無停止インデックス化',
+                body: [
+                  '通常のインデックス作成は書き込みを全停止しますが、CONCURRENTLY指定によりテーブルを2回走査し、ユーザーのCRUD処理を阻害することなく安全に構築できます。',
+                ],
+              },
+              {
+                heading: '3. Expand & Contract（拡張と縮退）パターン',
+                body: [
+                  'スキーマの追加・コードの反映・旧定義の削除を段階的に進めることで、後方互換性を保ちながらダウンタイムゼロでのマイグレーションを実現します。',
+                ],
+              },
+            ],
+          },
+        },
+        {
+          slug: 'event-driven-iot-spring-boot',
+          title: 'イベント駆動型IoTデータ収集パイプライン：MQTTからReactive Workersへの設計',
+          date: '2025年7月',
+          readTime: '所要時間：約7分',
+          summary:
+            '毎分10,000件以上のセンサーテレメトリを欠損なく処理する耐障害性の高いエッジ受信ゲートウェイ。Backpressure制御とTransactional Outboxパターンの実装。',
+          tags: ['IoT', 'Spring Boot', 'アーキテクチャ', 'Kafka'],
+          content: {
+            lead: 'フィールドのエッジ端末は頻繁に切断し、回線復旧時に一斉に再接続してバーストデータを送信します。突発的な負荷を吸収するイベント駆動パイプラインの構築手法を解説します。',
+            sections: [
+              {
+                heading: '1. センサー再接続バーストの吸収',
+                body: [
+                  'MQTTブローカーとSpring Bootリアクティブキューを連携させ、Backpressure制御によりメモリを圧迫することなくパケットを確実にバッファリングします。',
+                ],
+                code: {
+                  language: 'java',
+                  snippet: CODE_SNIPPET_IOT,
+                },
+              },
+              {
+                heading: '2. 決定論的UUIDv5と重複排除（Exactly-Once）',
+                body: [
+                  '通信リトライによる重複フレームを、デバイスIDとタイムスタンプから生成するUUIDv5およびRedis Bloomフィルターを用いて0.8ms以下で検知・破棄します。',
+                ],
+              },
+              {
+                heading: '3. Transactional Outboxによるデータ欠損防止',
+                body: [
+                  'エッジ端末の状態更新とイベント通知を単一のトランザクションでOutboxテーブルに記録し、分析基盤との最終的な整合性を保証します。',
                 ],
               },
             ],
