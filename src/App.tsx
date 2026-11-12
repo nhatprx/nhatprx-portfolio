@@ -764,11 +764,11 @@ export default function App() {
                               </ul>
                             </div>
                             {exp.tech && exp.tech.length > 0 && (
-                              <div className="shrink-0 mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
+                              <div className="shrink-0 mt-4 pt-4 border-t border-white/10 flex flex-wrap gap-2">
                                 {exp.tech.map((tech) => (
                                   <span
                                     key={tech}
-                                    className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/40 bg-white/[0.02]"
+                                    className="font-mono text-xs px-2.5 py-1 border border-white/15 text-white/70 bg-white/[0.03] hover:border-white/30 hover:text-white transition-colors"
                                   >
                                     {tech}
                                   </span>
@@ -851,11 +851,11 @@ export default function App() {
                             </ul>
                           </div>
                           {proj.tech && proj.tech.length > 0 && (
-                            <div className="shrink-0 mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
+                            <div className="shrink-0 mt-4 pt-4 border-t border-white/10 flex flex-wrap gap-2">
                               {proj.tech.map((tech) => (
                                 <span
                                   key={tech}
-                                  className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/40 bg-white/[0.02]"
+                                  className="font-mono text-xs px-2.5 py-1 border border-white/15 text-white/70 bg-white/[0.03] hover:border-white/30 hover:text-white transition-colors"
                                 >
                                   {tech}
                                 </span>
