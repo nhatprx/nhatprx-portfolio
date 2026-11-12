@@ -73,48 +73,8 @@ export async function translateList(
   return results
 }
 
-/**
- * Layout Character Limits Specification
- */
-export const CONTENT_LIMITS = {
-  about: {
-    title: 35,
-    titleSub: 35,
-    p1: 340,
-    p2: 340,
-    educationTitle: 25,
-    eduSchool: 32,
-    eduLocation: 28,
-    eduDegree: 35,
-    eduMajor: 35,
-  },
-  skills: {
-    title: 35,
-    titleSub: 35,
-    itemSmall: 14, // Languages & Databases
-    itemMedium: 18, // Frameworks
-    itemLarge: 26, // DevOps
-    itemXLarge: 50, // Architecture
-  },
-  work: {
-    title: 48,
-    company: 42,
-    period: 25,
-    summary: 200,
-    bullet: 240,
-    techItem: 18,
-  },
-  blog: {
-    title: 85,
-    date: 20,
-    readTime: 18,
-    summary: 180,
-    tag: 20,
-    lead: 260,
-    sectionHeading: 75,
-    sectionBodyPara: 450,
-  },
-} as const
+export { CONTENT_LIMITS } from './contentLimits'
+import { CONTENT_LIMITS } from './contentLimits'
 
 /**
  * Translates an entire ExperienceItem from English

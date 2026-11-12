@@ -1,0 +1,40 @@
+// Layout Character Limits Specification ensuring responsive designs and baseline limits
+export const CONTENT_LIMITS = {
+  about: {
+    title: 35,
+    titleSub: 35,
+    p1: 340,
+    p2: 340,
+    educationTitle: 25,
+    eduSchool: 32,
+    eduLocation: 28,
+    eduDegree: 35,
+    eduMajor: 35,
+  },
+  skills: {
+    title: 35,
+    titleSub: 35,
+    itemSmall: 14,
+    itemMedium: 18,
+    itemLarge: 26,
+    itemXLarge: 50,
+  },
+  work: {
+    title: 48,
+    company: 42,
+    period: 25,
+    summary: 200,
+    bullet: 240,
+    techItem: 18,
+  },
+  blog: {
+    title: 85,
+    date: 20,
+    readTime: 18,
+    summary: 180,
+    tag: 20,
+    lead: 260,
+    sectionHeading: 75,
+    sectionBodyPara: 450,
+  },
+} as const
