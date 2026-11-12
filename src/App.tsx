@@ -367,10 +367,10 @@ export default function App() {
           const p = Math.max(0, Math.min(1, current / total))
           setHorizontalProgress(p)
 
-          if (rect.top > 120) {
+          if (rect.top > 60) {
             setActiveSection('#hero')
             setIsNavVertical(false)
-          } else if (rect.bottom < 120) {
+          } else if (rect.bottom < 60) {
             setActiveSection('#contact')
             setIsNavVertical(true)
           } else {
@@ -836,7 +836,9 @@ export default function App() {
               {/* ========== 01 - ABOUT ========== */}
               <div
                 id="about"
-                className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:pl-64 xl:pl-72 lg:pr-16 py-24 overflow-y-auto"
+                className={`w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:pr-14 py-24 overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                  isNavVertical ? 'lg:pl-64 xl:pl-72' : 'lg:pl-14'
+                }`}
               >
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.about.tag}</p>
@@ -883,7 +885,9 @@ export default function App() {
         {/* ========== 02 - TECH STACK ========== */}
         <div
           id="skills"
-          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:pl-64 xl:pl-72 lg:pr-16 py-24 overflow-y-auto"
+          className={`w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:pr-14 py-24 overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isNavVertical ? 'lg:pl-64 xl:pl-72' : 'lg:pl-14'
+          }`}
         >
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.skills.tag}</p>
@@ -936,7 +940,9 @@ export default function App() {
           return (
             <div
               id="experience"
-              className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:pl-64 xl:pl-72 lg:pr-16 py-24 overflow-y-auto"
+              className={`w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:pr-14 py-24 overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                isNavVertical ? 'lg:pl-64 xl:pl-72' : 'lg:pl-14'
+              }`}
             >
               <div className="w-full text-left">
                 {/* Header & Story progress indicator */}
@@ -1105,7 +1111,9 @@ export default function App() {
         {/* ========== 04 - PROJECTS ========== */}
         <div
           id="projects"
-          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:pl-64 xl:pl-72 lg:pr-16 py-24 overflow-y-auto"
+          className={`w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:pr-14 py-24 overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isNavVertical ? 'lg:pl-64 xl:pl-72' : 'lg:pl-14'
+          }`}
         >
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.projects.tag}</p>
@@ -1163,7 +1171,9 @@ export default function App() {
         {/* ========== 05 - BLOG ========== */}
         <div
           id="blog"
-          className="w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:pl-64 xl:pl-72 lg:pr-16 py-24 overflow-y-auto"
+          className={`w-screen shrink-0 h-screen flex flex-col justify-center px-6 sm:px-10 lg:pr-14 py-24 overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isNavVertical ? 'lg:pl-64 xl:pl-72' : 'lg:pl-14'
+          }`}
         >
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.blog.tag}</p>
@@ -1213,7 +1223,12 @@ export default function App() {
   </div>
 
         {/* ========== 06 - CONTACT ========== */}
-        <section id="contact" className="min-h-screen flex items-center py-24 px-6 sm:px-10 lg:pl-64 xl:pl-72 lg:pr-14">
+        <section
+          id="contact"
+          className={`min-h-screen flex items-center py-24 px-6 sm:px-10 lg:pr-14 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isNavVertical ? 'lg:pl-64 xl:pl-72' : 'lg:pl-14'
+          }`}
+        >
           <div className="w-full text-left">
             <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-6">{t.contact.tag}</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-8">
@@ -1232,7 +1247,11 @@ export default function App() {
         </section>
 
         {/* ========== FOOTER ========== */}
-        <footer className="py-8 px-6 sm:px-10 lg:pl-64 xl:pl-72 lg:pr-14">
+        <footer
+          className={`py-8 px-6 sm:px-10 lg:pr-14 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isNavVertical ? 'lg:pl-64 xl:pl-72' : 'lg:pl-14'
+          }`}
+        >
           <div className="w-full text-xs font-mono text-white/20">
             <span>&copy; {CURRENT_YEAR} Minh Nhat Pham. {t.footer.rights}</span>
           </div>
