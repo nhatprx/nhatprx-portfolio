@@ -635,51 +635,47 @@ export default function App() {
             </h2>
 
             {/* 2-Column Grid: Left About & Education, Right Tech Stack */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 xl:gap-12 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 xl:gap-12 items-stretch">
               {/* Left Column: Bio, Education, Languages */}
-              <div className="lg:col-span-5 space-y-8">
-                <div className="space-y-4 text-sm sm:text-base text-white/70 leading-relaxed">
+              <div className="lg:col-span-6 flex flex-col justify-between space-y-6">
+                <div className="space-y-3 text-sm sm:text-base text-white/70 leading-relaxed">
                   <p>{t.about.p1}</p>
                   <p>{t.about.p2}</p>
                 </div>
 
                 <div>
-                  <h3 className="font-mono text-[10px] tracking-[0.25em] text-white/40 mb-3 uppercase">
+                  <h3 className="font-mono text-[10px] tracking-[0.25em] text-white/40 mb-2.5 uppercase">
                     {t.about.educationTitle}
                   </h3>
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {/* Education Card 1: FPT University */}
-                    <div className="border border-white/10 hover:border-white/25 p-4 transition-colors flex flex-col justify-between">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-semibold text-white tracking-tight truncate">
-                          {t.about.edu1School}
-                        </span>
-                        <span className="font-mono text-[9px] text-white/50 flex items-center gap-1.5 shrink-0 uppercase">
-                          <span className="w-1 h-1 rounded-full bg-white/40" />
-                          {t.about.edu1Degree}
-                        </span>
+                    <div className="border border-white/10 hover:border-white/25 p-3.5 transition-colors flex flex-col justify-between bg-white/[0.01]">
+                      <div>
+                        <div className="flex items-center justify-between gap-1 mb-1">
+                          <span className="text-xs font-semibold text-white tracking-tight truncate">{t.about.edu1School}</span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-white/40 shrink-0" />
+                        </div>
+                        <p className="font-mono text-[10px] text-emerald-400/90 truncate">{t.about.edu1Degree}</p>
+                        <p className="font-mono text-[10px] text-white/50 truncate mt-1">{t.about.edu1Major}</p>
                       </div>
-                      <div className="flex items-center justify-between gap-2 mt-2 font-mono text-xs text-white/50">
-                        <span className="truncate">{t.about.edu1Major}</span>
-                        <span className="text-white/30 text-[10px] shrink-0">{t.about.edu1Location || t.about.edu1Dates}</span>
-                      </div>
+                      <span className="font-mono text-[9px] text-white/30 pt-2 border-t border-white/5 mt-2 block">
+                        {t.about.edu1Location || t.about.edu1Dates}
+                      </span>
                     </div>
 
                     {/* Education Card 2: Multimedia University */}
-                    <div className="border border-white/10 hover:border-white/25 p-4 transition-colors flex flex-col justify-between">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-semibold text-white tracking-tight truncate">
-                          {t.about.edu2School}
-                        </span>
-                        <span className="font-mono text-[9px] text-white/50 flex items-center gap-1.5 shrink-0 uppercase">
-                          <span className="w-1 h-1 rounded-full bg-white/40" />
-                          {t.about.edu2Degree}
-                        </span>
+                    <div className="border border-white/10 hover:border-white/25 p-3.5 transition-colors flex flex-col justify-between bg-white/[0.01]">
+                      <div>
+                        <div className="flex items-center justify-between gap-1 mb-1">
+                          <span className="text-xs font-semibold text-white tracking-tight truncate">{t.about.edu2School}</span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-white/40 shrink-0" />
+                        </div>
+                        <p className="font-mono text-[10px] text-emerald-400/90 truncate">{t.about.edu2Degree}</p>
+                        <p className="font-mono text-[10px] text-white/50 truncate mt-1">{t.about.edu2Major}</p>
                       </div>
-                      <div className="flex items-center justify-between gap-2 mt-2 font-mono text-xs text-white/50">
-                        <span className="truncate">{t.about.edu2Major}</span>
-                        <span className="text-white/30 text-[10px] shrink-0">{t.about.edu2Location || t.about.edu2Dates}</span>
-                      </div>
+                      <span className="font-mono text-[9px] text-white/30 pt-2 border-t border-white/5 mt-2 block">
+                        {t.about.edu2Location || t.about.edu2Dates}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -688,9 +684,9 @@ export default function App() {
                   <span className="block font-mono text-[10px] tracking-[0.25em] text-white/40 mb-2 uppercase">
                     LANGUAGES
                   </span>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {t.about.languages.map((langItem) => (
-                      <span key={langItem} className="font-mono text-[10px] px-3 py-1.5 border border-white/10 text-white/50 bg-white/[0.02]">
+                      <span key={langItem} className="font-mono text-[10px] px-2.5 py-1 border border-white/10 text-white/60 bg-white/[0.02]">
                         {langItem}
                       </span>
                     ))}
@@ -699,60 +695,45 @@ export default function App() {
               </div>
 
               {/* Right Column: Tech Stack Modular Cards */}
-              <div id="skills" className="lg:col-span-7 scroll-mt-24">
-                <div className="flex items-center justify-between pb-3 mb-4 border-b border-white/10">
-                  <div>
-                    <h3 className="font-mono text-xs tracking-[0.25em] text-white/90 uppercase font-semibold">
-                      {t.nav.skills} // ARCHITECTURAL STACK
-                    </h3>
-                    {t.skills.desc && (
-                      <p className="text-xs font-mono text-white/40 mt-1 max-w-xl">
-                        {t.skills.desc}
-                      </p>
-                    )}
-                  </div>
-                  <span className="font-mono text-[10px] text-white/30 shrink-0">
+              <div id="skills" className="lg:col-span-6 flex flex-col justify-between scroll-mt-24">
+                <div className="flex items-center justify-between pb-2 mb-3 border-b border-white/10">
+                  <h3 className="font-mono text-xs tracking-[0.25em] text-white/90 uppercase font-semibold">
+                    {t.nav.skills} // ARCHITECTURAL STACK
+                  </h3>
+                  <span className="font-mono text-[10px] text-white/40 shrink-0">
                     {t.skills.categories.length} MODULES
                   </span>
                 </div>
 
-                {/* Modular Card Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 items-stretch">
+                {/* Modular Card Grid - Compact Chips to balance height */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1">
                   {t.skills.categories.map((group, gIdx) => (
                     <div
                       key={group.title}
-                      className={`border border-white/10 hover:border-white/25 transition-all p-4.5 flex flex-col justify-between ${
+                      className={`border border-white/10 hover:border-white/25 transition-all p-3 bg-white/[0.01] flex flex-col justify-between ${
                         gIdx === 4 ? 'sm:col-span-2' : ''
                       }`}
                     >
                       <div>
-                        <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-white/10">
-                          <h4 className="font-mono text-xs tracking-[0.2em] text-white/90 font-semibold truncate pr-2 uppercase">
+                        <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10">
+                          <h4 className="font-mono text-[11px] tracking-[0.18em] text-white/90 font-semibold truncate pr-2 uppercase">
                             {group.title}
                           </h4>
                           <span className="font-mono text-[10px] text-white/40 shrink-0">
-                            // 0{gIdx + 1}
+                            0{gIdx + 1}
                           </span>
                         </div>
 
-                        <div className={gIdx === 4 ? 'grid grid-cols-1 sm:grid-cols-2 gap-1.5' : 'space-y-1.5'}>
+                        <div className="flex flex-wrap gap-1.5">
                           {group.skills.map((s) => (
-                            <div
+                            <span
                               key={s}
-                              className="flex items-start gap-2 font-mono text-[11px] leading-snug text-white/75 hover:text-white px-2.5 py-1.5 border border-white/5 hover:border-white/20 transition-colors"
+                              className="font-mono text-[10px] sm:text-[11px] px-2 py-0.5 border border-white/10 text-white/80 bg-white/[0.03] hover:border-white/30 hover:text-white transition-colors"
                             >
-                              <span className="w-1.5 h-1.5 rounded-full bg-white/40 shrink-0 mt-1" />
-                              <span title={s} className="truncate sm:whitespace-normal">
-                                {s}
-                              </span>
-                            </div>
+                              {s}
+                            </span>
                           ))}
                         </div>
-                      </div>
-
-                      <div className="mt-3.5 pt-2.5 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-white/30">
-                        <span>STACK</span>
-                        <span>{group.skills.length} MODULES</span>
                       </div>
                     </div>
                   ))}
