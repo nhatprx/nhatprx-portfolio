@@ -758,14 +758,27 @@ export default function App() {
               <div id="projects" className="absolute -top-10" />
 
               <div className="w-full text-left">
-                {/* Header & Tab Switcher */}
+                {/* Header, Title & Tab Switcher */}
                 <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-6 px-2 sm:px-4">
                   <div>
                     <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-2">
                       {isExp ? t.experience.tag : t.projects.tag}
                     </p>
 
-                    <div className="flex flex-wrap items-center gap-3 mb-3">
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3">
+                      {isExp ? t.experience.title : t.projects.title}{' '}
+                      <span className="text-white/30">
+                        {isExp ? t.experience.titleSub : t.projects.titleSub}
+                      </span>
+                    </h2>
+
+                    {(isExp ? t.experience.desc : t.projects.desc) && (
+                      <p className="text-sm sm:text-base text-white/50 leading-relaxed max-w-2xl mb-4">
+                        {isExp ? t.experience.desc : t.projects.desc}
+                      </p>
+                    )}
+
+                    <div className="flex items-center gap-3 pt-1">
                       <div className="inline-flex p-1 border border-white/20 bg-white/[0.04]">
                         <button
                           type="button"
@@ -776,7 +789,7 @@ export default function App() {
                               : 'text-white/50 hover:text-white'
                           }`}
                         >
-                          {t.experience.title} ({expItems.length})
+                          {t.nav.experience} ({expItems.length})
                         </button>
                         <button
                           type="button"
@@ -787,14 +800,10 @@ export default function App() {
                               : 'text-white/50 hover:text-white'
                           }`}
                         >
-                          {t.projects.title} ({projItems.length})
+                          {t.nav.projects} ({projItems.length})
                         </button>
                       </div>
                     </div>
-
-                    <p className="text-sm text-white/50 leading-relaxed max-w-2xl">
-                      {isExp ? t.experience.desc : t.projects.desc}
-                    </p>
                   </div>
 
                   {/* Progress & Chevron Navigation */}
