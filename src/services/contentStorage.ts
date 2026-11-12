@@ -28,7 +28,19 @@ export function getStoredTranslations(): Record<SupportedLang, TranslationDict> 
           ...custom,
           about: { ...base.about, ...(custom.about || {}), tag: base.about.tag },
           skills: { ...base.skills, ...(custom.skills || {}), tag: base.skills.tag },
-          experience: { ...base.experience, ...(custom.experience || {}), tag: base.experience.tag },
+          experience: {
+            ...base.experience,
+            ...(custom.experience || {}),
+            tag: base.experience.tag,
+            items: base.experience.items.map((baseItem, idx) => {
+              const customItem = custom.experience?.items?.[idx]
+              if (!customItem) return baseItem
+              return {
+                ...customItem,
+                tech: baseItem.tech.length === 0 ? [] : (customItem.tech || baseItem.tech),
+              }
+            }),
+          },
           projects: {
             ...base.projects,
             ...(custom.projects || {}),

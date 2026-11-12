@@ -770,19 +770,11 @@ export default function App() {
           const N = isExp ? expItems.length : projItems.length
           const currentActive = isExp ? activeExp : activeProj
           const setCurrentActive = isExp ? setActiveExp : setActiveProj
-          const realIndex = ((currentActive % N) + N) % N
           const cardWidth = Math.min(windowWidth - 48, 560)
           const gap = windowWidth < 640 ? 16 : 28
 
           // 5 slots around currentActive: 2 left, 1 center, 2 right for seamless infinite transition
           const slots = [currentActive - 2, currentActive - 1, currentActive, currentActive + 1, currentActive + 2]
-
-          const jumpToChapter = (targetIdx: number) => {
-            let diff = targetIdx - realIndex
-            if (diff > 1) diff -= N
-            if (diff < -1) diff += N
-            setCurrentActive((prev) => prev + diff)
-          }
 
           return (
             <section
@@ -794,7 +786,7 @@ export default function App() {
 
               <div className="w-full text-left">
                 {/* Header, Title & Tab Switcher */}
-                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-6 px-2 sm:px-4">
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8 px-2 sm:px-4">
                   <div>
                     <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-2">
                       {isExp ? t.experience.tag : t.projects.tag}
@@ -841,61 +833,25 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Progress & Chevron Navigation */}
-                  <div className="flex items-center gap-3 font-mono text-xs text-white/40 shrink-0">
-                    <span>
-                      CH. 0{realIndex + 1} / 0{N}
-                    </span>
-                    <div className="w-20 sm:w-24 h-1 bg-white/10 relative overflow-hidden">
-                      <div
-                        className="h-full bg-white transition-all duration-300"
-                        style={{ width: `${((realIndex + 1) / N) * 100}%` }}
-                      />
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => setCurrentActive((prev) => prev - 1)}
-                        aria-label="Previous item (infinite loop)"
-                        className="p-1.5 border border-white/10 hover:border-white/30 text-white hover:bg-white/5 transition-colors cursor-pointer"
-                      >
-                        <ChevronLeftIcon className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setCurrentActive((prev) => prev + 1)}
-                        aria-label="Next item (infinite loop)"
-                        className="p-1.5 border border-white/10 hover:border-white/30 text-white hover:bg-white/5 transition-colors cursor-pointer"
-                      >
-                        <ChevronRightIcon className="w-4 h-4" />
-                      </button>
-                    </div>
+                  {/* Navigation Chevrons */}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setCurrentActive((prev) => prev - 1)}
+                      aria-label="Previous item (infinite loop)"
+                      className="p-2 border border-white/10 hover:border-white/30 text-white hover:bg-white/5 transition-colors cursor-pointer"
+                    >
+                      <ChevronLeftIcon className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentActive((prev) => prev + 1)}
+                      aria-label="Next item (infinite loop)"
+                      className="p-2 border border-white/10 hover:border-white/30 text-white hover:bg-white/5 transition-colors cursor-pointer"
+                    >
+                      <ChevronRightIcon className="w-4 h-4" />
+                    </button>
                   </div>
-                </div>
-
-                {/* Timeline Chapter Pills */}
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 mb-6 px-2 sm:px-4">
-                  {(isExp ? expItems : projItems).map((item, idx) => {
-                    const label = isExp
-                      ? ('role' in item ? item.role.split('·')[0].split('&')[0].trim() : '')
-                      : ('title' in item ? item.title : '')
-                    return (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => jumpToChapter(idx)}
-                        className={`font-mono text-[10px] tracking-wider px-3 py-1.5 border transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
-                          realIndex === idx
-                            ? 'border-white bg-white text-black font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)]'
-                            : 'border-white/10 text-white/40 hover:text-white/70 hover:border-white/30 bg-white/[0.02]'
-                        }`}
-                      >
-                        <span>0{idx + 1}</span>
-                        <span className="opacity-40">|</span>
-                        <span className="truncate max-w-[140px] sm:max-w-none">{label}</span>
-                      </button>
-                    )
-                  })}
                 </div>
 
                 {/* 3-Card Stage with Infinite Loop */}
@@ -965,7 +921,7 @@ export default function App() {
                                     }`}
                                   />
                                   <span className="font-mono text-[10px] tracking-[0.25em] text-white/50 uppercase">
-                                    CHAPTER 0{itemIndex + 1} // CAREER STORY
+                                    0{itemIndex + 1} // EXPERIENCE
                                   </span>
                                 </div>
                                 <span className="font-mono text-[10px] text-white/40 border border-white/10 px-2 py-0.5">
@@ -986,16 +942,18 @@ export default function App() {
                                 ))}
                               </ul>
                             </div>
-                            <div className="mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
-                              {exp.tech.map((tech) => (
-                                <span
-                                  key={tech}
-                                  className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30 bg-white/[0.02]"
-                                >
-                                  {tech}
-                                </span>
-                              ))}
-                            </div>
+                            {exp.tech && exp.tech.length > 0 && (
+                              <div className="mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
+                                {exp.tech.map((tech) => (
+                                  <span
+                                    key={tech}
+                                    className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30 bg-white/[0.02]"
+                                  >
+                                    {tech}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
                           </article>
                         </div>
                       )
@@ -1036,7 +994,7 @@ export default function App() {
                                   }`}
                                 />
                                 <span className="font-mono text-[10px] tracking-[0.25em] text-white/50 uppercase">
-                                  PROJECT 0{itemIndex + 1} // ARCHITECTURE
+                                  0{itemIndex + 1} // PROJECT
                                 </span>
                               </div>
                               <div className="flex items-center gap-3">
@@ -1071,16 +1029,18 @@ export default function App() {
                               ))}
                             </ul>
                           </div>
-                          <div className="mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
-                            {proj.tech.map((tech) => (
-                              <span
-                                key={tech}
-                                className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30 bg-white/[0.02]"
-                              >
-                                {tech}
-                              </span>
-                            ))}
-                          </div>
+                          {proj.tech && proj.tech.length > 0 && (
+                            <div className="mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
+                              {proj.tech.map((tech) => (
+                                <span
+                                  key={tech}
+                                  className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30 bg-white/[0.02]"
+                                >
+                                  {tech}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </article>
                       </div>
                     )
