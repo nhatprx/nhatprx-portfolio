@@ -672,17 +672,23 @@ export default function App() {
               ))}
             </div>
 
-            {/* Embedded Tech Stack Sub-section */}
-            <div id="skills" className="pt-14 mt-14 border-t border-white/10 scroll-mt-20">
-              <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-3">{t.skills.tag}</p>
-              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight mb-3">
-                {t.skills.title} <span className="text-white/30">{t.skills.titleSub}</span>
-              </h3>
-              {t.skills.desc && (
-                <p className="text-sm sm:text-base text-white/50 leading-relaxed max-w-2xl mb-8">
-                  {t.skills.desc}
-                </p>
-              )}
+            {/* Tech Stack Modules within About Section */}
+            <div id="skills" className="pt-12 mt-12 border-t border-white/10 scroll-mt-20">
+              <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-6">
+                <div>
+                  <h3 className="font-mono text-xs tracking-[0.25em] text-white/80 uppercase">
+                    {t.nav.skills} // ARCHITECTURAL STACK & TOOLS
+                  </h3>
+                  {t.skills.desc && (
+                    <p className="text-xs font-mono text-white/40 mt-1 max-w-2xl">
+                      {t.skills.desc}
+                    </p>
+                  )}
+                </div>
+                <span className="font-mono text-[10px] text-white/30 shrink-0">
+                  {t.skills.categories.length} CORE MODULES
+                </span>
+              </div>
 
               {/* Modular Card Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 items-stretch">

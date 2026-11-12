@@ -252,7 +252,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       desc: "Yes, you are inspecting the actual live Linux machine hosting this portfolio. Feel free to poke around and verify what's running under the hood - don't worry, you can't break it.",
     },
     about: {
-      tag: '01 - ABOUT',
+      tag: '01 - ABOUT & TECH STACK',
       title: 'Building systems',
       titleSub: 'that scale.',
       p1: 'Software Engineer comfortable owning a feature end-to-end - from system design to deployment. Production experience across backend systems, cloud infrastructure, and full-stack delivery. Built and shipped real systems at Grevo Solutions and contributed to AWS infrastructure design during an internship at Amazon.',
@@ -271,7 +271,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       languages: ['English (Fluent)', 'Vietnamese (Native)', 'Japanese (Basic)', 'French (Familiar)'],
     },
     experience: {
-      tag: '03 - EXPERIENCE',
+      tag: '02 - EXPERIENCE & PROJECTS',
       title: "Where I've",
       titleSub: 'shipped code.',
       desc: 'Engineering roles across cloud infrastructure, multi-tenant SaaS, and hardware-edge platforms.',
@@ -319,7 +319,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     projects: {
-      tag: '04 - PROJECTS',
+      tag: '02 - EXPERIENCE & PROJECTS',
       title: 'Featured',
       titleSub: 'systems.',
       desc: 'End-to-end production systems, reverse-engineered frameworks, and scalable cloud applications.',
@@ -365,7 +365,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     skills: {
-      tag: '02 - TECH STACK',
+      tag: '01 - ABOUT & TECH STACK',
       title: 'Technical',
       titleSub: 'stack.',
       desc: 'Curated tools, production languages, cloud backends, and engineering patterns honed across distributed systems.',
@@ -404,7 +404,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     blog: {
-      tag: '05 - BLOG',
+      tag: '03 - BLOG',
       title: 'Engineering',
       titleSub: 'notes.',
       desc: 'Technical deep dives, architectural trade-offs, and lessons learned from shipping high-concurrency software.',
@@ -652,7 +652,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     contact: {
-      tag: '06 - CONTACT',
+      tag: '04 - CONTACT',
       title: "Let's build",
       titleSub: 'together.',
       desc: 'Available for full-time engineering roles, freelance opportunities, and collaborative projects. Currently based in Ho Chi Minh City, Vietnam.',
@@ -696,7 +696,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       desc: 'Bạn đang trực tiếp tương tác với máy chủ Linux thật đang vận hành portfolio này. Thoải mái kiểm tra các tiến trình và tài nguyên bên dưới - đừng lo, bạn không làm hỏng nó được đâu.',
     },
     about: {
-      tag: '01 - GIỚI THIỆU',
+      tag: '01 - GIỚI THIỆU & KỸ NĂNG',
       title: 'Xây dựng hệ thống',
       titleSub: 'mở rộng & bền bỉ.',
       p1: 'Kỹ sư phần mềm làm chủ toàn bộ vòng đời sản phẩm từ thiết kế kiến trúc đến triển khai production. Kinh nghiệm thực chiến với backend chịu tải cao, hạ tầng cloud, xây dựng sản phẩm tại Grevo Solutions và tham gia thiết kế hạ tầng AWS khi thực tập tại Amazon Web Services.',
@@ -715,7 +715,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       languages: ['Tiếng Anh (Thành thạo)', 'Tiếng Việt (Bản ngữ)', 'Tiếng Nhật (Cơ bản)', 'Tiếng Pháp (Giao tiếp cơ bản)'],
     },
     experience: {
-      tag: '03 - KINH NGHIỆM',
+      tag: '02 - KINH NGHIỆM & DỰ ÁN',
       title: 'Nơi tôi từng',
       titleSub: 'làm việc & cống hiến.',
       desc: 'Hành trình kỹ thuật thực chiến qua hạ tầng đám mây AWS, nền tảng SaaS đa người dùng và tích hợp phần cứng edge IoT.',
@@ -763,7 +763,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     projects: {
-      tag: '04 - DỰ ÁN',
+      tag: '02 - KINH NGHIỆM & DỰ ÁN',
       title: 'Hệ thống',
       titleSub: 'tiêu biểu.',
       desc: 'Các hệ thống phân tán, giải pháp tự động hóa hiệu năng cao và ứng dụng phần cứng được thiết kế từ con số 0.',
@@ -809,7 +809,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     skills: {
-      tag: '02 - TECH STACK',
+      tag: '01 - GIỚI THIỆU & KỸ NĂNG',
       title: 'Ngăn xếp',
       titleSub: 'công nghệ.',
       desc: 'Bộ công nghệ, ngôn ngữ lập trình, hệ thống đám mây và kiến trúc hướng đối tượng được ứng dụng thực chiến trong môi trường phân tán.',
@@ -848,7 +848,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     blog: {
-      tag: '05 - BÀI VIẾT',
+      tag: '03 - BÀI VIẾT',
       title: 'Ghi chép',
       titleSub: 'kỹ thuật.',
       desc: 'Ghi chép chuyên sâu về kiến trúc hệ thống, tối ưu hóa hiệu năng phần cứng và kinh nghiệm vận hành thực tế.',
@@ -1096,7 +1096,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     contact: {
-      tag: '06 - LIÊN HỆ',
+      tag: '04 - LIÊN HỆ',
       title: 'Cùng nhau',
       titleSub: 'xây dựng sản phẩm.',
       desc: 'Sẵn sàng tiếp nhận các cơ hội việc làm toàn thời gian, dự án freelance và hợp tác công nghệ. Hiện đang sinh sống và làm việc tại TP. Hồ Chí Minh, Việt Nam.',
@@ -1140,7 +1140,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       desc: "Vous interagissez directement avec le vrai serveur Linux hébergeant ce portfolio. Explorez les conteneurs et les métriques système - c'est un bac à sable sécurisé en lecture seule.",
     },
     about: {
-      tag: '01 - À PROPOS',
+      tag: '01 - À PROPOS & COMPÉTENCES',
       title: 'Concevoir des systèmes',
       titleSub: 'performants et fiables.',
       p1: "Ingénieur logiciel autonome sur l'ensemble du cycle de développement, de la conception architecturale au déploiement en production. Expérience éprouvée en architecture backend, cloud et intégration chez Grevo Solutions et Amazon Web Services.",
@@ -1159,7 +1159,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       languages: ['Anglais (Courant)', 'Vietnamien (Langue maternelle)', 'Japonais (Notions)', 'Français (Familier)'],
     },
     experience: {
-      tag: '03 - EXPÉRIENCE',
+      tag: '02 - EXPÉRIENCE & PROJETS',
       title: 'Parcours',
       titleSub: 'professionnel.',
       desc: 'Rôles d’ingénierie à travers l’infrastructure cloud, le SaaS multi-tenant et les plateformes IoT.',
@@ -1207,7 +1207,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     projects: {
-      tag: '04 - PROJETS',
+      tag: '02 - EXPÉRIENCE & PROJETS',
       title: 'Projets',
       titleSub: 'phares.',
       desc: 'Systèmes de production de bout en bout, frameworks d’automatisation et applications cloud évolutives.',
@@ -1253,7 +1253,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     skills: {
-      tag: '02 - COMPÉTENCES',
+      tag: '01 - À PROPOS & COMPÉTENCES',
       title: 'Stack',
       titleSub: 'technique.',
       desc: 'Outils sélectionnés, langages de production, backends cloud et architectures éprouvés sur des systèmes distribués.',
@@ -1292,7 +1292,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     blog: {
-      tag: '05 - BLOG',
+      tag: '03 - BLOG',
       title: 'Notes',
       titleSub: "d'ingénierie.",
       desc: 'Analyses techniques approfondies, compromis d’architecture et retours d’expérience sur la production logicielle.',
@@ -1531,7 +1531,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     contact: {
-      tag: '06 - CONTACT',
+      tag: '04 - CONTACT',
       title: 'Créons ensemble',
       titleSub: 'des projets durables.',
       desc: 'Disponible pour des opportunités d’ingénierie à temps plein, missions freelance et collaborations techniques. Actuellement basé à Hô Chi Minh-Ville, Vietnam.',
@@ -1575,7 +1575,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       desc: 'このポートフォリオサイトを実際にホストしているLinux実機サーバーに直接接続されています。内部プロセスやメモリ、稼働コンテナを自由にご確認いただけます（安全な読み取り専用環境です）。',
     },
     about: {
-      tag: '01 - 概要',
+      tag: '01 - プロフィール & 技術スタック',
       title: 'スケーラブルな',
       titleSub: 'システムを創る。',
       p1: 'アーキテクチャ設計から本番運用まで、機能開発をエンドツーエンドで完結できるソフトウェアエンジニア。Grevo Solutionsでのプロダクト開発やAmazon Web Servicesでのクラウド設計経験を有し、信頼性の高いシステムを構築してきました。',
@@ -1594,7 +1594,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       languages: ['英語 (流暢)', 'ベトナム語 (母国語)', '日本語 (基礎)', 'フランス語 (初級)'],
     },
     experience: {
-      tag: '03 - 職務経歴',
+      tag: '02 - 経歴 & プロジェクト',
       title: 'これまでの',
       titleSub: '開発・参画実績。',
       desc: 'クラウドインフラ、マルチテナントSaaS、IoTエッジ連携の実践的なエンジニアリング経歴。',
@@ -1642,7 +1642,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     projects: {
-      tag: '04 - 実績',
+      tag: '02 - 経歴 & プロジェクト',
       title: '主要な',
       titleSub: '開発成果物。',
       desc: '設計から本番稼働まで、リバースエンジニアリングと高可用性を追求した主要開発プロジェクト。',
@@ -1688,7 +1688,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     skills: {
-      tag: '02 - スキル',
+      tag: '01 - プロフィール & 技術スタック',
       title: '技術',
       titleSub: 'スタック。',
       desc: '分散システムの実践で培った、厳選されたツール、言語、クラウド基盤、アーキテクチャパターン。',
@@ -1727,7 +1727,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     blog: {
-      tag: '05 - 技術ノート',
+      tag: '03 - ブログ',
       title: '技術',
       titleSub: 'ノート。',
       desc: '高負荷分散処理、プロトコル解析、本番運用から得たアーキテクチャの知見と技術考察。',
@@ -1964,7 +1964,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     contact: {
-      tag: '06 - お問い合わせ',
+      tag: '04 - お問い合わせ',
       title: '共に',
       titleSub: '未来を創る。',
       desc: 'フルタイムのエンジニア採用、フリーランス案件、共同開発の機会を受け付けております。現在ベトナム・ホーチミン市在住。',

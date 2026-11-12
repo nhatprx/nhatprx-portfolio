@@ -26,16 +26,19 @@ export function getStoredTranslations(): Record<SupportedLang, TranslationDict> 
         return {
           ...base,
           ...custom,
-          skills: { ...base.skills, ...(custom.skills || {}) },
-          experience: { ...base.experience, ...(custom.experience || {}) },
+          about: { ...base.about, ...(custom.about || {}), tag: base.about.tag },
+          skills: { ...base.skills, ...(custom.skills || {}), tag: base.skills.tag },
+          experience: { ...base.experience, ...(custom.experience || {}), tag: base.experience.tag },
           projects: {
             ...base.projects,
             ...(custom.projects || {}),
+            tag: base.projects.tag,
             items: (custom.projects?.items?.length ?? 0) >= base.projects.items.length
               ? custom.projects.items
               : base.projects.items,
           },
-          blog: { ...base.blog, ...customBlog, posts },
+          blog: { ...base.blog, ...customBlog, tag: base.blog.tag, posts },
+          contact: { ...base.contact, ...(custom.contact || {}), tag: base.contact.tag },
         }
       }
 
