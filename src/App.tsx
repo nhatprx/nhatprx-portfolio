@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import Ec2Terminal from './components/Ec2Terminal'
+import ServerTelemetry from './components/ServerTelemetry'
 import { TRANSLATIONS, type SupportedLang } from './data/translations'
-import BlogPostModal from './components/BlogPostModal'
 import CustomCursor from './components/CustomCursor'
 import AdminPortal from './components/Admin/AdminPortal'
+import BlogPostModal from './components/BlogPostModal'
 import { getStoredTranslations } from './services/contentStorage'
 
 const CURRENT_YEAR = new Date().getFullYear()
@@ -92,12 +93,11 @@ function ArrowUpIcon({ className = 'w-4 h-4' }: { className?: string }) {
 
 export default function App() {
   const [showTopBtn, setShowTopBtn] = useState(false)
-  const [selectedPostSlug, setSelectedPostSlug] = useState<string | null>(null)
-  const [langOpen, setLangOpen] = useState(false)
+  const [scrolledHeaderActions, setScrolledHeaderActions] = useState(false)
   const [isInitialLoading, setIsInitialLoading] = useState(true)
+  const [loaderMounted, setLoaderMounted] = useState(true)
   const [isLangSwitching, setIsLangSwitching] = useState(false)
   const [loadingLabel, setLoadingLabel] = useState('INITIALIZING ENVIRONMENT...')
-  const langMenuRef = useRef<HTMLDivElement>(null)
   const lenisRef = useRef<Lenis | null>(null)
 
   const [allTranslations, setAllTranslations] = useState(() => getStoredTranslations())
@@ -105,11 +105,28 @@ export default function App() {
     if (typeof window === 'undefined') return false
     return window.location.hash === '#admin' || window.location.pathname === '/admin'
   })
+
+  const [langOpen, setLangOpen] = useState(false)
+  const langMenuRef = useRef<HTMLDivElement>(null)
+
+  const aboutTitleRef = useRef<HTMLHeadingElement>(null)
+  const [aboutTitleWidth, setAboutTitleWidth] = useState<number | undefined>(undefined)
+
+  const skillsTitleRef = useRef<HTMLHeadingElement>(null)
+  const [skillsTitleWidth, setSkillsTitleWidth] = useState<number | undefined>(undefined)
+
+  const workTitleRef = useRef<HTMLHeadingElement>(null)
+  const [workTitleWidth, setWorkTitleWidth] = useState<number | undefined>(undefined)
+
+  const blogTitleRef = useRef<HTMLHeadingElement>(null)
+  const [blogTitleWidth, setBlogTitleWidth] = useState<number | undefined>(undefined)
+  const [activeBlogSlug, setActiveBlogSlug] = useState<string | null>(null)
+  const [blogPage, setBlogPage] = useState(1)
+  const [blogSearch, setBlogSearch] = useState('')
+
   const [workTab, setWorkTab] = useState<'experience' | 'projects'>('experience')
   const [activeExp, setActiveExp] = useState(0)
   const [activeProj, setActiveProj] = useState(0)
-  const [windowWidth, setWindowWidth] = useState(() => (typeof window !== 'undefined' ? window.innerWidth : 1000))
-  const [touchStartX, setTouchStartX] = useState<number | null>(null)
 
   const [lang, setLang] = useState<SupportedLang>(() => {
     const saved = localStorage.getItem('nhatprx_lang') as SupportedLang
@@ -118,7 +135,6 @@ export default function App() {
   })
 
   const t = allTranslations[lang] || TRANSLATIONS[lang]
-  const selectedPost = t.blog.posts.find((p) => p.slug === selectedPostSlug)
 
   useEffect(() => {
     const handleLocationChange = () => {
@@ -140,16 +156,16 @@ export default function App() {
     }
   }, [])
 
-  // Initialize Lenis smooth scrolling
+  // Initialize Lenis smooth scrolling with optimized checkpoint responsiveness
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.1,
+      duration: 1.0,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 2,
+      wheelMultiplier: 1.0,
+      touchMultiplier: 1.0,
     })
     lenisRef.current = lenis
 
@@ -168,42 +184,64 @@ export default function App() {
   }, [])
 
   const scrollTo = (target: string | number) => {
-    if (lenisRef.current) {
-      lenisRef.current.scrollTo(target, { duration: 1.1 })
-    } else {
-      if (typeof target === 'number') {
-        window.scrollTo({ top: target, behavior: 'smooth' })
+    if (typeof target === 'number') {
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo(target, { duration: 0.9 })
       } else {
-        document.querySelector(target)?.scrollIntoView({ behavior: 'smooth' })
+        window.scrollTo({ top: target, behavior: 'smooth' })
       }
+      return
+    }
+
+    if (target === '#hero' || target === '#about' || target === '#top') {
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo(0, { duration: 0.9 })
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+      return
+    }
+
+    const el = document.querySelector(target) as HTMLElement | null
+    if (!el) return
+
+    // Dynamically calculate exact position of the section tag below the floating header
+    const tag = el.querySelector('p') || el.querySelector('h2') || el
+    const tagTop = tag.getBoundingClientRect().top + window.scrollY
+    const headerOffset = typeof window !== 'undefined' && window.innerWidth >= 1024 ? 116 : 96
+    const targetY = Math.max(0, Math.round(tagTop - headerOffset))
+
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(targetY, { duration: 0.85 })
+    } else {
+      window.scrollTo({ top: targetY, behavior: 'smooth' })
     }
   }
 
+  // Pause Lenis smooth scrolling on main page while admin is open
   useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth)
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  // Pause Lenis smooth scrolling on main page while modal or admin is open
-  useEffect(() => {
-    if (selectedPost || isAdminOpen) {
+    if (isAdminOpen) {
       lenisRef.current?.stop()
       return () => {
         lenisRef.current?.start()
       }
     }
-  }, [selectedPost, isAdminOpen])
+  }, [isAdminOpen])
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsInitialLoading(false)
-    }, 550)
+      const unmountTimer = setTimeout(() => {
+        setLoaderMounted(false)
+      }, 350)
+      return () => clearTimeout(unmountTimer)
+    }, 450)
     return () => clearTimeout(timer)
   }, [])
 
   useEffect(() => {
     const handleScroll = () => {
+      setScrolledHeaderActions(window.scrollY > 220)
       setShowTopBtn(window.scrollY > 400)
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
@@ -221,13 +259,69 @@ export default function App() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const handleLangChange = (newLang: SupportedLang) => {
-    if (newLang === lang) {
-      setLangOpen(false)
-      return
-    }
+  useEffect(() => {
+    if (!aboutTitleRef.current) return
+    setAboutTitleWidth(aboutTitleRef.current.offsetWidth)
+    const ro = new ResizeObserver(([entry]) => {
+      if (entry) setAboutTitleWidth(entry.contentRect.width)
+    })
+    ro.observe(aboutTitleRef.current)
+    return () => ro.disconnect()
+  }, [lang])
 
+  useEffect(() => {
+    if (!skillsTitleRef.current) return
+    setSkillsTitleWidth(skillsTitleRef.current.offsetWidth)
+    const ro = new ResizeObserver(([entry]) => {
+      if (entry) setSkillsTitleWidth(entry.contentRect.width)
+    })
+    ro.observe(skillsTitleRef.current)
+    return () => ro.disconnect()
+  }, [lang])
+
+  useEffect(() => {
+    if (!workTitleRef.current) return
+    setWorkTitleWidth(workTitleRef.current.offsetWidth)
+    const ro = new ResizeObserver(([entry]) => {
+      if (entry) setWorkTitleWidth(entry.contentRect.width)
+    })
+    ro.observe(workTitleRef.current)
+    return () => ro.disconnect()
+  }, [lang, workTab])
+
+  useEffect(() => {
+    if (!blogTitleRef.current) return
+    setBlogTitleWidth(blogTitleRef.current.offsetWidth)
+    const ro = new ResizeObserver(([entry]) => {
+      if (entry) setBlogTitleWidth(entry.contentRect.width)
+    })
+    ro.observe(blogTitleRef.current)
+    return () => ro.disconnect()
+  }, [lang])
+
+  // Storytelling scroll reveal observer
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const elements = document.querySelectorAll('.story-reveal')
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('revealed')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    )
+    elements.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [lang, workTab, blogPage, blogSearch])
+
+  const handleLangChange = (newLang: SupportedLang) => {
     setLangOpen(false)
+    if (newLang === lang) return
+
     setIsLangSwitching(true)
 
     const labelMap: Record<SupportedLang, string> = {
@@ -257,8 +351,12 @@ export default function App() {
       <CustomCursor />
 
       {/* Screen Loader (Initial & Language Switch) */}
-      {(isInitialLoading || isLangSwitching) && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black font-mono text-white select-none transition-opacity duration-200">
+      {(loaderMounted || isLangSwitching) && (
+        <div
+          className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black font-mono text-white select-none transition-opacity duration-300 pointer-events-none ${
+            isInitialLoading || isLangSwitching ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
           <div className="w-64 space-y-4 text-center px-4">
             <div className="flex items-center justify-between text-[11px] text-white/60 tracking-wider">
               <span className="truncate">{loadingLabel}</span>
@@ -277,764 +375,868 @@ export default function App() {
         </div>
       )}
 
-      {/* Top Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 p-4 sm:p-6 lg:px-14 backdrop-blur-md bg-black/80 border-b border-white/10">
-        <div className="w-full flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 shrink-0">
+      <main className="relative z-10 w-full min-h-screen">
+        {/* Top Content Fade Mask / Shield (Hides content scrolling past header) */}
+        <div
+          aria-hidden="true"
+          className="fixed top-0 left-0 w-full lg:w-1/2 h-24 sm:h-26 lg:h-28 pointer-events-none z-30 bg-gradient-to-b from-black via-black/90 to-transparent"
+        />
+
+        {/* Top Header - Floating Slab Strictly Constrained to Left Column */}
+        <div className="fixed top-0 left-0 w-full lg:w-1/2 z-40 p-4 sm:p-6 lg:px-10 lg:pt-6 pointer-events-none">
+          <header
+            className={`w-full pointer-events-auto px-5 sm:px-8 py-4 sm:py-5 bg-black/95 backdrop-blur-xl border border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.8)] flex items-center justify-between transition-all duration-700 ease-out motion-reduce:transition-none motion-reduce:transform-none ${
+              !isInitialLoading ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
+            }`}
+          >
             <button
+              type="button"
               onClick={() => scrollTo(0)}
-              className="font-mono text-xs tracking-[0.3em] text-white/80 hover:text-white transition-colors cursor-pointer"
+              className="text-left group cursor-pointer"
+              aria-label="Scroll to top"
             >
-              NHATPRX
+              <p className="font-mono text-[8.5px] sm:text-[9px] tracking-[0.25em] text-emerald-400 uppercase font-medium mb-0.5">
+                {t.hero.role}
+              </p>
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white leading-none">
+                nhatprx <span className="text-white/25">.</span>
+              </h2>
             </button>
-            <span className="w-1.5 h-1.5 rounded-full bg-white" />
-            <span className="font-mono text-xs text-white/40">2026</span>
-          </div>
 
-          <nav className="hidden lg:flex items-center gap-6 text-xs font-mono tracking-wider text-white/40">
-            <a
-              href="#about"
-              onClick={(e) => {
-                e.preventDefault()
-                scrollTo('#about')
-              }}
-              className="hover:text-white transition-colors"
-            >
-              {t.nav.about}
-            </a>
-            <a
-              href="#work"
-              onClick={(e) => {
-                e.preventDefault()
-                setWorkTab('experience')
-                scrollTo('#work')
-              }}
-              className="hover:text-white transition-colors"
-            >
-              {t.nav.experience}
-            </a>
-            <a
-              href="#work"
-              onClick={(e) => {
-                e.preventDefault()
-                setWorkTab('projects')
-                scrollTo('#work')
-              }}
-              className="hover:text-white transition-colors"
-            >
-              {t.nav.projects}
-            </a>
-            <a
-              href="#blog"
-              onClick={(e) => {
-                e.preventDefault()
-                scrollTo('#blog')
-              }}
-              className="hover:text-white transition-colors"
-            >
-              {t.nav.blog}
-            </a>
-            <a
-              href="#contact"
-              onClick={(e) => {
-                e.preventDefault()
-                scrollTo('#contact')
-              }}
-              className="hover:text-white transition-colors"
-            >
-              {t.nav.contact}
-            </a>
-          </nav>
-
-          <div className="flex items-center gap-3 shrink-0">
-            {/* Language Dropdown (Dropbox) */}
-            <div ref={langMenuRef} className="relative">
-              <button
-                onClick={() => setLangOpen((prev) => !prev)}
-                aria-expanded={langOpen}
-                aria-haspopup="true"
-                aria-label="Select Language"
-                className="flex items-center gap-2 px-3 py-1.5 font-mono text-xs border border-white/20 bg-white/[0.04] text-white/90 hover:text-white hover:border-white/40 transition-all cursor-pointer"
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* Scroll-activated Quick CTA Buttons with 2-way Slide & Fade Transition */}
+              <div
+                className={`flex items-center gap-1.5 sm:gap-2 transition-all duration-500 ease-out overflow-hidden ${
+                  scrolledHeaderActions
+                    ? 'opacity-100 max-w-[360px] p-0.5 translate-x-0 pointer-events-auto'
+                    : 'opacity-0 max-w-0 p-0 translate-x-3 pointer-events-none'
+                }`}
               >
-                <span className="font-semibold uppercase">{lang}</span>
-                <span className="text-[9px] text-white/50">{langOpen ? '▲' : '▼'}</span>
-              </button>
-
-              {langOpen && (
-                <div className="absolute right-0 top-full mt-2 w-52 bg-black/95 border border-white/20 shadow-[0_15px_40px_rgba(0,0,0,0.85)] py-1.5 z-50 backdrop-blur-md animate-dropdown divide-y divide-white/5">
-                  <div className="px-3.5 py-1 font-mono text-[9px] text-white/30 tracking-widest uppercase">
-                    LOCALE
-                  </div>
-                  <div className="py-1">
-                    {LANG_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.code}
-                        onClick={() => handleLangChange(opt.code)}
-                        className={`w-full text-left px-3.5 py-2 text-xs font-mono flex items-center justify-between hover:bg-white/10 transition-colors cursor-pointer ${lang === opt.code
-                          ? 'text-white bg-white/10 font-semibold'
-                          : 'text-white/60'
-                          }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          <span className={`w-1.5 h-1.5 rounded-full ${lang === opt.code ? 'bg-emerald-400' : 'bg-transparent'}`} />
-                          <span>{opt.label}</span>
-                        </span>
-                        <span className="text-[10px] text-white/30 px-1.5 py-0.5 border border-white/10 bg-white/5">
-                          {opt.short}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <a
-              href="https://github.com/nhatprx"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="GitHub"
-              className="text-white/40 hover:text-white transition-colors"
-            >
-              <GithubIcon className="w-4 h-4" />
-            </a>
-            <a
-              href="https://www.linkedin.com/in/nhatprx/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="LinkedIn"
-              className="text-white/40 hover:text-white transition-colors"
-            >
-              <LinkedinIcon className="w-4 h-4" />
-            </a>
-          </div>
-        </div>
-      </header>
-
-      <main className="relative z-10 pt-14 sm:pt-16">
-        {/* ========== HERO & TERMINAL (STACKED: HERO CONTENT ON TOP OF TERMINAL, BALANCED WITHIN 100VH) ========== */}
-        <section
-          id="hero"
-          className="h-[calc(100dvh-3.5rem)] sm:h-[calc(100dvh-4rem)] min-h-[560px] max-h-screen flex flex-col justify-evenly px-6 sm:px-10 lg:px-14 py-2 sm:py-4"
-        >
-          {/* Top: Hero Content */}
-          <div className="w-full text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 uppercase mb-1.5">{t.hero.role}</p>
-
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-              <div>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[0.95]">
-                  Minh Nhat <span className="text-white/20">Pham.</span>
-                </h1>
-                <p className="mt-2 text-xs sm:text-sm text-white/50 leading-relaxed max-w-2xl">
-                  {t.hero.desc}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2.5 shrink-0">
                 <a
                   href="#contact"
+                  tabIndex={scrolledHeaderActions ? 0 : -1}
                   onClick={(e) => {
                     e.preventDefault()
                     scrollTo('#contact')
                   }}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1.5 bg-white text-black font-mono text-[10px] sm:text-[11px] font-bold tracking-wider hover:bg-white/85 transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] cursor-pointer whitespace-nowrap shrink-0"
                 >
-                  {t.hero.getInTouch}
-                  <span aria-hidden="true">→</span>
+                  <span>{t.hero.getInTouch}</span>
+                  <span aria-hidden="true" className="text-[10px]">→</span>
                 </a>
                 <a
                   href={t.hero.resumeUrl || '/%5Bnhatprx%5D%20PERSONAL%20RESUME.pdf'}
                   download={t.hero.resumeFileName || '[nhatprx] PERSONAL RESUME.pdf'}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 border border-white/20 text-white font-mono text-xs font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-colors"
+                  tabIndex={scrolledHeaderActions ? 0 : -1}
+                  className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1.5 border border-white/20 text-white font-mono text-[10px] sm:text-[11px] font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-all whitespace-nowrap shrink-0"
                 >
-                  <DownloadIcon className="w-3.5 h-3.5 text-white/60" />
-                  {t.hero.resume}
+                  <DownloadIcon className="w-3 h-3 text-white/60" />
+                  <span>{t.hero.resume}</span>
                 </a>
               </div>
-            </div>
-          </div>
 
-          {/* Bottom: Terminal */}
-          <div id="terminal" className="w-full flex flex-col justify-center">
-            <div className="flex items-center justify-between gap-4 mb-2">
-              <p className="font-mono text-[10px] tracking-[0.4em] text-emerald-400/90 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block shrink-0" />
-                {t.server.tag}
-              </p>
-              <span className="text-[10px] font-mono text-white/30 tracking-widest hidden sm:inline">
-                LIVE CLOUD NODE · AP-SOUTHEAST-1
-              </span>
-            </div>
-            <div className="h-[290px] sm:h-[330px] md:h-[360px] lg:h-[390px] xl:h-[420px] w-full">
-              <Ec2Terminal />
-            </div>
-          </div>
-        </section>
+              {/* GitHub & LinkedIn Socials */}
+              <div className={`items-center gap-1.5 ${scrolledHeaderActions ? 'hidden md:flex' : 'flex'}`}>
+                <a
+                  href="https://github.com/nhatprx"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="GitHub Profile"
+                  className="p-2 border border-white/10 hover:border-white/30 text-white/60 hover:text-white transition-colors bg-white/[0.02]"
+                >
+                  <GithubIcon className="w-3.5 h-3.5" />
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/nhatprx/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn Profile"
+                  className="p-2 border border-white/10 hover:border-white/30 text-white/60 hover:text-white transition-colors bg-white/[0.02]"
+                >
+                  <LinkedinIcon className="w-3.5 h-3.5" />
+                </a>
+              </div>
 
-        {/* ========== 01 - ABOUT & TECH STACK (2-COLUMN UNIFIED) ========== */}
-        <section id="about" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 flex items-center">
-          <div className="w-full text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-3">{t.about.tag}</p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-8">
-              {t.about.title} <span className="text-white/30">{t.about.titleSub}</span>
-            </h2>
+              <div className="h-4 w-[1px] bg-white/10" aria-hidden="true" />
 
-            {/* 2-Column Grid: Left About & Education, Right Tech Stack */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 xl:gap-12 items-stretch">
-              {/* Left Column: Bio, Education, Languages */}
-              <div className="lg:col-span-6 flex flex-col justify-between space-y-6">
-                <div className="space-y-3 text-sm sm:text-base text-white/70 leading-relaxed">
+              {/* Language Dropdown (Dropbox) */}
+              <div ref={langMenuRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setLangOpen((prev) => !prev)}
+                  aria-expanded={langOpen}
+                  aria-haspopup="true"
+                  aria-label="Select Language"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 font-mono text-xs border border-white/15 bg-white/[0.03] text-white/80 hover:text-white hover:border-white/30 transition-colors cursor-pointer"
+                >
+                  <span className="font-semibold uppercase text-[11px]">{lang}</span>
+                  <span className="text-[8px] text-white/40">{langOpen ? '▲' : '▼'}</span>
+                </button>
+
+                {langOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-36 bg-black/95 border border-white/20 shadow-2xl py-1 z-50 backdrop-blur-md">
+                    {LANG_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.code}
+                        type="button"
+                        onClick={() => handleLangChange(opt.code)}
+                        className={`w-full text-left px-3 py-1.5 text-xs font-mono flex items-center justify-between hover:bg-white/10 transition-colors cursor-pointer ${lang === opt.code
+                          ? 'text-white bg-white/10 font-semibold'
+                          : 'text-white/60'
+                          }`}
+                      >
+                        <span>{opt.label}</span>
+                        <span className="text-[10px] text-white/30">{opt.short}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </header>
+        </div>
+
+        {/* Left Scrollable Content Column (50/50 Split) */}
+        <div
+          className={`w-full lg:w-1/2 lg:min-h-screen flex flex-col transition-all duration-700 delay-100 ease-out motion-reduce:transition-none motion-reduce:transform-none ${
+            !isInitialLoading ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+          }`}
+        >
+          {/* ========== 01 - HERO & ABOUT (UNIFIED SECTION) ========== */}
+          <section
+            id="about"
+            className="relative pt-36 pb-20 sm:pt-40 sm:pb-24 lg:pt-44 lg:pb-24 px-6 sm:px-10 lg:px-14 flex flex-col text-left scroll-mt-28 sm:scroll-mt-32"
+          >
+            {/* Alias anchor for any links expecting #hero */}
+            <div id="hero" className="absolute top-0" />
+
+            <div className="w-full">
+              {/* Hero Content Block */}
+              <div className="mb-8 sm:mb-10">
+                <p className="font-mono text-xs tracking-[0.35em] text-emerald-400 uppercase mb-2 font-medium">
+                  {t.hero.role}
+                </p>
+
+                <h1 className="text-5xl sm:text-6xl xl:text-7xl font-bold tracking-tight text-white leading-[0.98]">
+                  nhatprx <span className="text-white/25">.</span>
+                </h1>
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap items-center gap-3 mt-7">
+                  <a
+                    href="#contact"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      scrollTo('#contact')
+                    }}
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-black font-mono text-xs font-bold tracking-wider hover:bg-white/85 transition-all shadow-[0_0_25px_rgba(255,255,255,0.12)] cursor-pointer"
+                  >
+                    {t.hero.getInTouch}
+                    <span aria-hidden="true">→</span>
+                  </a>
+                  <a
+                    href={t.hero.resumeUrl || '/%5Bnhatprx%5D%20PERSONAL%20RESUME.pdf'}
+                    download={t.hero.resumeFileName || '[nhatprx] PERSONAL RESUME.pdf'}
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-white/20 text-white font-mono text-xs font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-all"
+                  >
+                    <DownloadIcon className="w-3.5 h-3.5 text-white/60" />
+                    {t.hero.resume}
+                  </a>
+                </div>
+
+                {/* Mobile-only Terminal & Telemetry (stacked inline when split fixed is not feasible) */}
+                <div className="lg:hidden mt-8 mb-4 w-full space-y-3">
+                  <div className="h-[360px] w-full shadow-xl">
+                    <Ec2Terminal />
+                  </div>
+
+                  <div className="w-full shadow-xl">
+                    <ServerTelemetry />
+                  </div>
+                </div>
+              </div>
+
+              {/* About Content Block */}
+              <div className="pt-8 sm:pt-10 border-t border-white/10 story-reveal">
+                <p className="font-mono text-xs tracking-[0.35em] text-emerald-400 uppercase mb-2 font-medium">
+                  {t.about.tag}
+                </p>
+                <h2
+                  ref={aboutTitleRef}
+                  className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-5 text-white w-fit"
+                >
+                  {t.about.title} <span className="text-white/30">{t.about.titleSub}</span>
+                </h2>
+
+                <div
+                  style={{
+                    width: aboutTitleWidth ? `${aboutTitleWidth}px` : undefined,
+                    maxWidth: '100%',
+                  }}
+                  className="space-y-4 text-sm text-white/70 leading-relaxed mb-8 text-justify [text-justify:inter-word]"
+                >
                   <p>{t.about.p1}</p>
                   <p>{t.about.p2}</p>
                 </div>
 
-                <div>
-                  <h3 className="font-mono text-[10px] tracking-[0.25em] text-white/40 mb-2.5 uppercase">
+                {/* Education */}
+                <div className="mb-3 story-reveal story-delay-1">
+                  <h3 className="font-mono text-[10px] tracking-[0.25em] text-white/40 mb-3 uppercase">
                     {t.about.educationTitle}
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Education Card 1: FPT University */}
-                    <div className="border border-white/10 hover:border-white/25 p-3.5 transition-colors flex flex-col justify-between bg-white/[0.01]">
-                      <div>
-                        <div className="flex items-center justify-between gap-1 mb-1">
-                          <span className="text-xs font-semibold text-white tracking-tight truncate">{t.about.edu1School}</span>
-                          <span className="w-1.5 h-1.5 rounded-full bg-white/40 shrink-0" />
-                        </div>
-                        <p className="font-mono text-[10px] text-emerald-400/90 truncate">{t.about.edu1Degree}</p>
-                        <p className="font-mono text-[10px] text-white/50 truncate mt-1">{t.about.edu1Major}</p>
+                    <div className="border border-white/10 p-4 bg-white/[0.015]">
+                      <div className="text-sm font-bold text-white">{t.about.edu1School}</div>
+                      <div className="font-mono text-[10px] text-emerald-400/90 mt-1 uppercase">
+                        {t.about.edu1Degree}
                       </div>
-                      <span className="font-mono text-[9px] text-white/30 pt-2 border-t border-white/5 mt-2 block">
+                      <div className="text-xs text-white/50 mt-1.5">{t.about.edu1Major}</div>
+                      <div className="text-[11px] font-mono text-white/30 mt-1">
                         {t.about.edu1Location || t.about.edu1Dates}
-                      </span>
+                      </div>
                     </div>
 
-                    {/* Education Card 2: Multimedia University */}
-                    <div className="border border-white/10 hover:border-white/25 p-3.5 transition-colors flex flex-col justify-between bg-white/[0.01]">
-                      <div>
-                        <div className="flex items-center justify-between gap-1 mb-1">
-                          <span className="text-xs font-semibold text-white tracking-tight truncate">{t.about.edu2School}</span>
-                          <span className="w-1.5 h-1.5 rounded-full bg-white/40 shrink-0" />
-                        </div>
-                        <p className="font-mono text-[10px] text-emerald-400/90 truncate">{t.about.edu2Degree}</p>
-                        <p className="font-mono text-[10px] text-white/50 truncate mt-1">{t.about.edu2Major}</p>
+                    <div className="border border-white/10 p-4 bg-white/[0.015]">
+                      <div className="text-sm font-bold text-white">{t.about.edu2School}</div>
+                      <div className="font-mono text-[10px] text-emerald-400/90 mt-1 uppercase">
+                        {t.about.edu2Degree}
                       </div>
-                      <span className="font-mono text-[9px] text-white/30 pt-2 border-t border-white/5 mt-2 block">
+                      <div className="text-xs text-white/50 mt-1.5">{t.about.edu2Major}</div>
+                      <div className="text-[11px] font-mono text-white/30 mt-1">
                         {t.about.edu2Location || t.about.edu2Dates}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <span className="block font-mono text-[10px] tracking-[0.25em] text-white/40 mb-2 uppercase">
-                    LANGUAGES
-                  </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {t.about.languages.map((langItem) => (
-                      <span key={langItem} className="font-mono text-[10px] px-2.5 py-1 border border-white/10 text-white/60 bg-white/[0.02]">
-                        {langItem}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column: Tech Stack Modular Cards */}
-              <div id="skills" className="lg:col-span-6 flex flex-col justify-between scroll-mt-24">
-                <div className="flex items-center justify-between pb-2 mb-3 border-b border-white/10">
-                  <h3 className="font-mono text-xs tracking-[0.25em] text-white/90 uppercase font-semibold">
-                    {t.nav.skills} · ARCHITECTURAL STACK
-                  </h3>
-                  <span className="font-mono text-[10px] text-white/40 shrink-0">
-                    {t.skills.categories.length} MODULES
-                  </span>
-                </div>
-
-                {/* Modular Card Grid - Compact Chips to balance height */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1">
-                  {t.skills.categories.map((group, gIdx) => (
-                    <div
-                      key={group.title}
-                      className={`border border-white/10 hover:border-white/25 transition-all p-3 bg-white/[0.01] flex flex-col justify-between ${
-                        gIdx === 4 ? 'sm:col-span-2' : ''
-                      }`}
-                    >
-                      <div>
-                        <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-white/10">
-                          <h4 className="font-mono text-[11px] tracking-[0.18em] text-white/90 font-semibold truncate pr-2 uppercase">
-                            {group.title}
-                          </h4>
-                          <span className="font-mono text-[10px] text-white/40 shrink-0">
-                            0{gIdx + 1}
-                          </span>
-                        </div>
-
-                        <div className="flex flex-wrap gap-1.5">
-                          {group.skills.map((s) => (
-                            <span
-                              key={s}
-                              className="font-mono text-[10px] sm:text-[11px] px-2 py-0.5 border border-white/10 text-white/80 bg-white/[0.03] hover:border-white/30 hover:text-white transition-colors"
-                            >
-                              {s}
-                            </span>
-                          ))}
-                        </div>
                       </div>
                     </div>
-                  ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* ========== 02 - WORK: EXPERIENCE & PROJECTS (TABBED 3-CARD INFINITE LOOP STAGE) ========== */}
-        {(() => {
-          const isExp = workTab === 'experience'
-          const expItems = t.experience.items
-          const projItems = t.projects.items
-          const N = isExp ? expItems.length : projItems.length
-          const currentActive = isExp ? activeExp : activeProj
-          const setCurrentActive = isExp ? setActiveExp : setActiveProj
-          const cardWidth = Math.min(windowWidth - 48, 560)
-          const gap = windowWidth < 640 ? 16 : 28
+          {/* ========== 02 - TECHNICAL STACK ========== */}
+          <section
+            id="skills"
+            className="relative pt-20 sm:pt-24 lg:pt-24 pb-20 sm:pb-24 lg:pb-24 px-6 sm:px-10 lg:px-14 flex flex-col border-t border-white/5 scroll-mt-28 sm:scroll-mt-32"
+          >
+            {/* Alias anchor for any links expecting #tech-stack */}
+            <div id="tech-stack" className="absolute -top-28 sm:-top-32" />
 
-          // 5 slots around currentActive: 2 left, 1 center, 2 right for seamless infinite transition
-          const slots = [currentActive - 2, currentActive - 1, currentActive, currentActive + 1, currentActive + 2]
+            <div className="w-full text-left story-reveal">
+              <p className="font-mono text-xs tracking-[0.35em] text-emerald-400 uppercase mb-2 font-medium">
+                {t.skills.tag}
+              </p>
+              <h2
+                ref={skillsTitleRef}
+                className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-5 text-white w-fit"
+              >
+                {t.skills.title} <span className="text-white/30">{t.skills.titleSub}</span>
+              </h2>
 
-          return (
-            <section
-              id="work"
-              className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 flex items-center justify-center overflow-hidden relative"
-            >
-              <div id="experience" className="absolute -top-10" />
-              <div id="projects" className="absolute -top-10" />
+              {t.skills.desc && (
+                <div
+                  style={{
+                    width: skillsTitleWidth ? `${skillsTitleWidth}px` : undefined,
+                    maxWidth: '100%',
+                  }}
+                  className="mb-8 text-sm text-white/70 leading-relaxed text-justify [text-justify:inter-word]"
+                >
+                  <p>{t.skills.desc}</p>
+                </div>
+              )}
 
-              <div className="w-full text-left">
-                {/* Header, Title & Tab Switcher */}
-                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8 px-2 sm:px-4">
-                  <div>
-                    <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-2">
-                      {isExp ? t.experience.tag : t.projects.tag}
-                    </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 story-reveal story-delay-1">
+                {t.skills.categories.map((group, idx) => (
+                  <div
+                    key={group.title}
+                    className={`p-4 sm:p-5 border border-white/10 bg-white/[0.02] hover:border-white/20 transition-all flex flex-col justify-between ${
+                      idx === t.skills.categories.length - 1 ? 'sm:col-span-2' : ''
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between pb-2.5 mb-3.5 border-b border-white/10">
+                        <h3 className="font-mono text-xs tracking-wider text-white font-semibold uppercase">
+                          {group.title}
+                        </h3>
+                        <span className="font-mono text-[10px] text-emerald-400 font-medium">
+                          0{idx + 1}
+                        </span>
+                      </div>
 
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
-                      {isExp ? t.experience.title : t.projects.title}{' '}
-                      <span className="text-white/30">
-                        {isExp ? t.experience.titleSub : t.projects.titleSub}
-                      </span>
-                    </h2>
-
-                    <div className="flex items-center gap-3 pt-1">
-                      <div className="inline-flex p-1 border border-white/20 bg-white/[0.04]">
-                        <button
-                          type="button"
-                          onClick={() => setWorkTab('experience')}
-                          className={`px-4 py-2 font-mono text-xs tracking-wider transition-all cursor-pointer ${
-                            isExp
-                              ? 'bg-white text-black font-semibold shadow-sm'
-                              : 'text-white/50 hover:text-white'
-                          }`}
-                        >
-                          {t.nav.experience} ({expItems.length})
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setWorkTab('projects')}
-                          className={`px-4 py-2 font-mono text-xs tracking-wider transition-all cursor-pointer ${
-                            !isExp
-                              ? 'bg-white text-black font-semibold shadow-sm'
-                              : 'text-white/50 hover:text-white'
-                          }`}
-                        >
-                          {t.nav.projects} ({projItems.length})
-                        </button>
+                      <div className="flex flex-wrap gap-2">
+                        {group.skills.map((s) => (
+                          <span
+                            key={s}
+                            className="font-mono text-xs px-3 py-1.5 border border-white/15 bg-white/[0.03] text-white/85 hover:border-emerald-400/40 hover:text-emerald-400 transition-colors"
+                          >
+                            {s}
+                          </span>
+                        ))}
                       </div>
                     </div>
                   </div>
+                ))}
+              </div>
+            </div>
+          </section>
 
-                  {/* Navigation Chevrons */}
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setCurrentActive((prev) => prev - 1)}
-                      aria-label="Previous item (infinite loop)"
-                      className="p-2 border border-white/10 hover:border-white/30 text-white hover:bg-white/5 transition-colors cursor-pointer"
-                    >
-                      <ChevronLeftIcon className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setCurrentActive((prev) => prev + 1)}
-                      aria-label="Next item (infinite loop)"
-                      className="p-2 border border-white/10 hover:border-white/30 text-white hover:bg-white/5 transition-colors cursor-pointer"
-                    >
-                      <ChevronRightIcon className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+          {/* ========== 03 - WORK (EXPERIENCE & PROJECTS UNIFIED) ========== */}
+          {(() => {
+            const isExp = workTab === 'experience'
+            const expItems = t.experience.items
+            const projItems = t.projects.items
+            const items = isExp ? expItems : projItems
+            const N = items.length
+            const currentActive = isExp ? activeExp : activeProj
+            const setCurrentActive = isExp ? setActiveExp : setActiveProj
+            const realIndex = ((currentActive % N) + N) % N
 
-                {/* 3-Card Stage with Infinite Loop */}
-                <div
-                  className="relative w-full h-[580px] sm:h-[600px] overflow-hidden outline-none"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'ArrowRight') {
-                      e.preventDefault()
-                      setCurrentActive((prev) => prev + 1)
-                    } else if (e.key === 'ArrowLeft') {
-                      e.preventDefault()
-                      setCurrentActive((prev) => prev - 1)
-                    }
-                  }}
-                  onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
-                  onTouchEnd={(e) => {
-                    if (touchStartX === null) return
-                    const diff = touchStartX - e.changedTouches[0].clientX
-                    if (diff > 40) {
-                      setCurrentActive((prev) => prev + 1)
-                    } else if (diff < -40) {
-                      setCurrentActive((prev) => prev - 1)
-                    }
-                    setTouchStartX(null)
-                  }}
-                  role="region"
-                  aria-label="3-card interactive infinite stage"
-                >
-                  {slots.map((slot) => {
-                    const itemIndex = ((slot % N) + N) % N
-                    const offset = slot - currentActive // -2, -1, 0, 1, 2
-                    const isCenter = offset === 0
+            return (
+              <section
+                id="work"
+                className="relative pt-20 sm:pt-24 lg:pt-24 pb-20 sm:pb-24 lg:pb-24 px-6 sm:px-10 lg:px-14 border-t border-white/5 flex flex-col scroll-mt-28 sm:scroll-mt-32"
+              >
+                <div id="experience" className="absolute -top-28 sm:-top-32" />
+                <div id="projects" className="absolute -top-28 sm:-top-32" />
 
-                    if (isExp) {
-                      const exp = expItems[itemIndex]
-                      return (
-                        <div
-                          key={`exp-${slot}`}
-                          onClick={() => Math.abs(offset) === 1 && setCurrentActive((prev) => prev + offset)}
-                          style={{
-                            width: `${cardWidth}px`,
-                            transform: `translateX(calc(-50% + ${offset * (cardWidth + gap)}px)) scale(${isCenter ? 1 : 0.94})`,
-                            left: '50%',
-                            opacity: isCenter ? 1 : Math.abs(offset) === 1 ? 0.38 : 0,
-                            zIndex: isCenter ? 20 : 10 - Math.abs(offset),
-                            pointerEvents: Math.abs(offset) > 1 ? 'none' : 'auto',
-                            transition: 'transform 500ms cubic-bezier(0.16, 1, 0.3, 1), opacity 500ms ease',
-                          }}
-                          className={`absolute top-0 bottom-0 select-none ${
-                            Math.abs(offset) === 1 ? 'cursor-pointer hover:opacity-60' : ''
-                          }`}
-                        >
-                          <article
-                            className={`h-full flex flex-col justify-between p-6 sm:p-8 border transition-all duration-300 ${
-                              isCenter
-                                ? 'border-white/30 bg-white/[0.04] shadow-[0_0_50px_rgba(255,255,255,0.06)]'
-                                : 'border-white/10 bg-white/[0.01]'
-                            }`}
-                          >
-                            <div className="flex-1 min-h-0 overflow-y-auto pr-1">
-                              <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-white/10">
-                                <div className="flex items-center gap-2">
-                                  <span
-                                    className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                                      isCenter ? 'bg-emerald-400 animate-pulse' : 'bg-white/20'
-                                    }`}
-                                  />
-                                  <span className="font-mono text-[10px] tracking-[0.25em] text-white/50 uppercase">
-                                    0{itemIndex + 1} · EXPERIENCE
-                                  </span>
-                                </div>
-                                <span className="font-mono text-[10px] text-white/40 border border-white/10 px-2 py-0.5">
-                                  {exp.period}
-                                </span>
-                              </div>
+                <div className="w-full text-left story-reveal">
+                  {/* Tag, Title & Subtitle */}
+                  <p className="font-mono text-xs tracking-[0.35em] text-emerald-400 uppercase mb-2 font-medium">
+                    {isExp ? t.experience.tag : t.projects.tag}
+                  </p>
+                  <h2
+                    ref={workTitleRef}
+                    className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3 text-white w-fit"
+                  >
+                    {isExp ? t.experience.title : t.projects.title}{' '}
+                    <span className="text-white/30">{isExp ? t.experience.titleSub : t.projects.titleSub}</span>
+                  </h2>
+                  <p
+                    key={workTab}
+                    style={{
+                      width: workTitleWidth ? `${workTitleWidth}px` : undefined,
+                      maxWidth: '100%',
+                    }}
+                    className="text-sm text-white/65 leading-relaxed mb-6 text-justify [text-justify:inter-word] animate-card-switch"
+                  >
+                    {isExp ? t.experience.desc : t.projects.desc}
+                  </p>
 
-                              <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-2">
-                                <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white">{exp.role}</h3>
-                              </div>
-                              <p className="text-xs font-mono text-emerald-400/90 mb-4">{exp.company}</p>
-                              <p className="text-sm text-white/60 leading-relaxed mb-4">
-                                {exp.summary}
-                              </p>
-                              <ul className="space-y-2 text-sm text-white/50 leading-relaxed mb-6">
-                                {exp.bullets.map((b, bIdx) => (
-                                  <li key={bIdx}>• {b}</li>
-                                ))}
-                              </ul>
-                            </div>
-                            {exp.tech && exp.tech.length > 0 && (
-                              <div className="shrink-0 mt-4 pt-4 border-t border-white/10 flex flex-wrap gap-2">
-                                {exp.tech.map((tech) => (
-                                  <span
-                                    key={tech}
-                                    className="font-mono text-xs px-2.5 py-1 border border-white/15 text-white/70 bg-white/[0.03] hover:border-white/30 hover:text-white transition-colors"
-                                  >
-                                    {tech}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </article>
-                        </div>
-                      )
-                    }
-
-                    // Render Project Card
-                    const proj = projItems[itemIndex]
-                    return (
-                      <div
-                        key={`proj-${slot}`}
-                        onClick={() => Math.abs(offset) === 1 && setCurrentActive((prev) => prev + offset)}
-                        style={{
-                          width: `${cardWidth}px`,
-                          transform: `translateX(calc(-50% + ${offset * (cardWidth + gap)}px)) scale(${isCenter ? 1 : 0.94})`,
-                          left: '50%',
-                          opacity: isCenter ? 1 : Math.abs(offset) === 1 ? 0.38 : 0,
-                          zIndex: isCenter ? 20 : 10 - Math.abs(offset),
-                          pointerEvents: Math.abs(offset) > 1 ? 'none' : 'auto',
-                          transition: 'transform 500ms cubic-bezier(0.16, 1, 0.3, 1), opacity 500ms ease',
-                        }}
-                        className={`absolute top-0 bottom-0 select-none ${
-                          Math.abs(offset) === 1 ? 'cursor-pointer hover:opacity-60' : ''
+                  {/* Section Switcher Tabs & Counter */}
+                  <div className="flex items-center justify-between gap-3 mb-5">
+                    <div className="inline-flex p-1 border border-white/15 bg-white/[0.03]">
+                      <button
+                        type="button"
+                        onClick={() => setWorkTab('experience')}
+                        className={`px-3.5 py-1.5 font-mono text-xs tracking-wider transition-all cursor-pointer ${
+                          isExp
+                            ? 'bg-white text-black font-semibold shadow-sm'
+                            : 'text-white/50 hover:text-white'
                         }`}
                       >
+                        {t.nav.experience} ({expItems.length})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setWorkTab('projects')}
+                        className={`px-3.5 py-1.5 font-mono text-xs tracking-wider transition-all cursor-pointer ${
+                          !isExp
+                            ? 'bg-white text-black font-semibold shadow-sm'
+                            : 'text-white/50 hover:text-white'
+                        }`}
+                      >
+                        {t.nav.projects} ({projItems.length})
+                      </button>
+                    </div>
+
+                    <span className="font-mono text-xs text-white/50">
+                      0{realIndex + 1} / 0{N}
+                    </span>
+                  </div>
+
+                  {/* Card Display with Side Switch Buttons */}
+                  <div className="relative w-full story-reveal story-delay-1">
+                    {/* Previous Button (Left Side) */}
+                    <button
+                      type="button"
+                      onClick={() => setCurrentActive((realIndex - 1 + N) % N)}
+                      aria-label="Previous card"
+                      className="absolute -left-3 sm:-left-4.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 border border-white/20 bg-neutral-950/95 hover:border-emerald-400 hover:bg-emerald-950/50 text-white/70 hover:text-emerald-300 transition-all flex items-center justify-center cursor-pointer shadow-lg hover:shadow-[0_0_12px_rgba(52,211,153,0.3)] active:scale-95 group"
+                    >
+                      <ChevronLeftIcon className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
+                    </button>
+
+                    {/* Single Active Card Display (Fixed Compact Dimensions) */}
+                    {isExp ? (() => {
+                      const exp = expItems[realIndex]
+                      const maxTags = 5
+                      const visibleTech = exp.tech ? exp.tech.slice(0, maxTags) : []
+                      const remainingCount = exp.tech ? exp.tech.length - maxTags : 0
+
+                      return (
                         <article
-                          className={`h-full flex flex-col justify-between p-6 sm:p-8 border transition-all duration-300 ${
-                            isCenter
-                              ? 'border-white/30 bg-white/[0.04] shadow-[0_0_50px_rgba(255,255,255,0.06)]'
-                              : 'border-white/10 bg-white/[0.01]'
-                          }`}
+                          key={`exp-${realIndex}`}
+                          className="border border-white/15 bg-white/[0.025] p-5 sm:p-6 transition-all duration-200 h-[390px] sm:h-[405px] flex flex-col justify-between animate-card-switch"
                         >
-                          <div className="flex-1 min-h-0 overflow-y-auto pr-1">
-                            <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-white/10">
-                              <div className="flex items-center gap-2">
+                          <div className="overflow-y-auto pr-1 min-h-0 flex-1 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.15)_transparent]">
+                            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 mb-1">
+                              <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                                {exp.role}
+                              </h3>
+                              <span className="font-mono text-xs sm:text-sm text-white/45 shrink-0">
+                                {exp.period}
+                              </span>
+                            </div>
+
+                            <p className="font-mono text-xs sm:text-sm text-emerald-400 font-medium mb-3">
+                              {exp.company}
+                            </p>
+
+                            <p className="text-sm sm:text-base text-white/80 leading-relaxed mb-4">
+                              {exp.summary}
+                            </p>
+
+                            <ul className="space-y-2 text-sm sm:text-[14px] text-white/70 leading-relaxed mb-4">
+                              {exp.bullets.map((b, bIdx) => (
+                                <li key={bIdx} className="flex items-start gap-2.5">
+                                  <span className="text-emerald-400 mt-0.5 shrink-0 text-xs">▸</span>
+                                  <span>{b}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          {exp.tech && exp.tech.length > 0 && (
+                            <div className="pt-3 border-t border-white/10 flex flex-wrap items-center gap-1.5 shrink-0 mt-3">
+                              {visibleTech.map((tech) => (
                                 <span
-                                  className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                                    isCenter ? 'bg-emerald-400 animate-pulse' : 'bg-white/20'
-                                  }`}
-                                />
-                                <span className="font-mono text-[10px] tracking-[0.25em] text-white/50 uppercase">
-                                  0{itemIndex + 1} · PROJECT
+                                  key={tech}
+                                  className="font-mono text-xs px-2.5 py-1 border border-white/15 text-white/75 bg-white/[0.03]"
+                                >
+                                  {tech}
                                 </span>
-                              </div>
-                              <div className="flex items-center gap-3">
+                              ))}
+                              {remainingCount > 0 && (
+                                <span
+                                  className="font-mono text-[11px] px-2 py-0.5 border border-white/10 text-white/40 bg-white/[0.01]"
+                                  title={exp.tech.slice(maxTags).join(', ')}
+                                >
+                                  +{remainingCount}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </article>
+                      )
+                    })() : (() => {
+                      const proj = projItems[realIndex]
+                      const maxTags = 5
+                      const visibleTech = proj.tech ? proj.tech.slice(0, maxTags) : []
+                      const remainingCount = proj.tech ? proj.tech.length - maxTags : 0
+
+                      return (
+                        <article
+                          key={`proj-${realIndex}`}
+                          className="border border-white/15 bg-white/[0.025] p-5 sm:p-6 transition-all duration-200 h-[390px] sm:h-[405px] flex flex-col justify-between animate-card-switch"
+                        >
+                          <div className="overflow-y-auto pr-1 min-h-0 flex-1 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.15)_transparent]">
+                            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 mb-1">
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                                  {proj.title}
+                                </h3>
                                 {proj.repoUrl && (
                                   <a
                                     href={proj.repoUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    aria-label="View source code on GitHub"
-                                    title="View source on GitHub"
-                                    className="text-white/40 hover:text-white transition-colors"
+                                    aria-label={`View source code for ${proj.title}`}
+                                    className="p-1 border border-white/10 text-white/40 hover:text-white transition-colors"
                                   >
-                                    <GithubIcon className="w-4 h-4" />
+                                    <GithubIcon className="w-3.5 h-3.5" />
                                   </a>
                                 )}
-                                <span className="font-mono text-[10px] text-white/40 border border-white/10 px-2 py-0.5">
-                                  {proj.period}
-                                </span>
                               </div>
+                              <span className="font-mono text-xs sm:text-sm text-white/45 shrink-0">
+                                {proj.period}
+                              </span>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-2">
-                              <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white">{proj.title}</h3>
-                            </div>
-                            <p className="text-xs font-mono text-emerald-400/90 mb-4">{proj.meta}</p>
-                            <p className="text-sm text-white/60 leading-relaxed mb-4">
+                            <p className="font-mono text-xs sm:text-sm text-emerald-400 font-medium mb-3">
+                              {proj.meta}
+                            </p>
+
+                            <p className="text-sm sm:text-base text-white/80 leading-relaxed mb-4">
                               {proj.desc}
                             </p>
-                            <ul className="space-y-2 text-sm text-white/50 leading-relaxed mb-6">
+
+                            <ul className="space-y-2 text-sm sm:text-[14px] text-white/70 leading-relaxed mb-4">
                               {proj.bullets.map((b, bIdx) => (
-                                <li key={bIdx}>• {b}</li>
+                                <li key={bIdx} className="flex items-start gap-2.5">
+                                  <span className="text-emerald-400 mt-0.5 shrink-0 text-xs">▸</span>
+                                  <span>{b}</span>
+                                </li>
                               ))}
                             </ul>
                           </div>
+
                           {proj.tech && proj.tech.length > 0 && (
-                            <div className="shrink-0 mt-4 pt-4 border-t border-white/10 flex flex-wrap gap-2">
-                              {proj.tech.map((tech) => (
+                            <div className="pt-3 border-t border-white/10 flex flex-wrap items-center gap-1.5 shrink-0 mt-3">
+                              {visibleTech.map((tech) => (
                                 <span
                                   key={tech}
-                                  className="font-mono text-xs px-2.5 py-1 border border-white/15 text-white/70 bg-white/[0.03] hover:border-white/30 hover:text-white transition-colors"
+                                  className="font-mono text-xs px-2.5 py-1 border border-white/15 text-white/75 bg-white/[0.03]"
                                 >
                                   {tech}
                                 </span>
                               ))}
+                              {remainingCount > 0 && (
+                                <span
+                                  className="font-mono text-[11px] px-2 py-0.5 border border-white/10 text-white/40 bg-white/[0.01]"
+                                  title={proj.tech.slice(maxTags).join(', ')}
+                                >
+                                  +{remainingCount}
+                                </span>
+                              )}
                             </div>
                           )}
                         </article>
+                      )
+                    })()}
+
+                    {/* Next Button (Right Side) */}
+                    <button
+                      type="button"
+                      onClick={() => setCurrentActive((realIndex + 1) % N)}
+                      aria-label="Next card"
+                      className="absolute -right-3 sm:-right-4.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 border border-white/20 bg-neutral-950/95 hover:border-emerald-400 hover:bg-emerald-950/50 text-white/70 hover:text-emerald-300 transition-all flex items-center justify-center cursor-pointer shadow-lg hover:shadow-[0_0_12px_rgba(52,211,153,0.3)] active:scale-95 group"
+                    >
+                      <ChevronRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                    </button>
+                  </div>
+                </div>
+              </section>
+            )
+          })()}
+
+          {/* ========== 04 - BLOG ========== */}
+          <section
+            id="blog"
+            className="relative pt-20 sm:pt-24 lg:pt-24 pb-20 sm:pb-24 lg:pb-24 px-6 sm:px-10 lg:px-14 border-t border-white/5 flex flex-col scroll-mt-28 sm:scroll-mt-32"
+          >
+            <div className="w-full text-left story-reveal">
+              <p className="font-mono text-xs tracking-[0.35em] text-emerald-400 uppercase mb-2 font-medium">
+                {t.blog.tag}
+              </p>
+              <h2
+                ref={blogTitleRef}
+                className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3 text-white w-fit"
+              >
+                {t.blog.title} <span className="text-white/30">{t.blog.titleSub}</span>
+              </h2>
+              <p
+                style={{
+                  width: blogTitleWidth ? `${blogTitleWidth}px` : undefined,
+                  maxWidth: '100%',
+                }}
+                className="text-sm text-white/65 leading-relaxed mb-8 text-justify [text-justify:inter-word]"
+              >
+                {t.blog.desc}
+              </p>
+
+              {/* Blog Posts Vertical Stack (Paginated: max 3 per page + Search) */}
+              {(() => {
+                const postsPerPage = 3
+                const q = blogSearch.trim().toLowerCase()
+                const filteredPosts = t.blog.posts.filter((post) => {
+                  if (!q) return true
+                  return (
+                    post.title.toLowerCase().includes(q) ||
+                    post.summary.toLowerCase().includes(q) ||
+                    post.tags.some((tag) => tag.toLowerCase().includes(q))
+                  )
+                })
+                const totalBlogPages = Math.ceil(filteredPosts.length / postsPerPage)
+                const currentBlogPage = Math.min(Math.max(1, blogPage), totalBlogPages || 1)
+                const paginatedPosts = filteredPosts.slice(
+                  (currentBlogPage - 1) * postsPerPage,
+                  currentBlogPage * postsPerPage
+                )
+
+                return (
+                  <>
+                    {paginatedPosts.length === 0 ? (
+                      <div className="p-8 border border-white/10 bg-white/[0.015] text-center font-mono">
+                        <p className="text-xs text-white/40 mb-2.5">
+                          NO NOTES FOUND MATCHING "{blogSearch}"
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setBlogSearch('')
+                            setBlogPage(1)
+                          }}
+                          className="text-xs text-emerald-400 hover:underline cursor-pointer font-medium"
+                        >
+                          RESET SEARCH →
+                        </button>
                       </div>
-                    )
-                  })}
-                </div>
-              </div>
-            </section>
-          )
-        })()}
+                    ) : (
+                      <div key={currentBlogPage} className="space-y-2.5 animate-card-switch story-reveal story-delay-1">
+                        {paginatedPosts.map((post) => (
+                          <article
+                            key={post.slug}
+                            onClick={() => setActiveBlogSlug(post.slug)}
+                            className="group border border-white/10 hover:border-emerald-400/50 bg-white/[0.015] hover:bg-white/[0.035] p-3.5 sm:p-4 transition-all duration-200 cursor-pointer"
+                          >
+                            <div className="flex items-center justify-between gap-2 mb-1.5 font-mono text-[11px] text-white/40">
+                              <span>{post.date}</span>
+                              <span className="text-emerald-400/80 font-medium">{post.readTime}</span>
+                            </div>
 
-        {/* ========== 05 - BLOG ========== */}
-        <section id="blog" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14">
-          <div className="w-full text-left">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-3">{t.blog.tag}</p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-8">
-              {t.blog.title} <span className="text-white/30">{t.blog.titleSub}</span>
-            </h2>
+                            <h3 className="text-sm sm:text-base font-bold text-white group-hover:text-emerald-400 transition-colors tracking-tight mb-1.5 leading-snug line-clamp-1">
+                              {post.title}
+                            </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {t.blog.posts.map((post) => (
-                <article
-                  key={post.slug}
-                  onClick={() => setSelectedPostSlug(post.slug)}
-                  className="border border-white/10 p-6 hover:border-white/30 transition-all cursor-pointer group bg-white/[0.01] flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
-                      <span className="font-mono text-[10px] text-white/40 tracking-wider">
-                        {post.date} · {post.readTime}
-                      </span>
-                      <span className="font-mono text-[10px] text-white/40 group-hover:text-white transition-colors">
-                        {t.blog.readNote}
-                      </span>
+                            <p className="text-xs text-white/60 leading-relaxed mb-3 line-clamp-2">
+                              {post.summary}
+                            </p>
+
+                            <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-white/10">
+                              <div className="flex flex-wrap gap-1.5">
+                                {post.tags.slice(0, 3).map((tag) => (
+                                  <span
+                                    key={tag}
+                                    className="font-mono text-[9.5px] px-2 py-0.5 border border-white/10 text-white/55 bg-white/[0.02]"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+
+                              <span className="font-mono text-[11px] text-emerald-400 group-hover:translate-x-1 transition-transform flex items-center gap-1 font-medium shrink-0">
+                                {t.blog.readNote}
+                              </span>
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Bottom Toolbar: Search Box (Replaced PAGE 01/02 text) + Pagination Controls */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-white/10 mt-6 font-mono text-xs">
+                      {/* Search Box */}
+                      <div className="relative flex items-center w-full sm:w-60">
+                        <span className="absolute left-2.5 text-white/30 text-xs font-mono select-none">/</span>
+                        <input
+                          type="text"
+                          value={blogSearch}
+                          onChange={(e) => {
+                            setBlogSearch(e.target.value)
+                            setBlogPage(1)
+                          }}
+                          placeholder="SEARCH NOTES..."
+                          aria-label="Search blog notes"
+                          className="w-full bg-white/[0.03] border border-white/10 focus:border-emerald-400/80 focus:bg-white/[0.05] pl-6 pr-7 py-1 text-xs font-mono text-white placeholder:text-white/30 outline-none transition-all"
+                        />
+                        {blogSearch && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setBlogSearch('')
+                              setBlogPage(1)
+                            }}
+                            aria-label="Clear search"
+                            className="absolute right-2 text-white/40 hover:text-white text-xs cursor-pointer"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Pagination Controls */}
+                      {totalBlogPages > 1 ? (
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            disabled={currentBlogPage === 1}
+                            onClick={() => setBlogPage((prev) => Math.max(1, prev - 1))}
+                            className="p-1.5 border border-white/10 hover:border-white/30 disabled:opacity-30 disabled:hover:border-white/10 disabled:cursor-not-allowed text-white transition-all cursor-pointer flex items-center justify-center"
+                            aria-label="Previous page"
+                          >
+                            <ChevronLeftIcon className="w-3.5 h-3.5" />
+                          </button>
+
+                          {Array.from({ length: totalBlogPages }).map((_, idx) => {
+                            const pageNum = idx + 1
+                            const isActive = pageNum === currentBlogPage
+                            return (
+                              <button
+                                key={pageNum}
+                                type="button"
+                                onClick={() => setBlogPage(pageNum)}
+                                className={`w-7 h-7 border text-xs transition-all cursor-pointer ${
+                                  isActive
+                                    ? 'border-emerald-400 bg-emerald-400/10 text-emerald-300 font-semibold shadow-sm'
+                                    : 'border-white/10 bg-white/[0.02] text-white/50 hover:text-white hover:border-white/30'
+                                }`}
+                              >
+                                0{pageNum}
+                              </button>
+                            )
+                          })}
+
+                          <button
+                            type="button"
+                            disabled={currentBlogPage === totalBlogPages}
+                            onClick={() => setBlogPage((prev) => Math.min(totalBlogPages, prev + 1))}
+                            className="p-1.5 border border-white/10 hover:border-white/30 disabled:opacity-30 disabled:hover:border-white/10 disabled:cursor-not-allowed text-white transition-all cursor-pointer flex items-center justify-center"
+                            aria-label="Next page"
+                          >
+                            <ChevronRightIcon className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-white/30 font-mono text-[11px]">
+                          {filteredPosts.length} {filteredPosts.length === 1 ? 'NOTE' : 'NOTES'}
+                        </span>
+                      )}
                     </div>
-                    <h3 className="text-lg font-bold tracking-tight mb-3 text-white group-hover:text-white/90">
-                      {post.title}
-                    </h3>
-                    <p className="text-sm text-white/50 leading-relaxed mb-4">
-                      {post.summary}
-                    </p>
-                  </div>
-                  <div className="pt-4 border-t border-white/5 flex flex-wrap gap-1.5">
-                    {post.tags.map((tag) => (
-                      <span key={tag} className="font-mono text-[9px] px-2 py-0.5 border border-white/10 text-white/30">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </article>
-              ))}
+                  </>
+                )
+              })()}
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* ========== 04 - CONTACT ========== */}
-        <section id="contact" className="min-h-screen py-24 p-6 sm:p-10 lg:p-14 flex items-center">
-          <div className="w-full text-left max-w-5xl">
-            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 mb-2">{t.contact.tag}</p>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
-              {t.contact.title} <span className="text-white/30">{t.contact.titleSub}</span>
-            </h2>
-            <p className="text-sm sm:text-base text-white/60 leading-relaxed max-w-2xl mb-10">
-              {t.contact.desc}
-            </p>
+          {/* ========== 05 - CONTACT ========== */}
+          <section
+            id="contact"
+            className="relative pt-20 sm:pt-24 lg:pt-24 pb-12 sm:pb-16 lg:pb-16 px-6 sm:px-10 lg:px-14 flex flex-col justify-between border-t border-white/5 scroll-mt-28 sm:scroll-mt-32"
+          >
+            <div className="w-full text-left story-reveal">
+              <p className="font-mono text-xs tracking-[0.35em] text-emerald-400 uppercase mb-2 font-medium">
+                {t.contact.tag}
+              </p>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-3 text-white">
+                {t.contact.title} <span className="text-white/30">{t.contact.titleSub}</span>
+              </h2>
+              <p className="text-sm text-white/60 leading-relaxed max-w-lg mb-7">
+                {t.contact.desc}
+              </p>
 
-            {/* Direct Channels Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <a
-                href="mailto:nhatprx@gmail.com"
-                className="group p-6 border border-white/10 hover:border-white/30 bg-white/[0.01] hover:bg-white/[0.03] transition-all flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
+              {/* Direct Channels Cards Grid (Optimized compact 2-col cards) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5 mb-5 story-reveal story-delay-1">
+                <a
+                  href="mailto:nhatprx@gmail.com"
+                  className="group p-4 sm:p-4.5 border border-white/10 hover:border-white/30 bg-white/[0.015] hover:bg-white/[0.04] transition-all flex flex-col justify-between"
+                >
+                  <div className="flex items-center justify-between mb-2.5">
                     <span className="font-mono text-[10px] tracking-widest text-white/40 uppercase">EMAIL</span>
-                    <MailIcon className="w-4 h-4 text-white/40 group-hover:text-white transition-colors" />
+                    <MailIcon className="w-3.5 h-3.5 text-white/40 group-hover:text-emerald-400 transition-colors" />
                   </div>
-                  <p className="font-mono text-sm text-white font-medium group-hover:text-emerald-400 transition-colors truncate">
-                    nhatprx@gmail.com
-                  </p>
-                </div>
-                <span className="font-mono text-[10px] text-white/40 group-hover:text-white mt-6 flex items-center gap-1 transition-colors">
-                  Open Mail Client →
-                </span>
-              </a>
+                  <div>
+                    <p className="font-mono text-xs sm:text-sm text-white font-medium group-hover:text-emerald-400 transition-colors truncate">
+                      nhatprx@gmail.com
+                    </p>
+                    <span className="font-mono text-[10px] text-white/30 group-hover:text-white/80 mt-2 flex items-center gap-1 transition-colors">
+                      Compose Email →
+                    </span>
+                  </div>
+                </a>
 
-              <a
-                href="tel:+84879888965"
-                className="group p-6 border border-white/10 hover:border-white/30 bg-white/[0.01] hover:bg-white/[0.03] transition-all flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
+                <a
+                  href="tel:+84879888965"
+                  className="group p-4 sm:p-4.5 border border-white/10 hover:border-white/30 bg-white/[0.015] hover:bg-white/[0.04] transition-all flex flex-col justify-between"
+                >
+                  <div className="flex items-center justify-between mb-2.5">
                     <span className="font-mono text-[10px] tracking-widest text-white/40 uppercase">PHONE</span>
-                    <PhoneIcon className="w-4 h-4 text-white/40 group-hover:text-white transition-colors" />
+                    <PhoneIcon className="w-3.5 h-3.5 text-white/40 group-hover:text-emerald-400 transition-colors" />
                   </div>
-                  <p className="font-mono text-sm text-white font-medium group-hover:text-emerald-400 transition-colors">
-                    +84 879 888 965
-                  </p>
-                </div>
-                <span className="font-mono text-[10px] text-white/40 group-hover:text-white mt-6 flex items-center gap-1 transition-colors">
-                  Direct Call / SMS →
-                </span>
-              </a>
+                  <div>
+                    <p className="font-mono text-xs sm:text-sm text-white font-medium group-hover:text-emerald-400 transition-colors">
+                      +84 879 888 965
+                    </p>
+                    <span className="font-mono text-[10px] text-white/30 group-hover:text-white/80 mt-2 flex items-center gap-1 transition-colors">
+                      Direct Call / SMS →
+                    </span>
+                  </div>
+                </a>
 
-              <a
-                href="https://github.com/nhatprx"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group p-6 border border-white/10 hover:border-white/30 bg-white/[0.01] hover:bg-white/[0.03] transition-all flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
+                <a
+                  href="https://github.com/nhatprx"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group p-4 sm:p-4.5 border border-white/10 hover:border-white/30 bg-white/[0.015] hover:bg-white/[0.04] transition-all flex flex-col justify-between"
+                >
+                  <div className="flex items-center justify-between mb-2.5">
                     <span className="font-mono text-[10px] tracking-widest text-white/40 uppercase">GITHUB</span>
-                    <GithubIcon className="w-4 h-4 text-white/40 group-hover:text-white transition-colors" />
+                    <GithubIcon className="w-3.5 h-3.5 text-white/40 group-hover:text-emerald-400 transition-colors" />
                   </div>
-                  <p className="font-mono text-sm text-white font-medium group-hover:text-emerald-400 transition-colors">
-                    github.com/nhatprx
-                  </p>
-                </div>
-                <span className="font-mono text-[10px] text-white/40 group-hover:text-white mt-6 flex items-center gap-1 transition-colors">
-                  View Repositories →
-                </span>
-              </a>
+                  <div>
+                    <p className="font-mono text-xs sm:text-sm text-white font-medium group-hover:text-emerald-400 transition-colors">
+                      github.com/nhatprx
+                    </p>
+                    <span className="font-mono text-[10px] text-white/30 group-hover:text-white/80 mt-2 flex items-center gap-1 transition-colors">
+                      View Repositories →
+                    </span>
+                  </div>
+                </a>
 
-              <a
-                href="https://www.linkedin.com/in/nhatprx/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group p-6 border border-white/10 hover:border-white/30 bg-white/[0.01] hover:bg-white/[0.03] transition-all flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
+                <a
+                  href="https://www.linkedin.com/in/nhatprx/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group p-4 sm:p-4.5 border border-white/10 hover:border-white/30 bg-white/[0.015] hover:bg-white/[0.04] transition-all flex flex-col justify-between"
+                >
+                  <div className="flex items-center justify-between mb-2.5">
                     <span className="font-mono text-[10px] tracking-widest text-white/40 uppercase">LINKEDIN</span>
-                    <LinkedinIcon className="w-4 h-4 text-white/40 group-hover:text-white transition-colors" />
+                    <LinkedinIcon className="w-3.5 h-3.5 text-white/40 group-hover:text-emerald-400 transition-colors" />
                   </div>
-                  <p className="font-mono text-sm text-white font-medium group-hover:text-emerald-400 transition-colors">
-                    Minh Nhat Pham
-                  </p>
-                </div>
-                <span className="font-mono text-[10px] text-white/40 group-hover:text-white mt-6 flex items-center gap-1 transition-colors">
-                  Connect on LinkedIn →
+                  <div>
+                    <p className="font-mono text-xs sm:text-sm text-white font-medium group-hover:text-emerald-400 transition-colors truncate">
+                      linkedin.com/in/nhatprx
+                    </p>
+                    <span className="font-mono text-[10px] text-white/30 group-hover:text-white/80 mt-2 flex items-center gap-1 transition-colors">
+                      Connect on LinkedIn →
+                    </span>
+                  </div>
+                </a>
+              </div>
+
+              {/* Location & Status Bar */}
+              <div className="p-3.5 sm:p-4 border border-white/10 bg-white/[0.02] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 font-mono text-xs story-reveal story-delay-2">
+                <span className="text-white/40 uppercase tracking-widest text-[10px]">CURRENT AVAILABILITY</span>
+                <span className="text-emerald-400/90 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Ho Chi Minh City, Vietnam · Available for Roles & Contracts
                 </span>
-              </a>
+              </div>
             </div>
 
-            {/* Location & Status Bar */}
-            <div className="p-4 sm:p-5 border border-white/10 bg-white/[0.02] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 font-mono text-xs">
-              <span className="text-white/40 uppercase tracking-widest text-[10px]">CURRENT AVAILABILITY</span>
-              <span className="text-emerald-400/90 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                Ho Chi Minh City, Vietnam · Available for Full-Time Roles & Contracts
-              </span>
+            {/* ========== INTEGRATED FOOTER ========== */}
+            <footer className="pt-8 border-t border-white/5 text-xs font-mono text-white/20">
+              <span>&copy; {CURRENT_YEAR} nhatprx. {t.footer.rights}</span>
+            </footer>
+          </section>
+        </div>
+
+        {/* Desktop Fixed Terminal & Live Metric on the Right (Aligned to Top Header & Bottom Baseline) */}
+        <aside
+          aria-label="Interactive Live Cloud Node Terminal & Telemetry"
+          className={`hidden lg:flex fixed top-0 right-0 bottom-0 w-1/2 pt-6 pb-12 sm:pb-16 lg:pb-20 pr-6 sm:pr-10 lg:pr-14 pl-4 xl:pl-6 2xl:pl-8 flex-col justify-between pointer-events-none z-30 transition-opacity duration-700 delay-150 ease-out motion-reduce:transition-none ${
+            !isInitialLoading ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <div className="w-full h-full flex flex-col gap-3.5 pointer-events-auto min-h-0">
+            <div className="flex-1 w-full shadow-2xl min-h-[360px]">
+              <Ec2Terminal />
+            </div>
+
+            {/* Streamlined Minimal Live Telemetry Metric under Terminal */}
+            <div className="w-full shadow-xl shrink-0">
+              <ServerTelemetry />
             </div>
           </div>
-        </section>
-
-        {/* ========== FOOTER ========== */}
-        <footer className="py-8 p-6 sm:p-10 lg:p-14">
-          <div className="w-full text-xs font-mono text-white/20">
-            <span>&copy; {CURRENT_YEAR} Minh Nhat Pham. {t.footer.rights}</span>
-          </div>
-        </footer>
+        </aside>
       </main>
-
-      {/* Large Blog Post Modal */}
-      {selectedPost && (
-        <BlogPostModal
-          post={selectedPost}
-          t={t}
-          onClose={() => setSelectedPostSlug(null)}
-          onSelectPost={(slug) => setSelectedPostSlug(slug)}
-          allPosts={t.blog.posts}
-        />
-      )}
 
       {/* Back to top button */}
       {showTopBtn && (
@@ -1047,6 +1249,21 @@ export default function App() {
           <ArrowUpIcon className="w-4 h-4" />
         </button>
       )}
+
+      {/* Blog Post Detail Modal */}
+      {(() => {
+        const activePost = activeBlogSlug ? t.blog.posts.find((p) => p.slug === activeBlogSlug) : null
+        if (!activePost) return null
+        return (
+          <BlogPostModal
+            post={activePost}
+            t={t}
+            onClose={() => setActiveBlogSlug(null)}
+            onSelectPost={(slug) => setActiveBlogSlug(slug)}
+            allPosts={t.blog.posts}
+          />
+        )
+      })()}
 
       {/* Hidden Admin Portal */}
       {isAdminOpen && (

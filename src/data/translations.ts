@@ -77,6 +77,7 @@ export interface TranslationDict {
     p1: string
     p2: string
     educationTitle: string
+    languagesTitle: string
     edu1School: string
     edu1Degree: string
     edu1Major: string
@@ -252,12 +253,13 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       desc: "Yes, you are inspecting the actual live Linux machine hosting this portfolio. Feel free to poke around and verify what's running under the hood - don't worry, you can't break it.",
     },
     about: {
-      tag: '01 - ABOUT & TECH STACK',
+      tag: '01 - ABOUT',
       title: 'Building systems',
       titleSub: 'that scale.',
       p1: 'Software Engineer comfortable owning a feature end-to-end - from system design to deployment. Production experience across backend systems, cloud infrastructure, and full-stack delivery. Built and shipped real systems at Grevo Solutions and contributed to AWS infrastructure design during an internship at Amazon.',
       p2: 'Strong understanding of OOP, SOLID principles, and RESTful API design. Hands-on experience with CI/CD pipelines (Jenkins) and containerized deployments (Docker, Google Cloud Run). Familiar with AWS Well-Architected Framework across security, reliability, and performance pillars.',
       educationTitle: 'EDUCATION',
+      languagesTitle: 'WORKING LANGUAGES',
       edu1School: 'FPT University',
       edu1Degree: 'BACHELOR OF ENGINEERING',
       edu1Major: 'Computer Science · Sep 2022 - Present',
@@ -271,10 +273,10 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       languages: ['English (Fluent)', 'Vietnamese (Native)', 'Japanese (Basic)', 'French (Familiar)'],
     },
     experience: {
-      tag: '02 - EXPERIENCE & PROJECTS',
+      tag: '03 - EXPERIENCE & PROJECTS',
       title: "Where I've",
       titleSub: 'shipped code.',
-      desc: 'Engineering roles across cloud infrastructure, multi-tenant SaaS, and hardware-edge platforms.',
+      desc: 'Engineering roles across cloud infrastructure, enterprise SaaS, and hardware-edge platforms — focused on backend resilience and distributed scalability.',
       items: [
         {
           role: 'Cloud Infrastructure Intern',
@@ -319,10 +321,10 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     projects: {
-      tag: '02 - EXPERIENCE & PROJECTS',
-      title: 'Featured',
-      titleSub: 'systems.',
-      desc: 'End-to-end production systems, reverse-engineered frameworks, and scalable cloud applications.',
+      tag: '03 - EXPERIENCE & PROJECTS',
+      title: "Selected systems I've",
+      titleSub: 'engineered.',
+      desc: 'Production systems, reverse-engineered automation frameworks, and scalable cloud backends — built for high concurrency and low latency.',
       items: [
         {
           title: 'LordNine Bot · Automation Framework',
@@ -334,7 +336,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
             'Implemented AIMD adaptive screenshot scheduling (150ms-800ms) and GUI queue coalescing, achieving ~90% reduction in UI update overhead',
             'Shipped a complete SaaS pipeline: HWID-bound license system, SHA256-verified auto-update, and Windows installer - iterated to v3.24+ across 34 releases in 2 months',
           ],
-          tech: ['Python 3.13', 'OpenCV', 'Chrome DevTools Protocol', 'CustomTkinter', 'SQLite', 'Vercel', 'PyInstaller', 'Inno Setup'],
+          tech: ['Python 3.13', 'OpenCV', 'CDP (DevTools)', 'SQLite', 'CustomTkinter'],
           repoUrl: 'https://github.com/nhatprx',
         },
         {
@@ -365,7 +367,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     skills: {
-      tag: '01 - ABOUT & TECH STACK',
+      tag: '02 - TECHNICAL STACK',
       title: 'Technical',
       titleSub: 'stack.',
       desc: 'Curated tools, production languages, cloud backends, and engineering patterns honed across distributed systems.',
@@ -404,10 +406,10 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     blog: {
-      tag: '03 - BLOG',
+      tag: '04 - BLOG',
       title: 'Engineering',
       titleSub: 'notes.',
-      desc: 'Technical deep dives, architectural trade-offs, and lessons learned from shipping high-concurrency software.',
+      desc: 'Technical deep dives and architectural trade-offs from shipping high-concurrency software and distributed systems.',
       readNote: 'READ NOTE →',
       backToPortfolio: '← BACK TO PORTFOLIO',
       modalNoteLabel: 'ENGINEERING NOTE',
@@ -652,7 +654,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     contact: {
-      tag: '04 - CONTACT',
+      tag: '05 - CONTACT',
       title: "Let's build",
       titleSub: 'together.',
       desc: 'Available for full-time engineering roles, freelance opportunities, and collaborative projects. Currently based in Ho Chi Minh City, Vietnam.',
@@ -696,12 +698,13 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       desc: 'Bạn đang trực tiếp tương tác với máy chủ Linux thật đang vận hành portfolio này. Thoải mái kiểm tra các tiến trình và tài nguyên bên dưới - đừng lo, bạn không làm hỏng nó được đâu.',
     },
     about: {
-      tag: '01 - GIỚI THIỆU & KỸ NĂNG',
+      tag: '01 - GIỚI THIỆU',
       title: 'Xây dựng hệ thống',
       titleSub: 'mở rộng & bền bỉ.',
       p1: 'Kỹ sư phần mềm làm chủ toàn bộ vòng đời sản phẩm từ thiết kế kiến trúc đến triển khai production. Kinh nghiệm thực chiến với backend chịu tải cao, hạ tầng cloud, xây dựng sản phẩm tại Grevo Solutions và tham gia thiết kế hạ tầng AWS khi thực tập tại Amazon Web Services.',
       p2: 'Thành thạo nguyên lý OOP, SOLID và thiết kế RESTful API. Kinh nghiệm thực tế triển khai CI/CD pipelines (Jenkins) và đóng gói ứng dụng bằng container (Docker, Google Cloud Run). Nắm vững khung kiến trúc AWS Well-Architected Framework về bảo mật, độ tin cậy và hiệu năng.',
       educationTitle: 'HỌC VẤN',
+      languagesTitle: 'NGÔN NGỮ GIAO TIẾP',
       edu1School: 'Đại học FPT',
       edu1Degree: 'KỸ SƯ KHOA HỌC MÁY TÍNH',
       edu1Major: 'Khoa học Máy tính · 09/2022 - Hiện tại',
@@ -715,10 +718,10 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       languages: ['Tiếng Anh (Thành thạo)', 'Tiếng Việt (Bản ngữ)', 'Tiếng Nhật (Cơ bản)', 'Tiếng Pháp (Giao tiếp cơ bản)'],
     },
     experience: {
-      tag: '02 - KINH NGHIỆM & DỰ ÁN',
+      tag: '03 - KINH NGHIỆM & DỰ ÁN',
       title: 'Nơi tôi từng',
       titleSub: 'làm việc & cống hiến.',
-      desc: 'Hành trình kỹ thuật thực chiến qua hạ tầng đám mây AWS, nền tảng SaaS đa người dùng và tích hợp phần cứng edge IoT.',
+      desc: 'Hành trình kỹ thuật thực chiến qua hạ tầng đám mây AWS, nền tảng SaaS và thiết bị IoT biên — tập trung vào độ tin cậy hệ thống và khả năng mở rộng phân tán.',
       items: [
         {
           role: 'Thực tập sinh Hạ tầng Đám mây',
@@ -763,10 +766,10 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     projects: {
-      tag: '02 - KINH NGHIỆM & DỰ ÁN',
-      title: 'Hệ thống',
-      titleSub: 'tiêu biểu.',
-      desc: 'Các hệ thống phân tán, giải pháp tự động hóa hiệu năng cao và ứng dụng phần cứng được thiết kế từ con số 0.',
+      tag: '03 - KINH NGHIỆM & DỰ ÁN',
+      title: 'Những hệ thống',
+      titleSub: 'tôi từng kiến tạo.',
+      desc: 'Hệ thống phân tán, framework tự động hóa dịch ngược và kiến trúc đám mây — tối ưu cho khả năng xử lý đồng thời cực hạn và độ trễ thấp.',
       items: [
         {
           title: 'LordNine Bot · Automation Framework',
@@ -778,7 +781,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
             'Áp dụng cơ chế lập lịch chụp màn hình thích ứng AIMD (150ms-800ms) kết hợp gộp hàng đợi GUI, giảm ~90% chi phí xử lý giao diện nền',
             'Xây dựng trọn vẹn quy trình SaaS: hệ thống cấp phép khóa theo HWID, cơ chế tự cập nhật xác thực mã băm SHA256 và bộ cài đặt Windows - phát hành 34 bản cập nhật trong 2 tháng (v1.0 đến v3.24)',
           ],
-          tech: ['Python 3.13', 'OpenCV', 'Chrome DevTools Protocol', 'CustomTkinter', 'SQLite', 'Vercel', 'PyInstaller', 'Inno Setup'],
+          tech: ['Python 3.13', 'OpenCV', 'CDP (DevTools)', 'SQLite', 'CustomTkinter'],
           repoUrl: 'https://github.com/nhatprx',
         },
         {
@@ -809,7 +812,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     skills: {
-      tag: '01 - GIỚI THIỆU & KỸ NĂNG',
+      tag: '02 - CÔNG NGHỆ & KỸ NĂNG',
       title: 'Ngăn xếp',
       titleSub: 'công nghệ.',
       desc: 'Bộ công nghệ, ngôn ngữ lập trình, hệ thống đám mây và kiến trúc hướng đối tượng được ứng dụng thực chiến trong môi trường phân tán.',
@@ -848,10 +851,10 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     blog: {
-      tag: '03 - BÀI VIẾT',
+      tag: '04 - BÀI VIẾT',
       title: 'Ghi chép',
       titleSub: 'kỹ thuật.',
-      desc: 'Ghi chép chuyên sâu về kiến trúc hệ thống, tối ưu hóa hiệu năng phần cứng và kinh nghiệm vận hành thực tế.',
+      desc: 'Ghi chép kỹ thuật chuyên sâu và bài học kiến trúc từ quá trình vận hành phần mềm phân tán chịu tải cao.',
       readNote: 'ĐỌC BÀI VIẾT →',
       backToPortfolio: '← QUAY LẠI TRANG CHỦ',
       modalNoteLabel: 'BÀI VIẾT KỸ THUẬT',
@@ -1096,7 +1099,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     contact: {
-      tag: '04 - LIÊN HỆ',
+      tag: '05 - LIÊN HỆ',
       title: 'Cùng nhau',
       titleSub: 'xây dựng sản phẩm.',
       desc: 'Sẵn sàng tiếp nhận các cơ hội việc làm toàn thời gian, dự án freelance và hợp tác công nghệ. Hiện đang sinh sống và làm việc tại TP. Hồ Chí Minh, Việt Nam.',
@@ -1140,12 +1143,13 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       desc: "Vous interagissez directement avec le vrai serveur Linux hébergeant ce portfolio. Explorez les conteneurs et les métriques système - c'est un bac à sable sécurisé en lecture seule.",
     },
     about: {
-      tag: '01 - À PROPOS & COMPÉTENCES',
+      tag: '01 - À PROPOS',
       title: 'Concevoir des systèmes',
       titleSub: 'performants et fiables.',
       p1: "Ingénieur logiciel autonome sur l'ensemble du cycle de développement, de la conception architecturale au déploiement en production. Expérience éprouvée en architecture backend, cloud et intégration chez Grevo Solutions et Amazon Web Services.",
       p2: 'Solide maîtrise de la programmation orientée objet (OOP), des principes SOLID et de la conception d’API RESTful. Pratique des pipelines CI/CD (Jenkins) et des déploiements conteneurisés (Docker, Google Cloud Run). Connaissance approfondie du framework AWS Well-Architected.',
       educationTitle: 'FORMATION',
+      languagesTitle: 'LANGUES MAÎTRISÉES',
       edu1School: 'Université FPT',
       edu1Degree: "LICENCE D'INGÉNIERIE",
       edu1Major: 'Informatique · Sept 2022 - Présent',
@@ -1159,10 +1163,10 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       languages: ['Anglais (Courant)', 'Vietnamien (Langue maternelle)', 'Japonais (Notions)', 'Français (Familier)'],
     },
     experience: {
-      tag: '02 - EXPÉRIENCE & PROJETS',
+      tag: '03 - EXPÉRIENCE & PROJETS',
       title: 'Parcours',
       titleSub: 'professionnel.',
-      desc: 'Rôles d’ingénierie à travers l’infrastructure cloud, le SaaS multi-tenant et les plateformes IoT.',
+      desc: 'Rôles d’ingénierie couvrant l’infrastructure cloud, le SaaS d’entreprise et l’IoT edge — axés sur la résilience backend et l’évolutivité distribuée.',
       items: [
         {
           role: 'Stagiaire Infrastructure Cloud',
@@ -1207,10 +1211,10 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     projects: {
-      tag: '02 - EXPÉRIENCE & PROJETS',
-      title: 'Projets',
-      titleSub: 'phares.',
-      desc: 'Systèmes de production de bout en bout, frameworks d’automatisation et applications cloud évolutives.',
+      tag: '03 - EXPÉRIENCE & PROJETS',
+      title: 'Systèmes conçus et',
+      titleSub: 'déployés en production.',
+      desc: 'Systèmes de production, frameworks d’automatisation et architectures cloud évolutives — conçus pour la haute concurrence et la basse latence.',
       items: [
         {
           title: 'LordNine Bot · Automation Framework',
@@ -1222,7 +1226,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
             'Implémentation d’une boucle AIMD adaptive (150ms-800ms) et fusion des files d’attente GUI, diminuant l’utilisation CPU de ~90%',
             'Création d’un écosystème SaaS complet : licences liées au HWID, mises à jour automatiques vérifiées par SHA256 et installeur Windows - 34 versions publiées en 2 mois',
           ],
-          tech: ['Python 3.13', 'OpenCV', 'Chrome DevTools Protocol', 'CustomTkinter', 'SQLite', 'Vercel', 'PyInstaller', 'Inno Setup'],
+          tech: ['Python 3.13', 'OpenCV', 'CDP (DevTools)', 'SQLite', 'CustomTkinter'],
           repoUrl: 'https://github.com/nhatprx',
         },
         {
@@ -1253,7 +1257,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     skills: {
-      tag: '01 - À PROPOS & COMPÉTENCES',
+      tag: '02 - STACK TECHNIQUE',
       title: 'Stack',
       titleSub: 'technique.',
       desc: 'Outils sélectionnés, langages de production, backends cloud et architectures éprouvés sur des systèmes distribués.',
@@ -1292,10 +1296,10 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     blog: {
-      tag: '03 - BLOG',
+      tag: '04 - BLOG',
       title: 'Notes',
       titleSub: "d'ingénierie.",
-      desc: 'Analyses techniques approfondies, compromis d’architecture et retours d’expérience sur la production logicielle.',
+      desc: 'Analyses techniques approfondies et compromis d’architecture issus de la production logicielle et des systèmes distribués.',
       readNote: "LIRE L'ARTICLE →",
       backToPortfolio: '← RETOUR AU PORTFOLIO',
       modalNoteLabel: "NOTE D'INGÉNIERIE",
@@ -1531,7 +1535,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     contact: {
-      tag: '04 - CONTACT',
+      tag: '05 - CONTACT',
       title: 'Créons ensemble',
       titleSub: 'des projets durables.',
       desc: 'Disponible pour des opportunités d’ingénierie à temps plein, missions freelance et collaborations techniques. Actuellement basé à Hô Chi Minh-Ville, Vietnam.',
@@ -1575,12 +1579,13 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       desc: 'このポートフォリオサイトを実際にホストしているLinux実機サーバーに直接接続されています。内部プロセスやメモリ、稼働コンテナを自由にご確認いただけます（安全な読み取り専用環境です）。',
     },
     about: {
-      tag: '01 - プロフィール & 技術スタック',
+      tag: '01 - プロフィール',
       title: 'スケーラブルな',
       titleSub: 'システムを創る。',
       p1: 'アーキテクチャ設計から本番運用まで、機能開発をエンドツーエンドで完結できるソフトウェアエンジニア。Grevo Solutionsでのプロダクト開発やAmazon Web Servicesでのクラウド設計経験を有し、信頼性の高いシステムを構築してきました。',
       p2: 'オブジェクト指向（OOP）やSOLID原則、RESTful API設計に精通。Jenkinsを用いたCI/CD自動化やコンテナデプロイ（Docker, Google Cloud Run）の実践経験が豊富。AWS Well-Architectedフレームワークに基づき、セキュリティと高可用性を徹底追求。',
       educationTitle: '学歴',
+      languagesTitle: '語学能力',
       edu1School: 'FPT大学',
       edu1Degree: '工学士（コンピュータサイエンス）',
       edu1Major: 'コンピュータサイエンス専攻 · 2022年9月 - 在学中',
@@ -1594,10 +1599,10 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       languages: ['英語 (流暢)', 'ベトナム語 (母国語)', '日本語 (基礎)', 'フランス語 (初級)'],
     },
     experience: {
-      tag: '02 - 経歴 & プロジェクト',
+      tag: '03 - 経歴 & プロジェクト',
       title: 'これまでの',
       titleSub: '開発・参画実績。',
-      desc: 'クラウドインフラ、マルチテナントSaaS、IoTエッジ連携の実践的なエンジニアリング経歴。',
+      desc: 'クラウド基盤、企業向けSaaS、IoTエッジ連携の実務経歴 — バックエンドの耐障害性と分散システムの拡張性を追求。',
       items: [
         {
           role: 'クラウドインフラ・インターン',
@@ -1642,10 +1647,10 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     projects: {
-      tag: '02 - 経歴 & プロジェクト',
-      title: '主要な',
-      titleSub: '開発成果物。',
-      desc: '設計から本番稼働まで、リバースエンジニアリングと高可用性を追求した主要開発プロジェクト。',
+      tag: '03 - 経歴 & プロジェクト',
+      title: '設計・構築を手がけた',
+      titleSub: '主要システム。',
+      desc: '本番分散システム、リバースエンジニアリング自動化フレームワーク、高並列クラウド基盤 — 低レイテンシと極限の並列処理を追求。',
       items: [
         {
           title: 'LordNine Bot · Automation Framework',
@@ -1657,7 +1662,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
             'AIMD適応型スクリーンショットスケジューリング（150ms〜800ms）とGUIキュー集約により、UI描画に伴うCPU負荷を約90%削減',
             'HWIDバインド認証、SHA256ハッシュ検証付き自己アップデート、Windowsインストーラーを含む完全なSaaS運用基盤を構築（2ヶ月で34回リリース）',
           ],
-          tech: ['Python 3.13', 'OpenCV', 'Chrome DevTools Protocol', 'CustomTkinter', 'SQLite', 'Vercel', 'PyInstaller', 'Inno Setup'],
+          tech: ['Python 3.13', 'OpenCV', 'CDP (DevTools)', 'SQLite', 'CustomTkinter'],
           repoUrl: 'https://github.com/nhatprx',
         },
         {
@@ -1688,7 +1693,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     skills: {
-      tag: '01 - プロフィール & 技術スタック',
+      tag: '02 - 技術スタック',
       title: '技術',
       titleSub: 'スタック。',
       desc: '分散システムの実践で培った、厳選されたツール、言語、クラウド基盤、アーキテクチャパターン。',
@@ -1727,10 +1732,10 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     blog: {
-      tag: '03 - ブログ',
+      tag: '04 - ブログ',
       title: '技術',
       titleSub: 'ノート。',
-      desc: '高負荷分散処理、プロトコル解析、本番運用から得たアーキテクチャの知見と技術考察。',
+      desc: '高負荷分散システムの本番運用から得たアーキテクチャの知見と技術的トレードオフの考察。',
       readNote: '記事を読む →',
       backToPortfolio: '← ポートフォリオに戻る',
       modalNoteLabel: '技術ノート',
@@ -1964,7 +1969,7 @@ export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
       ],
     },
     contact: {
-      tag: '04 - お問い合わせ',
+      tag: '05 - お問い合わせ',
       title: '共に',
       titleSub: '未来を創る。',
       desc: 'フルタイムのエンジニア採用、フリーランス案件、共同開発の機会を受け付けております。現在ベトナム・ホーチミン市在住。',
