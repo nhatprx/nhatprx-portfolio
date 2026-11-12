@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import Ec2Terminal from './components/Ec2Terminal'
-import ServerTelemetry from './components/ServerTelemetry'
 import { TRANSLATIONS, type SupportedLang } from './data/translations'
 import BlogPostModal from './components/BlogPostModal'
 import CustomCursor from './components/CustomCursor'
@@ -633,67 +632,63 @@ export default function App() {
         </div>
       </header>
 
-      <main className="relative z-10 pt-16 sm:pt-20">
-        {/* ========== HERO & TERMINAL (STACKED: HERO CONTENT ON TOP OF TERMINAL) ========== */}
-        <section id="hero" className="flex flex-col justify-center px-6 sm:px-10 lg:px-14 py-3 sm:py-4 min-h-[calc(100vh-4rem)] sm:min-h-[calc(100vh-5rem)]">
-          <div className="w-full flex flex-col space-y-3 sm:space-y-4 my-auto">
-            {/* Top: Hero Content */}
-            <div className="w-full text-left">
-              <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 uppercase mb-1.5">{t.hero.role}</p>
+      <main className="relative z-10 pt-14 sm:pt-16">
+        {/* ========== HERO & TERMINAL (STACKED: HERO CONTENT ON TOP OF TERMINAL, BALANCED WITHIN 100VH) ========== */}
+        <section
+          id="hero"
+          className="h-[calc(100dvh-3.5rem)] sm:h-[calc(100dvh-4rem)] min-h-[560px] max-h-screen flex flex-col justify-evenly px-6 sm:px-10 lg:px-14 py-2 sm:py-4"
+        >
+          {/* Top: Hero Content */}
+          <div className="w-full text-left">
+            <p className="font-mono text-[10px] tracking-[0.4em] text-white/30 uppercase mb-1.5">{t.hero.role}</p>
 
-              <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-                <div>
-                  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[0.95]">
-                    Minh Nhat <span className="text-white/20">Pham.</span>
-                  </h1>
-                  <p className="mt-2 text-xs sm:text-sm text-white/50 leading-relaxed max-w-2xl">
-                    {t.hero.desc}
-                  </p>
-                </div>
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+              <div>
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[0.95]">
+                  Minh Nhat <span className="text-white/20">Pham.</span>
+                </h1>
+                <p className="mt-2 text-xs sm:text-sm text-white/50 leading-relaxed max-w-2xl">
+                  {t.hero.desc}
+                </p>
+              </div>
 
-                <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-                  <a
-                    href="#contact"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      scrollTo('#contact')
-                    }}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors cursor-pointer"
-                  >
-                    {t.hero.getInTouch}
-                    <span aria-hidden="true">→</span>
-                  </a>
-                  <a
-                    href={t.hero.resumeUrl || '/%5Bnhatprx%5D%20PERSONAL%20RESUME.pdf'}
-                    download={t.hero.resumeFileName || '[nhatprx] PERSONAL RESUME.pdf'}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 border border-white/20 text-white font-mono text-xs font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-colors"
-                  >
-                    <DownloadIcon className="w-3.5 h-3.5 text-white/60" />
-                    {t.hero.resume}
-                  </a>
-                </div>
+              <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+                <a
+                  href="#contact"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    scrollTo('#contact')
+                  }}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white text-black font-mono text-xs font-semibold tracking-wider hover:bg-white/80 transition-colors cursor-pointer"
+                >
+                  {t.hero.getInTouch}
+                  <span aria-hidden="true">→</span>
+                </a>
+                <a
+                  href={t.hero.resumeUrl || '/%5Bnhatprx%5D%20PERSONAL%20RESUME.pdf'}
+                  download={t.hero.resumeFileName || '[nhatprx] PERSONAL RESUME.pdf'}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 border border-white/20 text-white font-mono text-xs font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-colors"
+                >
+                  <DownloadIcon className="w-3.5 h-3.5 text-white/60" />
+                  {t.hero.resume}
+                </a>
               </div>
             </div>
+          </div>
 
-            {/* Terminal & Live Server Telemetry (6/4 Split) */}
-            <div id="terminal" className="w-full flex flex-col justify-center">
-              <div className="flex items-center justify-between gap-4 mb-2">
-                <p className="font-mono text-[10px] tracking-[0.4em] text-emerald-400/90 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block shrink-0" />
-                  {t.server.tag}
-                </p>
-                <span className="text-[10px] font-mono text-white/30 tracking-widest hidden sm:inline">
-                  LIVE CLOUD NODE // AP-SOUTHEAST-1
-                </span>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 sm:gap-5 h-auto lg:h-[430px] xl:h-[470px] 2xl:h-[510px] w-full">
-                <div className="lg:col-span-6 h-[380px] sm:h-[420px] lg:h-full min-h-0">
-                  <Ec2Terminal />
-                </div>
-                <div className="lg:col-span-4 h-[360px] sm:h-[400px] lg:h-full min-h-0">
-                  <ServerTelemetry />
-                </div>
-              </div>
+          {/* Bottom: Terminal */}
+          <div id="terminal" className="w-full flex flex-col justify-center">
+            <div className="flex items-center justify-between gap-4 mb-2">
+              <p className="font-mono text-[10px] tracking-[0.4em] text-emerald-400/90 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block shrink-0" />
+                {t.server.tag}
+              </p>
+              <span className="text-[10px] font-mono text-white/30 tracking-widest hidden sm:inline">
+                LIVE CLOUD NODE // AP-SOUTHEAST-1
+              </span>
+            </div>
+            <div className="h-[290px] sm:h-[330px] md:h-[360px] lg:h-[390px] xl:h-[420px] w-full">
+              <Ec2Terminal />
             </div>
           </div>
         </section>
