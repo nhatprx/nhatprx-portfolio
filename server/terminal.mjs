@@ -16,7 +16,7 @@ import { promisify } from 'node:util'
 const execFileAsync = promisify(execFile)
 
 const EXEC_TIMEOUT_MS = 5_000
-const MAX_OUTPUT_BYTES = 32 * 1024
+const MAX_OUTPUT_BYTES = 100 * 1024
 
 /**
  * The public allowlist. Each entry is the exact argv tail that gets executed,
@@ -29,6 +29,7 @@ const MAX_OUTPUT_BYTES = 32 * 1024
  * node: the instance runs nginx + the portfolio API and has no docker daemon.
  */
 export const ALLOWED_COMMANDS = {
+  // System info
   uname: {
     args: ['-a'],
     exec: ['uname', '-a'],
@@ -61,16 +62,60 @@ export const ALLOWED_COMMANDS = {
     args: [],
     exec: ['nproc'],
   },
+  
+  // Git - portfolio deployment history
+  'git': {
+    args: ['log', '--oneline', '-10'],
+    exec: ['git', '-C', '/home/ubuntu/nhatprx-api', 'log', '--oneline', '-10'],
+  },
+  'git-branch': {
+    args: ['branch', '-a'],
+    exec: ['git', '-C', '/home/ubuntu/nhatprx-api', 'branch', '-a'],
+  },
+  'git-status': {
+    args: ['status'],
+    exec: ['git', '-C', '/home/ubuntu/nhatprx-api', 'status'],
+  },
+
+  // Health & Metrics
+  health: {
+    args: [],
+    exec: ['curl', '-s', 'http://localhost:8787/api/health'],
+  },
+  'health-detailed': {
+    args: [],
+    exec: ['curl', '-s', 'http://localhost:8787/api/system-info'],
+  },
+  metrics: {
+    args: [],
+    exec: ['ps', 'aux'],
+  },
+  'metrics-cpu': {
+    args: [],
+    exec: ['top', '-b', '-n', '1'],
+  },
+
+  // Process & Services
   ps: {
     args: ['aux'],
     exec: ['ps', 'aux'],
   },
+  
+  // Logs
+  'api-log': {
+    args: [],
+    exec: ['tail', '-n', '30', '/home/ubuntu/nhatprx-api/api.log'],
+  },
+
+  // Files & Directory listing
   ls: {
     // Only the project directory, not the whole home dir: the home folder
     // holds .ssh and other paths that should never be listed publicly.
     args: ['-1', '-la'],
     exec: ['ls', '-1', '-la', '/home/ubuntu/nhatprx-api'],
   },
+
+  // Services status
   'systemctl-nhatprx': {
     args: [],
     exec: ['systemctl', 'is-active', 'nhatprx-api'],
@@ -79,10 +124,8 @@ export const ALLOWED_COMMANDS = {
     args: [],
     exec: ['systemctl', 'is-active', 'nginx'],
   },
-  'api-log': {
-    args: [],
-    exec: ['systemctl', 'status', 'nhatprx-api', '--no-pager', '--lines', '5'],
-  },
+
+  // Proc filesystem info
   'proc-cpuinfo': {
     args: [],
     exec: ['grep', '-c', '^processor', '/proc/cpuinfo'],
