@@ -1,4 +1,4 @@
-import type { SupportedLang, TranslationDict, CustomTerminalCommands } from '../../../services/contentStorage'
+import type { SupportedLang, TranslationDict, CustomTerminalCommands, ContentPreset } from '../../../services/contentStorage'
 import type { TabType } from '../types'
 import HeroAboutTab from '../tabs/HeroAboutTab'
 import SkillsTab from '../tabs/SkillsTab'
@@ -8,6 +8,7 @@ import BlogTab from '../tabs/BlogTab'
 import ContactTab from '../tabs/ContactTab'
 import TerminalTab from '../tabs/TerminalTab'
 import SystemTab from '../tabs/SystemTab'
+import PresetsTab from '../tabs/PresetsTab'
 import type { ToastVariant } from '../Toast'
 
 interface AdminTabContentProps {
@@ -145,6 +146,24 @@ export default function AdminTabContent({
           translations={translations}
           setTranslations={setTranslations}
           onUpdateTranslations={onUpdateTranslations}
+          showToast={showToast}
+        />
+      )
+    case 'presets':
+      return (
+        <PresetsTab
+          translations={translations}
+          currentDict={currentDict}
+          selectedLang={selectedLang}
+          resumeUrl={currentDict.hero?.resumeUrl}
+          resumeFileName={currentDict.hero?.resumeFileName}
+          onLoadPreset={(preset: ContentPreset) => {
+            setTranslations(preset.translations)
+            onUpdateTranslations(preset.translations)
+            if (preset.resumeUrl) {
+              handleUpdateResumeAcrossAllLangs(preset.resumeUrl, preset.resumeFileName || 'resume.pdf')
+            }
+          }}
           showToast={showToast}
         />
       )

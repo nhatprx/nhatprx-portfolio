@@ -22,6 +22,7 @@ export default function BlogTab({
       }
       return { ...d, blog: { ...d.blog, posts } }
     })
+    setEditingBlogIndex(null)
     setBlogDraft(null)
     showToast('Blog post saved')
   }

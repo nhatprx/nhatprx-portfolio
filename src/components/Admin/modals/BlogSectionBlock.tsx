@@ -19,7 +19,24 @@ export default function BlogSectionBlock({
     <div className="border border-white/10 p-3 bg-white/[0.015] space-y-2">
       <div className="flex items-center justify-between">
         <label className="text-[10px] text-white/50 uppercase">Section {sIdx + 1} Heading</label>
-        <CharCounter current={sec.heading.length} max={CONTENT_LIMITS.blog.sectionHeading} />
+        <div className="flex items-center gap-2">
+          <CharCounter current={sec.heading.length} max={CONTENT_LIMITS.blog.sectionHeading} />
+          <button
+            type="button"
+            onClick={() => {
+              setBlogDraft({
+                ...blogDraft,
+                content: {
+                  ...blogDraft.content,
+                  sections: blogDraft.content.sections.filter((_, i) => i !== sIdx),
+                },
+              })
+            }}
+            className="text-[10px] text-red-400 hover:text-red-300 border border-red-500/30 px-1.5 py-0.5 cursor-pointer"
+          >
+            × DELETE
+          </button>
+        </div>
       </div>
       <input
         type="text"
