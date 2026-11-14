@@ -73,8 +73,8 @@ const ALLOWED_COMMANDS = new Set([
   'netstat -tulpn | grep -E "LISTEN|nginx|portfolio"',
   'curl -s http://localhost:8080/nginx_status',
   'lsof -i -P -n | grep -E "LISTEN|portfolio|nginx"',
-  'psql -c "SELECT version();" 2>/dev/null || echo "PostgreSQL unavailable"',
-  'redis-cli INFO stats | head -10',
+  'psql --version',
+  'redis-cli --version',
   'systemctl -l --no-pager status portfolio-api nginx',
   'ls -1 -la /var/www/dist',
 ]);

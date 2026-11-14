@@ -198,8 +198,8 @@ export function evaluateTerminalCommand(
   • hostname           - Instance hostname
   • whoami             - Current user
   • nginx-status       - Nginx statistics
-  • psql               - PostgreSQL version
-  • redis              - Redis stats
+  • psql-info          - PostgreSQL client version
+  • redis-info         - Redis client version
 
 📖 UTILITY:
   • cat resume.txt     - View your resume

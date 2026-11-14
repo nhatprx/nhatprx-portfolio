@@ -100,8 +100,8 @@ export const ALLOWED_COMMANDS = [
   'lsof',
   
   // Database
-  'psql',
-  'redis',
+  'psql-info',
+  'redis-info',
   
   // System
   'systemctl',
