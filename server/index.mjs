@@ -208,6 +208,14 @@ async function handleGet(req, res, path) {
       // S3 masks a missing key as AccessDenied unless the caller may ListBucket.
       const code = err?.name || err?.Code || err?.$metadata?.httpStatusCode
       console.warn(`[api] S3 fetch failed: code=${code}, message=${err?.message}`)
+      console.warn(`[api] Full error object:`, JSON.stringify({
+        name: err?.name,
+        Code: err?.Code,
+        message: err?.message,
+        httpStatusCode: err?.$metadata?.httpStatusCode,
+        statusCode: err?.statusCode,
+        $metadata: err?.$metadata,
+      }, null, 2))
       if (code === 'NoSuchKey' || code === 404) {
         sendJson(res, 200, { content: null })
         return
