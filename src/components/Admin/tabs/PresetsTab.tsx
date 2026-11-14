@@ -3,7 +3,6 @@ import {
   getStoredPresets,
   savePreset,
   deletePreset,
-  updatePreset,
   type SupportedLang,
   type TranslationDict,
   type ContentPreset,
@@ -30,11 +29,7 @@ export default function PresetsTab({
   const [presets, setPresets] = useState<ContentPreset[]>(getStoredPresets())
   const [showSaveForm, setShowSaveForm] = useState(false)
   const [presetName, setPresetName] = useState('')
-  const [presetDesc, setPresetDesc] = useState('')
   const [isSaving, setIsSaving] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [editName, setEditName] = useState('')
-  const [editDesc, setEditDesc] = useState('')
 
   const handleSavePreset = async () => {
     if (!presetName.trim()) {
@@ -44,10 +39,9 @@ export default function PresetsTab({
 
     setIsSaving(true)
     try {
-      const preset = savePreset(presetName.trim(), presetDesc.trim(), translations, resumeUrl, resumeFileName)
+      const preset = savePreset(presetName.trim(), '', translations, resumeUrl, resumeFileName)
       setPresets(getStoredPresets())
       setPresetName('')
-      setPresetDesc('')
       setShowSaveForm(false)
       showToast(`✓ Preset "${preset.name}" saved successfully!`)
     } catch (err) {
@@ -69,25 +63,6 @@ export default function PresetsTab({
       deletePreset(id)
       setPresets(getStoredPresets())
       showToast(`Deleted preset: ${name}`)
-    }
-  }
-
-  const handleUpdatePreset = () => {
-    if (!editName.trim()) {
-      showToast('Preset name is required', 'error')
-      return
-    }
-
-    if (editingId) {
-      updatePreset(editingId, {
-        name: editName.trim(),
-        description: editDesc.trim(),
-      })
-      setPresets(getStoredPresets())
-      setEditingId(null)
-      setEditName('')
-      setEditDesc('')
-      showToast('Preset updated successfully!')
     }
   }
 
@@ -120,16 +95,7 @@ export default function PresetsTab({
                 onChange={(e) => setPresetName(e.target.value)}
                 placeholder="e.g., Senior Engineer Profile"
                 className="w-full px-3 py-2 border border-white/20 bg-black/60 text-white text-xs focus:outline-none focus:border-emerald-400 transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-white/70 mb-1.5 font-semibold">Description</label>
-              <textarea
-                value={presetDesc}
-                onChange={(e) => setPresetDesc(e.target.value)}
-                placeholder="e.g., Updated resume, 3 projects, 5 years experience"
-                rows={2}
-                className="w-full px-3 py-2 border border-white/20 bg-black/60 text-white text-xs focus:outline-none focus:border-emerald-400 transition-colors resize-none"
+                autoFocus
               />
             </div>
             <div className="border border-white/10 p-3 bg-black/60 rounded text-xs text-white/60">
@@ -146,7 +112,6 @@ export default function PresetsTab({
                 onClick={() => {
                   setShowSaveForm(false)
                   setPresetName('')
-                  setPresetDesc('')
                 }}
                 className="px-3 py-1.5 border border-white/20 text-white/70 hover:text-white text-xs transition-colors"
               >
@@ -188,82 +153,35 @@ export default function PresetsTab({
                 key={preset.id}
                 className="border border-white/10 p-3 bg-black/40 hover:border-white/20 transition-colors"
               >
-                {editingId === preset.id ? (
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      className="w-full px-2 py-1 border border-white/20 bg-black/60 text-white text-xs focus:outline-none focus:border-white transition-colors"
-                    />
-                    <textarea
-                      value={editDesc}
-                      onChange={(e) => setEditDesc(e.target.value)}
-                      rows={2}
-                      className="w-full px-2 py-1 border border-white/20 bg-black/60 text-white text-xs focus:outline-none focus:border-white transition-colors resize-none"
-                    />
-                    <div className="flex gap-2 justify-end">
-                      <button
-                        type="button"
-                        onClick={() => setEditingId(null)}
-                        className="px-2 py-1 border border-white/20 text-white/70 hover:text-white text-xs transition-colors"
-                      >
-                        CANCEL
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleUpdatePreset}
-                        className="px-2 py-1 border border-emerald-500 bg-emerald-500/10 text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition-colors"
-                      >
-                        UPDATE
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="mb-2">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="text-sm font-bold text-white">{preset.name}</h3>
-                          <p className="text-xs text-white/50 mt-0.5">{preset.description}</p>
-                          <div className="text-[10px] text-white/40 mt-1.5 space-y-0.5">
-                            <div>📅 {new Date(preset.timestamp).toLocaleDateString()}</div>
-                            {preset.resumeFileName && (
-                              <div className="text-emerald-400/70">📄 Resume: {preset.resumeFileName}</div>
-                            )}
-                          </div>
-                        </div>
+                <div className="mb-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-bold text-white truncate">{preset.name}</h3>
+                      <div className="text-[10px] text-white/40 mt-1.5 space-y-0.5">
+                        <div>📅 {new Date(preset.timestamp).toLocaleDateString()}</div>
+                        {preset.resumeFileName && (
+                          <div className="text-emerald-400/70">📄 Resume: {preset.resumeFileName}</div>
+                        )}
                       </div>
                     </div>
-                    <div className="flex gap-2 justify-end">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingId(preset.id)
-                          setEditName(preset.name)
-                          setEditDesc(preset.description)
-                        }}
-                        className="px-2.5 py-1 border border-white/20 text-white/70 hover:text-white text-xs transition-colors"
-                      >
-                        EDIT
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleLoadPreset(preset)}
-                        className="px-2.5 py-1 border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:border-emerald-400 hover:text-emerald-200 text-xs font-semibold transition-colors"
-                      >
-                        LOAD
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeletePreset(preset.id, preset.name)}
-                        className="px-2.5 py-1 border border-red-500/40 bg-red-500/10 text-red-400 hover:border-red-500 hover:text-red-300 text-xs transition-colors"
-                      >
-                        DELETE
-                      </button>
-                    </div>
-                  </>
-                )}
+                  </div>
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => handleLoadPreset(preset)}
+                    className="px-2.5 py-1 border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:border-emerald-400 hover:text-emerald-200 text-xs font-semibold transition-colors"
+                  >
+                    LOAD
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeletePreset(preset.id, preset.name)}
+                    className="px-2.5 py-1 border border-red-500/40 bg-red-500/10 text-red-400 hover:border-red-500 hover:text-red-300 text-xs transition-colors"
+                  >
+                    DELETE
+                  </button>
+                </div>
               </div>
             ))}
           </div>
