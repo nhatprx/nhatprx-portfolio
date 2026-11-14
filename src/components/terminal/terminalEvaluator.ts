@@ -77,6 +77,16 @@ export function evaluateTerminalCommand(
     return { entries }
   }
 
+  // Detect space-separated multiple commands (e.g. "whoami hostname uptime")
+  // and suggest the correct chaining syntax
+  if (tokens.length > 1 && Object.keys(REMOTE_COMMANDS).includes(tokens[1])) {
+    entries.push({
+      type: 'error',
+      text: `bash: ${tokens[1]}: command not found.\n\nDid you mean to chain multiple commands? Try:\n  ${tokens.join(' && ')}   (stop on first error)\n  ${tokens.join(' ; ')}    (always continue)`,
+    })
+    return { entries }
+  }
+
   switch (cmd) {
     case 'help':
       entries.push({
@@ -93,6 +103,10 @@ export function evaluateTerminalCommand(
   • whoami             - Print current shell user permissions
   • cat resume.txt     - View your resume
   • clear              - Clear the terminal screen
+
+Chain commands with && (stop on error) or ; (always continue):
+  e.g.  whoami && hostname && uptime
+        free -h ; df -h ; uptime
 
 Live commands above are executed on the real EC2 node and stream back actual
 system output. Everything else is served from the local guest sandbox.`,
@@ -168,17 +182,58 @@ and full-stack delivery. Built systems at Grevo Solutions and AWS intern.
   return { entries }
 }
 
+/** Split raw input on `&&` and `;` operators, preserving which operator joined each pair. */
+function parseChain(raw: string): { cmd: string; op: '&&' | ';' | null }[] {
+  // Split on && or ; but keep the delimiter so we know how to chain.
+  const parts = raw.split(/(&&|;)/)
+  const result: { cmd: string; op: '&&' | ';' | null }[] = []
+  for (let i = 0; i < parts.length; i += 2) {
+    const cmd = parts[i].trim()
+    const op = (parts[i + 1]?.trim() as '&&' | ';') ?? null
+    if (cmd) result.push({ cmd, op })
+  }
+  return result
+}
+
+/** Check if every sub-command in a chain is a known remote command. */
+export function isFullyRemote(raw: string): boolean {
+  const chain = parseChain(raw)
+  if (chain.length === 0) return false
+  return chain.every(({ cmd }) => {
+    const key = cmd.split(/\s+/)[0].toLowerCase()
+    return key in REMOTE_COMMANDS
+  })
+}
+
 /**
- * Runs a command against the live EC2 node.
- * Returns null when the command is not one of the remote ones, so the caller
- * can fall back to the local guest sandbox.
+ * Runs one or more chained commands (`&&` / `;`) against the live EC2 node.
+ * Returns null when ANY sub-command is not remote, so the caller can fall back
+ * to the local guest sandbox.
+ *
+ * `&&` stops the chain on first failure (like bash).
+ * `;` always continues to the next command.
  */
 export async function runRemoteCommand(raw: string): Promise<string | null> {
-  const tokens = raw.trim().split(/\s+/)
-  const cmd = tokens[0].toLowerCase()
-  const remote = REMOTE_COMMANDS[cmd]
-  if (!remote) return null
+  if (!isFullyRemote(raw)) return null
 
-  const { stdout } = await execTerminalCommand(remote)
-  return stdout
+  const chain = parseChain(raw)
+  const outputs: string[] = []
+
+  for (const { cmd, op } of chain) {
+    const key = cmd.split(/\s+/)[0].toLowerCase()
+    const remote = REMOTE_COMMANDS[key]!
+    try {
+      const { stdout } = await execTerminalCommand(remote)
+      outputs.push(stdout)
+      // Write to console for debugging
+      console.log(`[terminal] executed "${remote}" on EC2`)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'command failed'
+      outputs.push(`bash: ${key}: ${msg}`)
+      // && stops on failure; ; continues
+      if (op === '&&' || op === null) break
+    }
+  }
+
+  return outputs.join('\n')
 }

@@ -13,6 +13,7 @@ import {
 import { login as apiLogin, logout as apiLogout, isLoggedIn, translatePortfolio } from '../../services/adminApi'
 import SitePreview from './SitePreview'
 import AdminHeader from './components/AdminHeader'
+import type { SyncStatus } from './components/AdminHeader'
 import AdminSidebar from './components/AdminSidebar'
 import AdminTabContent from './components/AdminTabContent'
 import LoginGate from './components/LoginGate'
@@ -43,6 +44,7 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
   const [mobilePane, setMobilePane] = useState<'editor' | 'preview'>('editor')
   const [toast, setToast] = useState<{ message: string; variant: ToastVariant } | null>(null)
   const [isAutoTranslating, setIsAutoTranslating] = useState(false)
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle')
 
   // Auto-Save Engine (syncs automatically to localStorage, S3 and the live site on every change)
   const isFirstMount = useRef(true)

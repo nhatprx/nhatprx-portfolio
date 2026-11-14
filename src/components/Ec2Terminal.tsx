@@ -5,6 +5,7 @@ import {
   QUICK_COMMANDS,
   evaluateTerminalCommand,
   runRemoteCommand,
+  isFullyRemote,
 } from './terminal/terminalEvaluator'
 import { DEFAULT_IDENTITY, type Identity } from '../data/identity'
 

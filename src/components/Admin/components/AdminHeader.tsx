@@ -1,5 +1,7 @@
 import type { SupportedLang } from '../../../services/contentStorage'
 
+export type SyncStatus = 'idle' | 'saving' | 'saved' | 'error'
+
 interface AdminHeaderProps {
   selectedLang: SupportedLang
   onSelectLang: (lang: SupportedLang) => void
@@ -9,6 +11,14 @@ interface AdminHeaderProps {
   onLogout: () => void
   onAutoTranslate: () => void
   isAutoTranslating: boolean
+  syncStatus: SyncStatus
+}
+
+const SYNC_LABEL: Record<SyncStatus, { text: string; cls: string }> = {
+  idle: { text: '', cls: '' },
+  saving: { text: '⟳ Saving…', cls: 'text-amber-300/80' },
+  saved: { text: '✓ Synced', cls: 'text-emerald-400/80' },
+  error: { text: '✗ Sync failed', cls: 'text-rose-400' },
 }
 
 export default function AdminHeader({
@@ -20,6 +30,7 @@ export default function AdminHeader({
   onLogout,
   onAutoTranslate,
   isAutoTranslating,
+  syncStatus,
 }: AdminHeaderProps) {
   return (
     <header className="border-b border-white/10 bg-black/80 backdrop-blur-md px-4 py-2.5 flex items-center justify-between gap-3 shrink-0 font-mono">
@@ -28,6 +39,11 @@ export default function AdminHeader({
         <span className="font-bold text-xs tracking-widest text-white uppercase">
           ADMIN DASHBOARD
         </span>
+        {syncStatus !== 'idle' && (
+          <span className={`text-[10px] tracking-wider ${SYNC_LABEL[syncStatus].cls}`}>
+            {SYNC_LABEL[syncStatus].text}
+          </span>
+        )}
       </div>
 
       {/* Language selector & Navigation controls */}

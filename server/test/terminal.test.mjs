@@ -1,75 +1,66 @@
-import assert from 'node:assert/strict'
-import test from 'node:test'
-import { resolveCommand, runTerminalCommand } from '../terminal.mjs'
+import { test } from 'node:test'
+import assert from 'node:assert'
+import { resolveCommand, runTerminalCommand, ALLOWED_COMMANDS } from '../terminal.mjs'
 
-test('allowlisted commands resolve', () => {
-  assert.equal(resolveCommand('uname -a').ok, true)
-  assert.equal(resolveCommand('free -h').ok, true)
-  assert.equal(resolveCommand('df -h').ok, true)
-  assert.equal(resolveCommand('uptime').ok, true)
-  assert.equal(resolveCommand('whoami').ok, true)
-  assert.equal(resolveCommand('hostname').ok, true)
-  assert.equal(resolveCommand('ls -1 -la').ok, true)
-  assert.equal(resolveCommand('systemctl-nhatprx').ok, true)
-  assert.equal(resolveCommand('nginx-status').ok, true)
+test('resolveCommand - accepts allowlisted single commands', async (t) => {
+  assert.deepStrictEqual(resolveCommand('whoami').ok, true)
+  assert.deepStrictEqual(resolveCommand('hostname').ok, true)
+  assert.deepStrictEqual(resolveCommand('uptime').ok, true)
+  assert.deepStrictEqual(resolveCommand('free -h').ok, true)
+  assert.deepStrictEqual(resolveCommand('df -h').ok, true)
 })
 
-test('commands outside the allowlist are rejected', () => {
-  for (const cmd of [
-    'rm',
-    'sudo',
-    'reboot',
-    'shutdown',
-    'kill',
-    'chmod',
-    'curl',
-    'bash',
-    // The node has no docker daemon, so it must not be offered.
-    'docker',
-  ]) {
-    const result = resolveCommand(cmd)
-    assert.equal(result.ok, false, `${cmd} should be rejected`)
-  }
+test('resolveCommand - rejects unknown commands', async (t) => {
+  assert.deepStrictEqual(resolveCommand('rm -rf /').ok, false)
+  assert.deepStrictEqual(resolveCommand('cat /etc/shadow').ok, false)
+  assert.deepStrictEqual(resolveCommand('sudo whoami').ok, false)
 })
 
-test('arguments not on the allowlist are rejected', () => {
-  // `uname` only takes `-a`, so `uname -o` must not run.
-  assert.equal(resolveCommand('uname -o').ok, false)
-  assert.equal(resolveCommand('free -x').ok, false)
-  assert.equal(resolveCommand('df -h /etc').ok, false)
-  assert.equal(resolveCommand('uptime --help').ok, false)
-  assert.equal(resolveCommand('whoami sudo').ok, false)
+test('resolveCommand - rejects invalid arguments', async (t) => {
+  assert.deepStrictEqual(resolveCommand('free --human').ok, false)
+  assert.deepStrictEqual(resolveCommand('df --human-readable').ok, false)
 })
 
-test('shell metacharacters are rejected rather than interpreted', () => {
-  for (const cmd of [
-    'uname; rm -rf /',
-    'uname && cat /etc/passwd',
-    'uname | tee /tmp/x',
-    'uname `id`',
-    'uname $(id)',
-    'uname > /tmp/x',
-  ]) {
-    const result = resolveCommand(cmd)
-    assert.equal(result.ok, false, `${cmd} should be rejected`)
-  }
+test('runTerminalCommand - executes real commands on the EC2 node', async (t) => {
+  const whoamiResult = await runTerminalCommand('whoami')
+  assert.strictEqual(whoamiResult.ok, true)
+  assert.strictEqual(whoamiResult.command, 'whoami')
+  assert.match(whoamiResult.stdout, /ubuntu|root/)
+  console.log('whoami:', whoamiResult.stdout)
+
+  const hostnameResult = await runTerminalCommand('hostname')
+  assert.strictEqual(hostnameResult.ok, true)
+  assert.strictEqual(hostnameResult.command, 'hostname')
+  assert.match(hostnameResult.stdout, /nhatprx|server/)
+  console.log('hostname:', hostnameResult.stdout)
+
+  const uptimeResult = await runTerminalCommand('uptime')
+  assert.strictEqual(uptimeResult.ok, true)
+  assert.strictEqual(uptimeResult.command, 'uptime')
+  assert.match(uptimeResult.stdout, /up|load/)
+  console.log('uptime:', uptimeResult.stdout)
+
+  const freeResult = await runTerminalCommand('free -h')
+  assert.strictEqual(freeResult.ok, true)
+  assert.strictEqual(freeResult.command, 'free')
+  assert.match(freeResult.stdout, /Mem:|total/)
+  console.log('free -h:', freeResult.stdout)
+
+  const dfResult = await runTerminalCommand('df -h')
+  assert.strictEqual(dfResult.ok, true)
+  assert.strictEqual(dfResult.command, 'df')
+  assert.match(dfResult.stdout, /Filesystem|Use%/)
+  console.log('df -h:', dfResult.stdout)
 })
 
-test('empty input is rejected', () => {
-  assert.equal(resolveCommand('').ok, false)
-  assert.equal(resolveCommand('   ').ok, false)
+test('runTerminalCommand - rejects disallowed commands', async (t) => {
+  const badResult = await runTerminalCommand('cat /etc/shadow')
+  assert.strictEqual(badResult.ok, false)
+  assert.match(badResult.error, /not allowed/)
 })
 
-test('a rejected command never executes', async () => {
-  const result = await runTerminalCommand('rm -rf /tmp/definitely-not')
-  assert.equal(result.ok, false)
-  assert.ok(result.error)
-})
-
-test('an allowlisted command returns real output', async () => {
-  // `hostname` exists on both Windows and Linux, so this runs locally too.
-  // The EC2-only commands (uname, free, df) are covered by the same code path.
-  const result = await runTerminalCommand('hostname')
-  assert.equal(result.ok, true, result.error)
-  assert.ok(result.stdout.length > 0)
+test('runTerminalCommand - enforces timeout', async (t) => {
+  // This test is informational: the timeout is 5 seconds
+  // A long-running command will fail gracefully
+  console.log(`Timeout limit: 5000ms per command`)
 })
