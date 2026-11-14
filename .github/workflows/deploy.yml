@@ -35,9 +35,19 @@ jobs:
       - name: Deploy to AWS EC2 via SSH & rsync
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-          EC2_HOST: ${{ secrets.EC2_HOST || '13.250.247.238' }}
-          EC2_USER: ${{ secrets.EC2_USER || 'ubuntu' }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
         run: |
+          # The `secrets` context does not support `||` fallbacks, so the
+          # defaults are applied here in the shell instead.
+          EC2_HOST="${EC2_HOST:-13.250.247.238}"
+          EC2_USER="${EC2_USER:-ubuntu}"
+
+          if [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "::error::EC2_SSH_KEY secret is not set"
+            exit 1
+          fi
+
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
