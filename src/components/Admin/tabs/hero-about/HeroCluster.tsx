@@ -92,7 +92,6 @@ export default function HeroCluster({
       }
       showToast(`Resume uploaded to S3: ${uploaded.fileName} (${formatFileSize(file.size)})`)
     } catch (err) {
-      console.error('Failed to upload resume to S3:', err)
       showToast(err instanceof Error ? `Upload failed: ${err.message}` : 'Failed to upload resume.', 'error')
     } finally {
       setIsUploading(false)
@@ -107,7 +106,7 @@ export default function HeroCluster({
       try {
         await deleteResume(key)
       } catch (err) {
-        console.warn('Failed to delete previous resume object:', err)
+        // failed to delete previous resume object
       }
     }
 

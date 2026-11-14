@@ -250,11 +250,9 @@ async function handlePost(req, res, path) {
     const command = String(data.command || '')
     const result = await runTerminalCommand(command)
     if (!result.ok) {
-      console.log(`[terminal] rejected "${command}": ${result.error}`)
       sendJson(res, 400, { error: result.error })
       return
     }
-    console.log(`[terminal] ran "${command}"`)
     sendJson(res, 200, { ok: true, stdout: result.stdout })
     return
   }
@@ -383,7 +381,6 @@ async function handlePut(req, res, path) {
     return
   }
 
-  console.log(`[api] saving content to S3: bucket=${BUCKET}, key=${CONTENT_KEY}, size=${Buffer.byteLength(body)}`)
   await s3.send(
     new PutObjectCommand({
       Bucket: BUCKET,
@@ -393,7 +390,6 @@ async function handlePut(req, res, path) {
       CacheControl: 'no-store',
     })
   )
-  console.log(`[api] successfully saved content to S3`)
   sendJson(res, 200, { ok: true })
 }
 

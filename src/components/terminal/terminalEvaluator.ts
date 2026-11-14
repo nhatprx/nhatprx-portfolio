@@ -251,8 +251,6 @@ export async function runRemoteCommand(raw: string): Promise<string | null> {
     try {
       const { stdout } = await execTerminalCommand(remote)
       outputs.push(stdout)
-      // Write to console for debugging
-      console.log(`[terminal] executed "${remote}" on EC2`)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'command failed'
       outputs.push(`bash: ${key}: ${msg}`)
