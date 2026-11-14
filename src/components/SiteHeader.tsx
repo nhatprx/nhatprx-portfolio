@@ -63,8 +63,8 @@ export default function SiteHeader({
         </h2>
       </button>
 
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-        {/* Scroll-activated Quick CTA Buttons with 2-way Slide & Fade Transition */}
+      <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+        {/* Scroll-activated Quick CTA Buttons - icon-only on mobile, full on sm+ */}
         <div
           className={`flex items-center gap-1.5 sm:gap-2 transition-all duration-500 ease-out overflow-hidden ${
             scrolledHeaderActions
@@ -72,7 +72,7 @@ export default function SiteHeader({
               : 'opacity-0 max-w-0 p-0 translate-x-3 pointer-events-none'
           }`}
         >
-          {/* GET IN TOUCH: Full button on sm+, icon-only on mobile */}
+          {/* GET IN TOUCH */}
           <a
             href="#contact"
             tabIndex={scrolledHeaderActions ? 0 : -1}
@@ -90,7 +90,7 @@ export default function SiteHeader({
             </span>
           </a>
 
-          {/* RESUME: Full button on sm+, icon-only on mobile */}
+          {/* RESUME */}
           <a
             href={t.hero.resumeUrl || '/%5Bnhatprx%5D%20PERSONAL%20RESUME.pdf'}
             download={t.hero.resumeFileName || '[nhatprx] PERSONAL RESUME.pdf'}
@@ -103,29 +103,25 @@ export default function SiteHeader({
           </a>
         </div>
 
-        {/* GitHub & LinkedIn Socials */}
-        <div
-          className={`items-center gap-1.5 ${
-            scrolledHeaderActions ? 'hidden md:flex' : 'flex'
-          }`}
-        >
+        {/* GitHub & LinkedIn - Always visible with icon-only style (consistent height with language button) */}
+        <div className="flex items-center gap-1 sm:gap-1.5">
           <a
             href={t.identity.githubUrl}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="GitHub Profile"
-            className="p-2 border border-white/10 hover:border-white/30 text-white/60 hover:text-white transition-colors bg-white/[0.02]"
+            className="p-1.5 sm:p-2 border border-white/15 hover:border-white/40 text-white/60 hover:text-white transition-colors bg-white/[0.02] hover:bg-white/[0.05]"
           >
-            <GithubIcon className="w-3.5 h-3.5" />
+            <GithubIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
           </a>
           <a
             href={t.identity.linkedinUrl}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="LinkedIn Profile"
-            className="p-2 border border-white/10 hover:border-white/30 text-white/60 hover:text-white transition-colors bg-white/[0.02]"
+            className="p-1.5 sm:p-2 border border-white/15 hover:border-white/40 text-white/60 hover:text-white transition-colors bg-white/[0.02] hover:bg-white/[0.05]"
           >
-            <LinkedinIcon className="w-3.5 h-3.5" />
+            <LinkedinIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
           </a>
         </div>
 
