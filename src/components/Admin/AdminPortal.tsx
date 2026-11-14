@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import {
   getStoredTranslations,
   saveStoredTranslations,
-  resetStoredTranslations,
   getStoredTerminalCommands,
   saveStoredTerminalCommands,
   loadRemoteTranslations,
@@ -179,8 +178,9 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
 
   const handleLogout = () => {
     apiLogout()
-    // Clear local cache so the next visitor loads fresh content from S3
-    resetStoredTranslations()
+    // Keep localStorage intact - it's an offline cache, not session data.
+    // The next S3 fetch will get fresh content. If S3 is down, cached data
+    // is better than nothing.
     setIsAuthenticated(false)
   }
 
