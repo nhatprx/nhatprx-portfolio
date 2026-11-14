@@ -67,6 +67,18 @@ export default function AdminSidebar({
       <div className="mt-auto pt-3 border-t border-white/10 space-y-1">
         <button
           type="button"
+          onClick={() => onSelectTab('presets')}
+          className={`w-full text-left px-3 py-2.5 text-xs font-mono tracking-wider flex items-center gap-2.5 transition-colors border-l-2 cursor-pointer ${
+            activeTab === 'presets'
+              ? 'border-white text-white font-bold bg-white/10'
+              : 'border-transparent text-white/50 hover:text-white hover:bg-white/[0.04]'
+          }`}
+        >
+          <span className="text-[11px] text-white/40">📦</span>
+          <span>PRESETS</span>
+        </button>
+        <button
+          type="button"
           onClick={() => onSelectTab('settings')}
           className={`w-full text-left px-3 py-2.5 text-xs font-mono tracking-wider flex items-center gap-2.5 transition-colors border-l-2 cursor-pointer ${
             activeTab === 'settings' || activeTab === 'system'

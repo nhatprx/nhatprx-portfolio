@@ -22,7 +22,7 @@ interface PresetsTabProps {
 
 export default function PresetsTab({
   translations,
-  currentDict,
+  // currentDict,
   resumeUrl,
   resumeFileName,
   onLoadPreset,

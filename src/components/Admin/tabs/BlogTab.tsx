@@ -125,6 +125,12 @@ export default function BlogTab({
                         posts: d.blog.posts.filter((_, i) => i !== idx),
                       },
                     }))
+                    // Reset editing state if we're deleting the post being edited
+                    if (editingBlogIndex === idx) {
+                      setEditingBlogIndex(null)
+                      setBlogDraft(null)
+                    }
+                    showToast(`Deleted: ${post.title}`)
                   }
                 }}
                 className="px-2.5 py-1 text-xs border border-red-500/30 text-red-400 hover:border-red-500 transition-colors cursor-pointer"
