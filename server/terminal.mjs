@@ -11,12 +11,19 @@
  */
 
 import { execFile } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import { promisify } from 'node:util'
 
 const execFileAsync = promisify(execFile)
 
 const EXEC_TIMEOUT_MS = 5_000
 const MAX_OUTPUT_BYTES = 100 * 1024
+const API_ROOT = existsSync('/home/ubuntu/nhatprx-api')
+  ? '/home/ubuntu/nhatprx-api'
+  : process.cwd()
+const API_LOG = existsSync('/home/ubuntu/nhatprx-api/api.log')
+  ? '/home/ubuntu/nhatprx-api/api.log'
+  : 'server/api.log'
 
 /**
  * The public allowlist. Each entry is the exact argv tail that gets executed,
@@ -64,17 +71,13 @@ export const ALLOWED_COMMANDS = {
   },
   
   // Git - portfolio deployment history
-  'git': {
-    args: ['log', '--oneline', '-10'],
-    exec: ['git', '-C', '/home/ubuntu/nhatprx-api', 'log', '--oneline', '-10'],
-  },
-  'git-branch': {
-    args: ['branch', '-a'],
-    exec: ['git', '-C', '/home/ubuntu/nhatprx-api', 'branch', '-a'],
-  },
-  'git-status': {
-    args: ['status'],
-    exec: ['git', '-C', '/home/ubuntu/nhatprx-api', 'status'],
+  git: {
+    forms: {
+      log: ['git', '-C', API_ROOT, 'log', '--oneline', '-10'],
+      branch: ['git', '-C', API_ROOT, 'branch', '-a'],
+      status: ['git', '-C', API_ROOT, 'status', '--short', '--branch'],
+      show: ['git', '-C', API_ROOT, 'show', '-s', '--format=%ci %an: %s', 'HEAD'],
+    },
   },
 
   // Health & Metrics
@@ -104,15 +107,23 @@ export const ALLOWED_COMMANDS = {
   // Logs
   'api-log': {
     args: [],
-    exec: ['tail', '-n', '30', '/home/ubuntu/nhatprx-api/api.log'],
+    exec: ['tail', '-n', '30', API_LOG],
+  },
+  'nginx-access': {
+    args: [],
+    exec: ['tail', '-n', '30', '/var/log/nginx/access.log'],
+  },
+  'nginx-error': {
+    args: [],
+    exec: ['tail', '-n', '30', '/var/log/nginx/error.log'],
   },
 
   // Files & Directory listing
   ls: {
     // Only the project directory, not the whole home dir: the home folder
     // holds .ssh and other paths that should never be listed publicly.
-    args: ['-1', '-la'],
-    exec: ['ls', '-1', '-la', '/home/ubuntu/nhatprx-api'],
+    args: ['-la'],
+    exec: ['ls', '-la', API_ROOT],
   },
 
   // Services status
@@ -151,23 +162,29 @@ export const ALLOWED_COMMANDS = {
 export function resolveCommand(raw) {
   const trimmed = String(raw || '').trim()
   if (!trimmed) return { ok: false, reason: 'empty command' }
+  // One argv token cannot contain shell syntax. Chaining is the client's job.
+  if (/[;&|`$<>]/.test(trimmed)) {
+    return { ok: false, reason: 'shell syntax not allowed' }
+  }
 
   const tokens = trimmed.split(/\s+/)
-
   const key = tokens[0].toLowerCase()
   const args = tokens.slice(1)
-
   const spec = ALLOWED_COMMANDS[key]
-  if (!spec) {
-    return { ok: false, reason: `command not allowed: ${key}` }
-  }
+  if (!spec) return { ok: false, reason: `command not allowed: ${key}` }
 
-  for (const arg of args) {
-    if (!spec.args.includes(arg)) {
-      return { ok: false, reason: `argument not allowed for ${key}: ${arg}` }
+  if (spec.forms) {
+    const form = spec.forms[args[0]]
+    if (!form || args.length !== 1) {
+      return { ok: false, reason: `argument not allowed for ${key}: ${args.join(' ') || '(none)'}` }
     }
+    return { ok: true, key, spec: { exec: form } }
   }
 
+  const accepted = spec.args.join('\0')
+  if (args.join('\0') !== accepted) {
+    return { ok: false, reason: `argument not allowed for ${key}: ${args.join(' ') || '(none)'}` }
+  }
   return { ok: true, key, spec }
 }
 

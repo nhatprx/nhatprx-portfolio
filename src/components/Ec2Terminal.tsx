@@ -49,7 +49,7 @@ export default function Ec2Terminal({ identity = DEFAULT_IDENTITY }: Ec2Terminal
         },
         {
           type: 'error',
-          text: '✗ Server unreachable - Terminal requires backend access',
+          text: 'Server unreachable - terminal requires backend access',
         },
         {
           type: 'system',

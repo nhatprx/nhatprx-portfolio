@@ -100,12 +100,13 @@ function checkTerminalRateLimit(key) {
 function sanitizeTerminalOutput(output) {
   // Mask AWS keys (AKIA prefix)
   output = output.replace(/AKIA[0-9A-Z]{16}/g, 'AKIA****')
-  // Mask secret keys
-  output = output.replace(/(?:aws_)?secret[_-]?(?:access[_-])?key[^:]*:[^\s]*/gi, 'secret_key:****')
+  // Mask secret keys - more flexible pattern
+  output = output.replace(/aws_secret_access_key\s*[:=]\s*\S+/gi, 'aws_secret_access_key: ****')
+  output = output.replace(/secret_access_key\s*[:=]\s*\S+/gi, 'secret_access_key: ****')
   // Mask generic credentials
-  output = output.replace(/(?:password|passwd|pwd|pass)[^:]*:[^\s]*/gi, 'password:****')
-  output = output.replace(/(?:token|auth)[^:]*:[^\s]*/gi, 'token:****')
-  output = output.replace(/(?:api[_-]?)?key[^:]*:[^\s]*/gi, 'api_key:****')
+  output = output.replace(/password\s*[:=]\s*\S+/gi, 'password: ****')
+  output = output.replace(/token\s*[:=]\s*\S+/gi, 'token: ****')
+  output = output.replace(/api[_-]?key\s*[:=]\s*\S+/gi, 'api_key: ****')
   // Mask private IPs
   output = output.replace(/192\.168\.\d{1,3}\.\d{1,3}/g, 'x.x.x.x')
   output = output.replace(/10\.\d{1,3}\.\d{1,3}\.\d{1,3}/g, 'x.x.x.x')

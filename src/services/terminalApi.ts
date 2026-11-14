@@ -123,12 +123,12 @@ export function sanitizeTerminalOutput(output: string): string {
   // Remove AWS access keys
   output = output.replace(/AKIA[0-9A-Z]{16}/g, 'AKIA****')
   // Remove AWS secret keys (typical format)
-  output = output.replace(/aws_secret_access_key[^:]*:[^\s]*/gi, 'aws_secret_access_key:****')
+  output = output.replace(/aws_secret_access_key\s*[:=]\s*\S+/gi, 'aws_secret_access_key: ****')
+  output = output.replace(/secret_access_key\s*[:=]\s*\S+/gi, 'secret_access_key: ****')
   // Remove common password/token patterns
-  output = output.replace(/password[^:]*:[^\s]*/gi, 'password:****')
-  output = output.replace(/token[^:]*:[^\s]*/gi, 'token:****')
-  output = output.replace(/secret[^:]*:[^\s]*/gi, 'secret:****')
-  output = output.replace(/api[_-]?key[^:]*:[^\s]*/gi, 'api_key:****')
+  output = output.replace(/password\s*[:=]\s*\S+/gi, 'password: ****')
+  output = output.replace(/token\s*[:=]\s*\S+/gi, 'token: ****')
+  output = output.replace(/api[_-]?key\s*[:=]\s*\S+/gi, 'api_key: ****')
   // Remove private IP addresses
   output = output.replace(/192\.168\.\d{1,3}\.\d{1,3}/g, 'x.x.x.x')
   output = output.replace(/10\.\d{1,3}\.\d{1,3}\.\d{1,3}/g, 'x.x.x.x')
