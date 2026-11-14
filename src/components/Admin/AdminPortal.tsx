@@ -56,7 +56,7 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
       return
     }
 
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       const current = translations[selectedLang]
       const lastSaved = lastPersistedRef.current[selectedLang] || current
       const safeDict = mergeValidDict(current, lastSaved)
@@ -72,11 +72,22 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
       // Publish the same sanitized dict that is persisted, otherwise the live
       // site shows a different value than the one stored in S3.
       onUpdateTranslations(updatedToSave)
-      void saveRemoteTranslations(updatedToSave)
+      
+      if (isAuthenticated) {
+        setSyncStatus('saving')
+        const success = await saveRemoteTranslations(updatedToSave)
+        setSyncStatus(success ? 'saved' : 'error')
+        if (!success) {
+          showToast('Failed to sync to cloud (saved locally)', 'error')
+          setTimeout(() => setSyncStatus('idle'), 2000)
+        } else {
+          setTimeout(() => setSyncStatus('idle'), 1500)
+        }
+      }
     }, 350)
 
     return () => clearTimeout(timer)
-  }, [translations, terminalCommands, onUpdateTranslations, selectedLang])
+  }, [translations, terminalCommands, onUpdateTranslations, selectedLang, isAuthenticated])
 
   // Pull the shared content from S3 once the admin is authenticated.
   useEffect(() => {
@@ -97,7 +108,7 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
     setToast({ message: msg, variant })
   }
 
-  const handleCloseAndSync = () => {
+  const handleCloseAndSync = async () => {
     const current = translations[selectedLang]
     const lastSaved = lastPersistedRef.current[selectedLang] || current
     const safeDict = mergeValidDict(current, lastSaved)
@@ -109,7 +120,17 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
     saveStoredTranslations(updatedToSave)
     saveStoredTerminalCommands(terminalCommands)
     onUpdateTranslations(translations)
-    void saveRemoteTranslations(updatedToSave)
+    
+    if (isAuthenticated) {
+      setSyncStatus('saving')
+      const success = await saveRemoteTranslations(updatedToSave)
+      if (success) {
+        showToast('✓ Changes saved to cloud', 'success')
+      } else {
+        showToast('✗ Failed to sync to cloud (saved locally)', 'error')
+      }
+    }
+    
     onClose()
   }
 

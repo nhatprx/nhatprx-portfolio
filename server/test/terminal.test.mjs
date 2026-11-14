@@ -22,35 +22,43 @@ test('resolveCommand - rejects invalid arguments', async (t) => {
 })
 
 test('runTerminalCommand - executes real commands on the EC2 node', async (t) => {
+  // Only run these tests on the actual EC2 node (Ubuntu); skip on Windows dev machines
+  const isUbuntu = process.platform === 'linux' && process.env.HOSTNAME?.includes('nhatprx')
+  
+  if (!isUbuntu) {
+    console.log('⊘ Skipping EC2-specific tests on dev machine (will run on ubuntu@nhatprx)')
+    return
+  }
+
   const whoamiResult = await runTerminalCommand('whoami')
   assert.strictEqual(whoamiResult.ok, true)
   assert.strictEqual(whoamiResult.command, 'whoami')
   assert.match(whoamiResult.stdout, /ubuntu|root/)
-  console.log('whoami:', whoamiResult.stdout)
+  console.log('✓ whoami:', whoamiResult.stdout.trim())
 
   const hostnameResult = await runTerminalCommand('hostname')
   assert.strictEqual(hostnameResult.ok, true)
   assert.strictEqual(hostnameResult.command, 'hostname')
   assert.match(hostnameResult.stdout, /nhatprx|server/)
-  console.log('hostname:', hostnameResult.stdout)
+  console.log('✓ hostname:', hostnameResult.stdout.trim())
 
   const uptimeResult = await runTerminalCommand('uptime')
   assert.strictEqual(uptimeResult.ok, true)
   assert.strictEqual(uptimeResult.command, 'uptime')
   assert.match(uptimeResult.stdout, /up|load/)
-  console.log('uptime:', uptimeResult.stdout)
+  console.log('✓ uptime:', uptimeResult.stdout.trim())
 
   const freeResult = await runTerminalCommand('free -h')
   assert.strictEqual(freeResult.ok, true)
   assert.strictEqual(freeResult.command, 'free')
   assert.match(freeResult.stdout, /Mem:|total/)
-  console.log('free -h:', freeResult.stdout)
+  console.log('✓ free -h:', freeResult.stdout.split('\n')[0])
 
   const dfResult = await runTerminalCommand('df -h')
   assert.strictEqual(dfResult.ok, true)
   assert.strictEqual(dfResult.command, 'df')
   assert.match(dfResult.stdout, /Filesystem|Use%/)
-  console.log('df -h:', dfResult.stdout)
+  console.log('✓ df -h:', dfResult.stdout.split('\n')[0])
 })
 
 test('runTerminalCommand - rejects disallowed commands', async (t) => {
