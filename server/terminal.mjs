@@ -71,6 +71,22 @@ export const ALLOWED_COMMANDS = {
     args: [],
     exec: ['systemctl', 'status', 'nhatprx-api', '--no-pager', '--lines', '5'],
   },
+  'proc-cpuinfo': {
+    args: [],
+    exec: ['grep', '-c', '^processor', '/proc/cpuinfo'],
+  },
+  'proc-meminfo': {
+    args: [],
+    exec: ['cat', '/proc/meminfo'],
+  },
+  'proc-loadavg': {
+    args: [],
+    exec: ['cat', '/proc/loadavg'],
+  },
+  'proc-net-dev': {
+    args: [],
+    exec: ['cat', '/proc/net/dev'],
+  },
 }
 
 /**
