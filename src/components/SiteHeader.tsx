@@ -72,7 +72,7 @@ export default function SiteHeader({
               : 'opacity-0 max-w-0 p-0 translate-x-3 pointer-events-none'
           }`}
         >
-          {/* GET IN TOUCH: Full button on xs+, icon-only on mobile */}
+          {/* GET IN TOUCH: Full button on sm+, icon-only on mobile */}
           <a
             href="#contact"
             tabIndex={scrolledHeaderActions ? 0 : -1}
@@ -84,13 +84,13 @@ export default function SiteHeader({
             title={t.hero.getInTouch}
           >
             <MailIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-black/70 shrink-0" />
-            <span className="hidden xs:inline">{t.hero.getInTouch}</span>
-            <span aria-hidden="true" className="hidden xs:inline text-[10px]">
+            <span className="hidden sm:inline">{t.hero.getInTouch}</span>
+            <span aria-hidden="true" className="hidden sm:inline text-[10px]">
               →
             </span>
           </a>
 
-          {/* RESUME: Full button on xs+, icon-only on mobile */}
+          {/* RESUME: Full button on sm+, icon-only on mobile */}
           <a
             href={t.hero.resumeUrl || '/%5Bnhatprx%5D%20PERSONAL%20RESUME.pdf'}
             download={t.hero.resumeFileName || '[nhatprx] PERSONAL RESUME.pdf'}
@@ -99,7 +99,7 @@ export default function SiteHeader({
             title={t.hero.resume}
           >
             <DownloadIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white/60 shrink-0" />
-            <span className="hidden xs:inline">{t.hero.resume}</span>
+            <span className="hidden sm:inline">{t.hero.resume}</span>
           </a>
         </div>
 
