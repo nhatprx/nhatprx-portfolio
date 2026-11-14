@@ -1,28 +1,103 @@
+
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>nhatprx. | Software Engineer</title>
-    <meta name="description" content="Portfolio of nhatprx - Software Engineer specializing in backend resilience, cloud infrastructure, and distributed systems." />
+
+    <!-- Primary SEO -->
+    <title>NhatPRX | Software Engineer & Cloud Infrastructure</title>
+    <meta
+      name="description"
+      content="NhatPRX — Software Engineer exploring backend engineering, cloud infrastructure, distributed systems, and interactive web experiences."
+    />
+    <meta name="author" content="NhatPRX" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Google Search Console -->
+    <meta
+      name="google-site-verification"
+      content="Yy3zz3MqTYRw7E6N44-x91NnkePz3UEO9IVAsfqLPrM"
+    />
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://nhatprx.com/" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="NhatPRX" />
+    <meta
+      property="og:title"
+      content="NhatPRX | Software Engineer"
+    />
+    <meta
+      property="og:description"
+      content="Personal portfolio of NhatPRX — Software Engineer specializing in backend engineering and cloud infrastructure."
+    />
+    <meta property="og:url" content="https://nhatprx.com/" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="NhatPRX | Software Engineer" />
+    <meta
+      name="twitter:description"
+      content="Software Engineer exploring backend engineering, cloud infrastructure, and distributed systems."
+    />
+
+    <!-- Theme -->
+    <meta name="theme-color" content="#000000" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Person",
+            "@id": "https://nhatprx.com/#person",
+            "name": "NhatPRX",
+            "url": "https://nhatprx.com/",
+            "jobTitle": "Software Engineer"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://nhatprx.com/#website",
+            "url": "https://nhatprx.com/",
+            "name": "NhatPRX",
+            "publisher": {
+              "@id": "https://nhatprx.com/#person"
+            }
+          }
+        ]
+      }
+    </script>
+
+    <!-- Scroll Restoration -->
     <script>
-      // Force initial load and refresh to always anchor at Hero section
       if ('scrollRestoration' in history) {
         history.scrollRestoration = 'manual';
       }
+
       if (window.location.hash && window.location.hash !== '#admin') {
         history.replaceState(null, '', window.location.pathname);
       }
+
       window.scrollTo(0, 0);
     </script>
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
     <link
       href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap"
       rel="stylesheet"
     />
   </head>
+
   <body class="bg-black text-white antialiased selection:bg-emerald-400 selection:text-black">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
