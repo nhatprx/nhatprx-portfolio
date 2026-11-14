@@ -377,6 +377,7 @@ async function handlePut(req, res, path) {
     return
   }
 
+  console.log(`[api] saving content to S3: bucket=${BUCKET}, key=${CONTENT_KEY}, size=${Buffer.byteLength(body)}`)
   await s3.send(
     new PutObjectCommand({
       Bucket: BUCKET,
@@ -386,6 +387,7 @@ async function handlePut(req, res, path) {
       CacheControl: 'no-store',
     })
   )
+  console.log(`[api] successfully saved content to S3`)
   sendJson(res, 200, { ok: true })
 }
 
