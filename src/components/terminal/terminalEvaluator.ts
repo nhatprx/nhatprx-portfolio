@@ -201,10 +201,10 @@ Software Engineer experienced in backend systems, cloud infra (AWS, GCP),
 and full-stack delivery. Built systems at Grevo Solutions and AWS intern.
 
 [STACK]
-• Languages: Java, Python, JavaScript, TypeScript
-• Backend: Spring Boot, REST APIs, WebSocket, OAuth2
-• Cloud/DevOps: AWS (EC2, S3, Lambda, CloudFront), Docker, Jenkins, GCP
-• Data: PostgreSQL, MySQL, Redis
+- Languages: Java, Python, JavaScript, TypeScript
+- Backend: Spring Boot, REST APIs, WebSocket, OAuth2
+- Cloud/DevOps: AWS (EC2, S3, Lambda, CloudFront), Docker, Jenkins, GCP
+- Data: PostgreSQL, MySQL, Redis
 ===========================================================`,
         })
       } else if (arg === 'docker-compose.yml') {
@@ -287,10 +287,7 @@ function remoteFor(raw: string): string | undefined {
 export function isFullyRemote(raw: string): boolean {
   const chain = parseChain(raw)
   if (chain.length === 0) return false
-  return chain.every(({ cmd }) => {
-    const key = cmd.split(/\s+/)[0].toLowerCase()
-    return key in REMOTE_COMMANDS
-  })
+  return chain.every(({ cmd }) => remoteFor(cmd) !== undefined)
 }
 
 /**
@@ -308,14 +305,13 @@ export async function runRemoteCommand(raw: string): Promise<string | null> {
   const outputs: string[] = []
 
   for (const { cmd, op } of chain) {
-    const key = cmd.split(/\s+/)[0].toLowerCase()
-    const remote = REMOTE_COMMANDS[key]!
+    const remote = remoteFor(cmd)!
     try {
       const { stdout } = await execTerminalCommand(remote)
       outputs.push(stdout)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'command failed'
-      outputs.push(`bash: ${key}: ${msg}`)
+      outputs.push(`bash: ${cmd}: ${msg}`)
       // && stops on failure; ; continues
       if (op === '&&' || op === null) break
     }

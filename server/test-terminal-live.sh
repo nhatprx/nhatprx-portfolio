@@ -30,7 +30,10 @@ test_command "hostname"
 test_command "uptime"
 test_command "free -h"
 test_command "df -h"
-test_command "uname -a"
+test_command "git log"
+test_command "health"
+test_command "api-log"
+test_command "nginx-access"
 
 # Test chained commands (should work with && and ;)
 echo ""

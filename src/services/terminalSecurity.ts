@@ -58,54 +58,11 @@ export function checkRateLimit(clientId: string): number | null {
  * Server must re-validate this
  */
 export const ALLOWED_COMMANDS = [
-  // System
-  'uname',
-  'uptime',
-  'free',
-  'df',
-  'whoami',
-  'hostname',
-  
-  // Git
-  'git',
-  'git-branch',
-  'git-status',
-  'git-head',
-  
-  // Health
-  'health',
-  'health-detailed',
-  'metrics',
-  'metrics-cpu',
-  'memory-detail',
-  
-  // Logs
-  'logs',
-  'logs-nginx',
-  'logs-error',
-  
-  // Docker
-  'docker',
-  'docker-logs',
-  'docker-inspect',
-  
-  // Deployment
-  'version',
-  'deployed',
-  'env-prod',
-  
-  // Network
-  'netstat',
-  'nginx-status',
-  'lsof',
-  
-  // Database
-  'psql-info',
-  'redis-info',
-  
-  // System
-  'systemctl',
-  'ls',
+  'uname', 'uptime', 'free', 'df', 'whoami', 'hostname', 'id', 'nproc',
+  'git', 'health', 'health-detailed', 'metrics', 'metrics-cpu', 'ps',
+  'api-log', 'nginx-access', 'nginx-error', 'ls',
+  'systemctl-nhatprx', 'nginx-status',
+  'proc-cpuinfo', 'proc-meminfo', 'proc-loadavg', 'proc-net-dev',
 ]
 
 export function isCommandAllowed(cmd: string): boolean {

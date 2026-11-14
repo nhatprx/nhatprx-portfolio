@@ -330,7 +330,7 @@ export default function Ec2Terminal({ identity = DEFAULT_IDENTITY }: Ec2Terminal
       {/* Terminal Footer Status Bar */}
       <div className="px-4 py-2 bg-white/[0.02] border-t border-white/10 flex items-center justify-between text-[10px] text-white/30 shrink-0">
         <span>EC2 NODE · ap-southeast-1 · TLS 1.3 · STRICT SECURITY MODE</span>
-        <span>{serverDown ? 'UNAVAILABLE - BACKEND REQUIRED' : isRunning ? 'EXECUTING ON LIVE NODE...' : 'RATE LIMITED · 60/MIN · JWT VALIDATED'}</span>
+        <span>{serverDown ? 'UNAVAILABLE - BACKEND REQUIRED' : isRunning ? 'EXECUTING ON LIVE NODE...' : 'RATE LIMITED · 60/MIN · READ-ONLY'}</span>
       </div>
     </div>
   )

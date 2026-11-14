@@ -62,7 +62,7 @@ test('Terminal - Command Execution', async t => {
   })
 
   await t.test('executes git commands if repo exists', async () => {
-    const result = await runTerminalCommand('git log --oneline -10')
+    const result = await runTerminalCommand('git log')
     // May fail if .git doesn't exist, but should have proper error handling
     assert(typeof result.stdout === 'string' || typeof result.error === 'string')
   })
@@ -85,18 +85,24 @@ test('Terminal - Security', async t => {
 
   await t.test('all allowed commands have safe paths', () => {
     for (const [key, spec] of Object.entries(ALLOWED_COMMANDS)) {
-      assert(Array.isArray(spec.exec), `${key} exec must be array`)
-      assert(spec.exec.length > 0, `${key} exec must not be empty`)
-      assert(Array.isArray(spec.args), `${key} args must be array`)
-      // Verify exec[0] is not a shell metacharacter or path traversal
-      assert(!spec.exec[0].includes(';'), `${key} exec contains shell metacharacter`)
-      assert(!spec.exec[0].includes('|'), `${key} exec contains pipe`)
-      assert(!spec.exec[0].includes('&'), `${key} exec contains ampersand`)
+      const execs = spec.forms ? Object.values(spec.forms) : [spec.exec]
+      for (const exec of execs) {
+        assert(Array.isArray(exec), `${key} exec must be array`)
+        assert(exec.length > 0, `${key} exec must not be empty`)
+        assert(!/[;&|`$<>]/.test(exec.join(' ')), `${key} exec contains shell syntax`)
+      }
+      if (!spec.forms) assert(Array.isArray(spec.args), `${key} args must be array`)
     }
   })
 
   await t.test('blocks command injection via pipe attempt', async () => {
-    const result = await runTerminalCommand('ls -1 -la; echo hacked')
+    const result = await runTerminalCommand('ls -la; echo hacked')
+    assert.strictEqual(result.ok, false)
+    assert.match(result.reason || result.error, /shell syntax not allowed/)
+  })
+
+  await t.test('rejects a subset of a fixed argument list', async () => {
+    const result = await runTerminalCommand('ls -1')
     assert.strictEqual(result.ok, false)
     assert.match(result.reason || result.error, /argument not allowed/)
   })
