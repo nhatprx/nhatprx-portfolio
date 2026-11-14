@@ -88,19 +88,29 @@ export async function getSystemMetrics() {
  */
 export async function getSystemInfo() {
   try {
-    const [{ stdout: hostname }, { stdout: uname }, { stdout: osRelease }] = await Promise.all([
+    const [{ stdout: hostname }, { stdout: uname }, osReleaseContent] = await Promise.all([
       execFileAsync('hostname'),
       execFileAsync('uname', ['-r']),
-      readFile('/etc/os-release', 'utf8').catch(() => 'Ubuntu'),
+      readFile('/etc/os-release', 'utf8').catch(() => ''),
     ])
 
     // Check if running on EC2
     const isEc2 = await checkIfEc2()
 
+    // Parse /etc/os-release to get a human-readable OS name
+    let osRelease = 'unknown'
+    if (osReleaseContent) {
+      const lines = osReleaseContent.split('\n')
+      // Try PRETTY_NAME first (e.g., "Ubuntu 20.04 LTS"), fall back to NAME
+      const prettyName = lines.find(l => l.startsWith('PRETTY_NAME'))?.split('=')[1]?.trim().replaceAll('"', '')
+      const name = lines.find(l => l.startsWith('NAME='))?.split('=')[1]?.trim().replaceAll('"', '')
+      osRelease = prettyName || name || 'unknown'
+    }
+
     return {
       hostname: hostname.trim(),
       kernel_version: uname.trim(),
-      os_release: osRelease.split('\n')[0],
+      os_release: osRelease,
       is_ec2: isEc2,
     }
   } catch (err) {

@@ -53,6 +53,18 @@ export const ALLOWED_COMMANDS = {
     args: [],
     exec: ['hostname'],
   },
+  id: {
+    args: [],
+    exec: ['id'],
+  },
+  nproc: {
+    args: [],
+    exec: ['nproc'],
+  },
+  ps: {
+    args: ['aux'],
+    exec: ['ps', 'aux'],
+  },
   ls: {
     // Only the project directory, not the whole home dir: the home folder
     // holds .ssh and other paths that should never be listed publicly.
@@ -119,11 +131,18 @@ export function resolveCommand(raw) {
 /**
  * Runs an allowlisted command and returns its real output.
  * Never throws for a rejected command - the caller turns it into a 400.
+ * 
+ * Error types returned:
+ * - "not_allowed": command not in allowlist
+ * - "permission_denied": Linux permission denied (exit code 1 + EACCES pattern)
+ * - "not_found": file/command not found (exit code 127 or ENOENT pattern)
+ * - "timeout": command execution timeout
+ * - "error": other execution errors
  */
 export async function runTerminalCommand(raw) {
   const resolved = resolveCommand(raw)
   if (!resolved.ok) {
-    return { ok: false, error: resolved.reason }
+    return { ok: false, error: resolved.reason, error_type: 'not_allowed' }
   }
 
   const { spec, key } = resolved
@@ -154,11 +173,26 @@ export async function runTerminalCommand(raw) {
     }
   } catch (err) {
     const message = err?.stderr || err?.message || 'command failed'
+    const code = typeof err?.code === 'number' ? err.code : null
+    
+    // Classify error type based on exit code and message
+    let error_type = 'error'
+    if (err.code === 'ETIMEDOUT') {
+      error_type = 'timeout'
+    } else if (code === 127 || /command not found|ENOENT/.test(message)) {
+      error_type = 'not_found'
+    } else if (code === 1 && /Permission denied|EACCES/.test(message)) {
+      error_type = 'permission_denied'
+    } else if (code === 1 && /No such file or directory/.test(message)) {
+      error_type = 'not_found'
+    }
+
     return {
       ok: false,
       command: key,
       error: String(message).trimEnd(),
-      exitCode: typeof err?.code === 'number' ? err.code : null,
+      error_type: error_type,
+      exitCode: code,
     }
   }
 }
