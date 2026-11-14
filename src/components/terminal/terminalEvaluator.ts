@@ -109,8 +109,8 @@ const REMOTE_COMMANDS: Record<string, string> = {
   'lsof': 'lsof -i -P -n | grep -E "LISTEN|portfolio|nginx"',
   
   // Database
-  'psql': 'psql -c "SELECT version();" 2>/dev/null || echo "PostgreSQL unavailable"',
-  'redis': 'redis-cli INFO stats | head -10',
+  'psql-info': 'psql --version',
+  'redis-info': 'redis-cli --version 2>/dev/null || echo "Redis CLI available (no server running locally)"',
   
   // System
   'systemctl': 'systemctl -l --no-pager status portfolio-api nginx',

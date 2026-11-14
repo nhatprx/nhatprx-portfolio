@@ -43,7 +43,7 @@ export default function PresetsTab({
       setPresets(getStoredPresets())
       setPresetName('')
       setShowSaveForm(false)
-      showToast(`✓ Preset "${preset.name}" saved successfully!`)
+      showToast(`Preset "${preset.name}" saved successfully`)
     } catch (err) {
       showToast('Failed to save preset', 'error')
     } finally {
@@ -101,9 +101,9 @@ export default function PresetsTab({
             <div className="border border-white/10 p-3 bg-black/60 rounded text-xs text-white/60">
               <div className="font-semibold text-white/80 mb-1.5">Resume to save with this preset:</div>
               {resumeFileName ? (
-                <div className="text-emerald-400">✓ {resumeFileName}</div>
+                <div className="text-emerald-400">Attached: {resumeFileName}</div>
               ) : (
-                <div className="text-amber-400">⚠ No resume (default will be used)</div>
+                <div className="text-amber-400">No resume (default will be used)</div>
               )}
             </div>
             <div className="flex gap-2 justify-end">
@@ -158,9 +158,9 @@ export default function PresetsTab({
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-bold text-white truncate">{preset.name}</h3>
                       <div className="text-[10px] text-white/40 mt-1.5 space-y-0.5">
-                        <div>📅 {new Date(preset.timestamp).toLocaleDateString()}</div>
+                        <div>{new Date(preset.timestamp).toLocaleDateString()}</div>
                         {preset.resumeFileName && (
-                          <div className="text-emerald-400/70">📄 Resume: {preset.resumeFileName}</div>
+                          <div className="text-emerald-400/70">Resume: {preset.resumeFileName}</div>
                         )}
                       </div>
                     </div>

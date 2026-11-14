@@ -72,6 +72,7 @@ export default function SiteHeader({
               : 'opacity-0 max-w-0 p-0 translate-x-3 pointer-events-none'
           }`}
         >
+          {/* GET IN TOUCH: Full button on xs+, icon-only on mobile */}
           <a
             href="#contact"
             tabIndex={scrolledHeaderActions ? 0 : -1}
@@ -82,12 +83,14 @@ export default function SiteHeader({
             className="inline-flex items-center justify-center gap-1 px-2 sm:px-2.5 py-1.5 bg-white text-black font-mono text-[10px] sm:text-[11px] font-bold tracking-wider hover:bg-white/85 transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] cursor-pointer whitespace-nowrap shrink-0"
             title={t.hero.getInTouch}
           >
-            <MailIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-black/70" />
+            <MailIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-black/70 shrink-0" />
             <span className="hidden xs:inline">{t.hero.getInTouch}</span>
             <span aria-hidden="true" className="hidden xs:inline text-[10px]">
               →
             </span>
           </a>
+
+          {/* RESUME: Full button on xs+, icon-only on mobile */}
           <a
             href={t.hero.resumeUrl || '/%5Bnhatprx%5D%20PERSONAL%20RESUME.pdf'}
             download={t.hero.resumeFileName || '[nhatprx] PERSONAL RESUME.pdf'}
@@ -95,7 +98,7 @@ export default function SiteHeader({
             className="inline-flex items-center justify-center gap-1 px-2 sm:px-2.5 py-1.5 border border-white/20 text-white font-mono text-[10px] sm:text-[11px] font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-all whitespace-nowrap shrink-0"
             title={t.hero.resume}
           >
-            <DownloadIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white/60" />
+            <DownloadIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white/60 shrink-0" />
             <span className="hidden xs:inline">{t.hero.resume}</span>
           </a>
         </div>
