@@ -50,6 +50,10 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
   const isFirstMount = useRef(true)
   const lastPersistedRef = useRef(translations)
 
+  const showToast = (msg: string, variant: ToastVariant = 'success') => {
+    setToast({ message: msg, variant })
+  }
+
   useEffect(() => {
     if (isFirstMount.current) {
       isFirstMount.current = false
@@ -103,10 +107,6 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
       active = false
     }
   }, [isAuthenticated, onUpdateTranslations])
-
-  const showToast = (msg: string, variant: ToastVariant = 'success') => {
-    setToast({ message: msg, variant })
-  }
 
   const handleCloseAndSync = async () => {
     const current = translations[selectedLang]

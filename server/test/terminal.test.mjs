@@ -1,8 +1,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert'
-import { resolveCommand, runTerminalCommand, ALLOWED_COMMANDS } from '../terminal.mjs'
+import { resolveCommand, runTerminalCommand } from '../terminal.mjs'
 
-test('resolveCommand - accepts allowlisted single commands', async (t) => {
+test('resolveCommand - accepts allowlisted single commands', async () => {
   assert.deepStrictEqual(resolveCommand('whoami').ok, true)
   assert.deepStrictEqual(resolveCommand('hostname').ok, true)
   assert.deepStrictEqual(resolveCommand('uptime').ok, true)
@@ -10,18 +10,18 @@ test('resolveCommand - accepts allowlisted single commands', async (t) => {
   assert.deepStrictEqual(resolveCommand('df -h').ok, true)
 })
 
-test('resolveCommand - rejects unknown commands', async (t) => {
+test('resolveCommand - rejects unknown commands', async () => {
   assert.deepStrictEqual(resolveCommand('rm -rf /').ok, false)
   assert.deepStrictEqual(resolveCommand('cat /etc/shadow').ok, false)
   assert.deepStrictEqual(resolveCommand('sudo whoami').ok, false)
 })
 
-test('resolveCommand - rejects invalid arguments', async (t) => {
+test('resolveCommand - rejects invalid arguments', async () => {
   assert.deepStrictEqual(resolveCommand('free --human').ok, false)
   assert.deepStrictEqual(resolveCommand('df --human-readable').ok, false)
 })
 
-test('runTerminalCommand - executes real commands on the EC2 node', async (t) => {
+test('runTerminalCommand - executes real commands on the EC2 node', async () => {
   // Only run these tests on the actual EC2 node (Ubuntu); skip on Windows dev machines
   const isUbuntu = process.platform === 'linux' && process.env.HOSTNAME?.includes('nhatprx')
   
@@ -61,13 +61,13 @@ test('runTerminalCommand - executes real commands on the EC2 node', async (t) =>
   console.log('✓ df -h:', dfResult.stdout.split('\n')[0])
 })
 
-test('runTerminalCommand - rejects disallowed commands', async (t) => {
+test('runTerminalCommand - rejects disallowed commands', async () => {
   const badResult = await runTerminalCommand('cat /etc/shadow')
   assert.strictEqual(badResult.ok, false)
   assert.match(badResult.error, /not allowed/)
 })
 
-test('runTerminalCommand - enforces timeout', async (t) => {
+test('runTerminalCommand - enforces timeout', async () => {
   // This test is informational: the timeout is 5 seconds
   // A long-running command will fail gracefully
   console.log(`Timeout limit: 5000ms per command`)
