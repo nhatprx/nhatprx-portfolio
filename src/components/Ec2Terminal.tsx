@@ -14,7 +14,7 @@ interface Ec2TerminalProps {
 }
 
 export default function Ec2Terminal({ identity = DEFAULT_IDENTITY }: Ec2TerminalProps) {
-  const [history, setHistory] = useState<HistoryEntry[]>(INITIAL_GREETING)
+  const [history, setHistory] = useState<HistoryEntry[]>([])
   const [inputVal, setInputVal] = useState('')
   const [cmdHistory, setCmdHistory] = useState<string[]>([])
   const [historyIndex, setHistoryIndex] = useState<number>(-1)
@@ -24,6 +24,13 @@ export default function Ec2Terminal({ identity = DEFAULT_IDENTITY }: Ec2Terminal
   const inputRef = useRef<HTMLInputElement>(null)
   const [isScrollable, setIsScrollable] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
+
+  // Load initial greeting
+  useEffect(() => {
+    INITIAL_GREETING().then(greeting => {
+      setHistory(greeting)
+    })
+  }, [])
 
   useEffect(() => {
     if (isInitialMount.current) {

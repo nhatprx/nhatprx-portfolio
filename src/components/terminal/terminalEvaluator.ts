@@ -1,23 +1,49 @@
 import { getStoredTerminalCommands } from '../../services/contentStorage'
-import { execTerminalCommand } from '../../services/terminalApi'
+import { execTerminalCommand, fetchTerminalInfo } from '../../services/terminalApi'
 import { DEFAULT_IDENTITY, type Identity } from '../../data/identity'
 import type { HistoryEntry } from './types'
 
-export const INITIAL_GREETING: HistoryEntry[] = [
-  {
-    type: 'system',
-    text: 'Welcome to Ubuntu 24.04.1 LTS (GNU/Linux 6.8.0-1018-generic x86_64)',
-  },
-  {
-    type: 'system',
-    text:
-      ' * Documentation:  https://help.ubuntu.com\n * Management:     Cloud Node Console (ap-southeast-1)\n * Security:       Read-only inspection shell active (Guest)\n * Live:           commands run on this instance and return live system output',
-  },
-  {
-    type: 'system',
-    text: 'Type "help" or click command pills below to inspect live instance metrics.',
-  },
-]
+let cachedGreeting: HistoryEntry[] | null = null
+
+export async function INITIAL_GREETING(): Promise<HistoryEntry[]> {
+  if (cachedGreeting) return cachedGreeting
+
+  try {
+    const info = await fetchTerminalInfo()
+    cachedGreeting = [
+      {
+        type: 'system',
+        text: `Welcome to ${info.os_release} (GNU/Linux ${info.kernel_version} ${info.is_ec2 ? 'x86_64-aws' : 'x86_64'})`,
+      },
+      {
+        type: 'system',
+        text: ` * Documentation:  https://help.ubuntu.com\n * Management:     ${info.is_ec2 ? 'AWS EC2 Console' : 'Local System'}\n * Security:       Read-only inspection shell (allowlist-based)\n * Live:           All commands execute on ${info.hostname} and return real-time output`,
+      },
+      {
+        type: 'system',
+        text: 'Type "help" or click command pills to see available monitoring tools.',
+      },
+    ]
+  } catch {
+    // Fallback to static greeting on error
+    cachedGreeting = [
+      {
+        type: 'system',
+        text: 'Welcome to Ubuntu (GNU/Linux AWS)',
+      },
+      {
+        type: 'system',
+        text: ' * Security: Read-only inspection shell (allowlist-based)\n * Live: All commands execute on the real EC2 node',
+      },
+      {
+        type: 'system',
+        text: 'Type "help" to see available commands.',
+      },
+    ]
+  }
+
+  return cachedGreeting
+}
 
 export const QUICK_COMMANDS = [
   'uname -a',

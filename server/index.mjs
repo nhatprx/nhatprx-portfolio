@@ -26,6 +26,7 @@ import { S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } fro
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { runTerminalCommand } from './terminal.mjs'
 import { translateSection } from './bedrock-translate.mjs'
+import { getSystemMetrics, getSystemInfo } from './system-metrics.mjs'
 
 const PORT = Number(process.env.PORT || 8787)
 const REGION = process.env.AWS_REGION || 'ap-southeast-1'
@@ -166,6 +167,28 @@ function requireAuth(req, res) {
 async function handleGet(req, res, path) {
   if (path === '/api/health') {
     sendJson(res, 200, { ok: true })
+    return
+  }
+
+  if (path === '/api/metrics') {
+    try {
+      const metrics = await getSystemMetrics()
+      sendJson(res, 200, { ok: true, metrics })
+    } catch (err) {
+      console.error('[api] metrics error:', err)
+      sendJson(res, 500, { error: 'failed to fetch metrics' })
+    }
+    return
+  }
+
+  if (path === '/api/system-info') {
+    try {
+      const info = await getSystemInfo()
+      sendJson(res, 200, { ok: true, info })
+    } catch (err) {
+      console.error('[api] system-info error:', err)
+      sendJson(res, 500, { error: 'failed to fetch system info' })
+    }
     return
   }
 
