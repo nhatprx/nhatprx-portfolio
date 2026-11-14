@@ -2,7 +2,6 @@ import { TRANSLATIONS, type SupportedLang, type TranslationDict, type LocalizedB
 import { resolveIdentity } from '../data/identity'
 import { fetchRemoteContent, saveRemoteContent } from './adminApi'
 
-const CONTENT_STORAGE_KEY = 'nhatprx_content_overrides'
 const TERMINAL_COMMANDS_KEY = 'nhatprx_custom_terminal_commands'
 
 /** The languages, in the order the global identity override is scanned. */
@@ -10,64 +9,29 @@ const LANG_ORDER: SupportedLang[] = ['en', 'vi', 'fr', 'ja']
 
 export type CustomTerminalCommands = Record<string, string>
 
-export function getStoredTranslations(): Record<SupportedLang, TranslationDict> {
-  if (typeof window === 'undefined') return TRANSLATIONS
-  try {
-    const raw = localStorage.getItem(CONTENT_STORAGE_KEY)
-    if (raw) {
-      return mergeTranslations(JSON.parse(raw))
-    }
-  } catch (err) {
-    console.error('Failed to parse stored translations:', err)
-  }
-  return TRANSLATIONS
-}
-
-export function saveStoredTranslations(data: Record<SupportedLang, TranslationDict>): void {
-  try {
-    localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(data))
-  } catch (err) {
-    console.error('Failed to save translations to localStorage:', err)
-  }
-}
-
-export function resetStoredTranslations(): void {
-  try {
-    localStorage.removeItem(CONTENT_STORAGE_KEY)
-  } catch (err) {
-    console.error('Failed to reset translations in localStorage:', err)
-  }
-}
-
 /**
  * Loads content overrides from the remote API (S3-backed) and merges them on
- * top of the factory defaults. Returns fresh data from S3, never stale cache.
+ * top of the factory defaults. S3 is the single source of truth; no localStorage cache.
  * Falls back to factory defaults only when S3 is unreachable.
  */
 export async function loadRemoteTranslations(): Promise<Record<SupportedLang, TranslationDict>> {
   try {
     const remote = await fetchRemoteContent<Record<SupportedLang, TranslationDict>>()
     if (!remote) {
-      // S3 returned no data; use factory defaults, not stale localStorage
+      // S3 returned no data; use factory defaults
       return mergeTranslations({})
-    }
-    // Always persist fresh S3 data to localStorage for offline fallback
-    try {
-      saveStoredTranslations(remote)
-    } catch {
-      // localStorage quota exceeded; not fatal, just skip caching
     }
     return mergeTranslations(remote)
   } catch (err) {
-    console.warn('S3 unreachable, falling back to factory defaults (not cache):', err)
-    // On network error, return clean defaults, not stale localStorage
+    console.warn('S3 unreachable, falling back to factory defaults:', err)
+    // On network error, return clean defaults
     return mergeTranslations({})
   }
 }
 
 /**
- * Persists content overrides to the remote API (S3-backed) and mirrors them to
- * localStorage as an offline cache.
+ * Persists content overrides to the remote API (S3-backed).
+ * S3 is the single source of truth; no local cache needed.
  */
 export async function saveRemoteTranslations(
   data: Record<SupportedLang, TranslationDict>
@@ -76,7 +40,7 @@ export async function saveRemoteTranslations(
     await saveRemoteContent(data)
     return true
   } catch (err) {
-    console.error('Failed to save translations to remote storage:', err)
+    console.error('Failed to save translations to S3:', err)
     return false
   }
 }
@@ -191,4 +155,3 @@ export function saveStoredTerminalCommands(commands: CustomTerminalCommands): vo
 }
 
 export type { LocalizedBlogPost, ExperienceItem, ProjectItem, SupportedLang, TranslationDict }
-

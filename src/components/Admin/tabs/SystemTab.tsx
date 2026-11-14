@@ -1,10 +1,9 @@
 import {
-  resetStoredTranslations,
-  getStoredTranslations,
   saveRemoteTranslations,
   type SupportedLang,
   type TranslationDict,
 } from '../../../services/contentStorage'
+import { TRANSLATIONS } from '../../../data/translations'
 import type { ToastVariant } from '../Toast'
 
 interface SystemTabProps {
@@ -47,8 +46,7 @@ export default function SystemTab({
                   'Are you sure you want to reset all data to default? All custom edits will be wiped.'
                 )
               ) {
-                resetStoredTranslations()
-                const defaults = getStoredTranslations()
+                const defaults = TRANSLATIONS
                 setTranslations(defaults)
                 onUpdateTranslations(defaults)
                 await saveRemoteTranslations(defaults)

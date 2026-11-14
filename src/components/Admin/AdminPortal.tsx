@@ -1,15 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import {
-  getStoredTranslations,
-  saveStoredTranslations,
   getStoredTerminalCommands,
-  saveStoredTerminalCommands,
   loadRemoteTranslations,
   saveRemoteTranslations,
   type SupportedLang,
   type TranslationDict,
   type CustomTerminalCommands,
 } from '../../services/contentStorage'
+import { TRANSLATIONS } from '../../data/translations'
 import { login as apiLogin, logout as apiLogout, isLoggedIn, translatePortfolio } from '../../services/adminApi'
 import SitePreview from './SitePreview'
 import AdminHeader from './components/AdminHeader'
@@ -32,10 +30,8 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
   const [loginError, setLoginError] = useState('')
   const [isAuthenticating, setIsAuthenticating] = useState(false)
 
-  // Admin Data State
-  const [translations, setTranslations] = useState<Record<SupportedLang, TranslationDict>>(() =>
-    getStoredTranslations()
-  )
+  // Admin Data State - Load from S3 on mount
+  const [translations, setTranslations] = useState<Record<SupportedLang, TranslationDict>>(TRANSLATIONS)
   const [terminalCommands, setTerminalCommands] = useState<CustomTerminalCommands>(() =>
     getStoredTerminalCommands()
   )
@@ -84,8 +80,6 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
 
       lastPersistedRef.current = syncedTranslations
 
-      saveStoredTranslations(syncedTranslations)
-      saveStoredTerminalCommands(terminalCommands)
       // Publish the same sanitized dict that is persisted, otherwise the live
       // site shows a different value than the one stored in S3.
       onUpdateTranslations(syncedTranslations)
@@ -95,7 +89,7 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
         const success = await saveRemoteTranslations(syncedTranslations)
         setSyncStatus(success ? 'saved' : 'error')
         if (!success) {
-          showToast('Failed to sync to cloud (saved locally)', 'error')
+          showToast('Failed to sync to cloud', 'error')
           setTimeout(() => setSyncStatus('idle'), 2000)
         } else {
           setTimeout(() => setSyncStatus('idle'), 1500)
@@ -141,8 +135,6 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
       }
     }
 
-    saveStoredTranslations(syncedTranslations)
-    saveStoredTerminalCommands(terminalCommands)
     onUpdateTranslations(syncedTranslations)
     
     if (isAuthenticated) {
@@ -151,7 +143,7 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
       if (success) {
         showToast('✓ Changes saved to cloud', 'success')
       } else {
-        showToast('✗ Failed to sync to cloud (saved locally)', 'error')
+        showToast('✗ Failed to sync to cloud', 'error')
       }
     }
     
