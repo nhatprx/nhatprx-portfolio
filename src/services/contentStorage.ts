@@ -19,11 +19,13 @@ export async function loadRemoteTranslations(): Promise<Record<SupportedLang, Tr
     const remote = await fetchRemoteContent<Record<SupportedLang, TranslationDict>>()
     if (!remote) {
       // S3 returned no data; use factory defaults
+      console.log('[loadRemoteTranslations] S3 returned null, using factory defaults')
       return mergeTranslations({})
     }
+    console.log('[loadRemoteTranslations] Successfully loaded content from S3')
     return mergeTranslations(remote)
   } catch (err) {
-    console.warn('S3 unreachable, falling back to factory defaults:', err)
+    console.warn('[loadRemoteTranslations] S3 unreachable, falling back to factory defaults:', err)
     // On network error, return clean defaults
     return mergeTranslations({})
   }

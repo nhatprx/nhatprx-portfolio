@@ -33,13 +33,15 @@ export function resolveIdentity(parsed, langOrder) {
   for (const code of langOrder) {
     const custom = parsed?.[code]?.identity
     if (!custom) continue
+    // Only use S3 data, no fallback to defaults
     return {
-      displayName: custom.displayName || DEFAULT_IDENTITY.displayName,
-      email: custom.email || DEFAULT_IDENTITY.email,
-      phone: custom.phone || DEFAULT_IDENTITY.phone,
-      githubUrl: custom.githubUrl || DEFAULT_IDENTITY.githubUrl,
-      linkedinUrl: custom.linkedinUrl || DEFAULT_IDENTITY.linkedinUrl,
+      displayName: custom.displayName,
+      email: custom.email,
+      phone: custom.phone,
+      githubUrl: custom.githubUrl,
+      linkedinUrl: custom.linkedinUrl,
     }
   }
-  return { ...DEFAULT_IDENTITY }
+  // No custom data found in S3 - return empty object (debug mode)
+  return {}
 }
