@@ -100,7 +100,7 @@ function mergeTranslations(
     return {
       ...base,
       ...custom,
-      identity,
+      identity, // Always override with the resolved global identity from remote
       hero: {
         ...base.hero,
         ...customHero,

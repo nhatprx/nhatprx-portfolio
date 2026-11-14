@@ -66,21 +66,34 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
       const lastSaved = lastPersistedRef.current[selectedLang] || current
       const safeDict = mergeValidDict(current, lastSaved)
 
-      const updatedToSave = {
+      // Always keep identity in sync across all languages: every language should
+      // have the same identity value so resolve order doesn't matter on load.
+      const syncedTranslations = {
         ...translations,
         [selectedLang]: safeDict,
       }
-      lastPersistedRef.current = updatedToSave
+      // Propagate the resolved identity to all other languages
+      const resolvedIdentity = safeDict.identity
+      for (const lang of (['en', 'vi', 'fr', 'ja'] as const)) {
+        if (lang !== selectedLang) {
+          syncedTranslations[lang] = {
+            ...syncedTranslations[lang],
+            identity: resolvedIdentity,
+          }
+        }
+      }
 
-      saveStoredTranslations(updatedToSave)
+      lastPersistedRef.current = syncedTranslations
+
+      saveStoredTranslations(syncedTranslations)
       saveStoredTerminalCommands(terminalCommands)
       // Publish the same sanitized dict that is persisted, otherwise the live
       // site shows a different value than the one stored in S3.
-      onUpdateTranslations(updatedToSave)
+      onUpdateTranslations(syncedTranslations)
       
       if (isAuthenticated) {
         setSyncStatus('saving')
-        const success = await saveRemoteTranslations(updatedToSave)
+        const success = await saveRemoteTranslations(syncedTranslations)
         setSyncStatus(success ? 'saved' : 'error')
         if (!success) {
           showToast('Failed to sync to cloud (saved locally)', 'error')
@@ -114,17 +127,28 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
     const lastSaved = lastPersistedRef.current[selectedLang] || current
     const safeDict = mergeValidDict(current, lastSaved)
 
-    const updatedToSave = {
+    // Always keep identity in sync across all languages
+    const syncedTranslations = {
       ...translations,
       [selectedLang]: safeDict,
     }
-    saveStoredTranslations(updatedToSave)
+    const resolvedIdentity = safeDict.identity
+    for (const lang of (['en', 'vi', 'fr', 'ja'] as const)) {
+      if (lang !== selectedLang) {
+        syncedTranslations[lang] = {
+          ...syncedTranslations[lang],
+          identity: resolvedIdentity,
+        }
+      }
+    }
+
+    saveStoredTranslations(syncedTranslations)
     saveStoredTerminalCommands(terminalCommands)
-    onUpdateTranslations(translations)
+    onUpdateTranslations(syncedTranslations)
     
     if (isAuthenticated) {
       setSyncStatus('saving')
-      const success = await saveRemoteTranslations(updatedToSave)
+      const success = await saveRemoteTranslations(syncedTranslations)
       if (success) {
         showToast('✓ Changes saved to cloud', 'success')
       } else {
