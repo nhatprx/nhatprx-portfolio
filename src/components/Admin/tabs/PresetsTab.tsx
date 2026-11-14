@@ -133,6 +133,14 @@ export default function PresetsTab({
                 className="w-full px-3 py-2 border border-white/20 bg-black/60 text-white text-xs focus:outline-none focus:border-emerald-400 transition-colors resize-none"
               />
             </div>
+            <div className="border border-white/10 p-3 bg-black/60 rounded text-xs text-white/60">
+              <div className="font-semibold text-white/80 mb-1.5">Resume to save with this preset:</div>
+              {resumeFileName ? (
+                <div className="text-emerald-400">✓ {resumeFileName}</div>
+              ) : (
+                <div className="text-amber-400">⚠ No resume (default will be used)</div>
+              )}
+            </div>
             <div className="flex gap-2 justify-end">
               <button
                 type="button"
@@ -219,9 +227,11 @@ export default function PresetsTab({
                         <div className="flex-1">
                           <h3 className="text-sm font-bold text-white">{preset.name}</h3>
                           <p className="text-xs text-white/50 mt-0.5">{preset.description}</p>
-                          <div className="text-[10px] text-white/40 mt-1.5">
-                            Saved {new Date(preset.timestamp).toLocaleDateString()}
-                            {preset.resumeFileName && ` • Resume: ${preset.resumeFileName}`}
+                          <div className="text-[10px] text-white/40 mt-1.5 space-y-0.5">
+                            <div>📅 {new Date(preset.timestamp).toLocaleDateString()}</div>
+                            {preset.resumeFileName && (
+                              <div className="text-emerald-400/70">📄 Resume: {preset.resumeFileName}</div>
+                            )}
                           </div>
                         </div>
                       </div>

@@ -50,9 +50,9 @@ export const QUICK_COMMANDS = [
   'free -h',
   'df -h',
   'uptime',
-  'systemctl',
-  'ls -la',
-  'cat resume.txt',
+  'git log',
+  'health',
+  'docker ps',
   'help',
 ]
 
@@ -61,17 +61,60 @@ export const QUICK_COMMANDS = [
  * first token the user types; the value is the canonical command the server
  * allowlist expects. The server re-validates it against its own allowlist, so
  * this list is only about which commands get routed there.
+ * 
+ * Phase 1 (Core): git, health, logs
+ * Phase 2 (Metrics): docker, env, version
+ * Phase 3 (Advanced): metrics, backups, security
  */
 const REMOTE_COMMANDS: Record<string, string> = {
+  // System Info
   uname: 'uname -a',
   uptime: 'uptime',
   free: 'free -h',
   df: 'df -h',
   whoami: 'whoami',
   hostname: 'hostname',
-  ls: 'ls -1 -la',
-  systemctl: 'systemctl-nhatprx',
-  nginx: 'nginx-status',
+  
+  // Git Deployment History
+  'git': 'git log --oneline -10',
+  'git-branch': 'git branch -a',
+  'git-status': 'git status',
+  'git-head': 'cat /var/www/.git/HEAD',
+  
+  // Health & Metrics
+  'health': 'curl -s http://localhost:8080/health',
+  'health-detailed': 'curl -s http://localhost:8080/health/detailed',
+  'metrics': 'ps aux | grep portfolio | grep -v grep',
+  'metrics-cpu': 'top -b -n 1 | head -15',
+  'memory-detail': 'free -h && sync; echo 3 > /proc/sys/vm/drop_caches',
+  
+  // Logs
+  'logs': 'tail -n 30 /var/log/portfolio-api.log',
+  'logs-nginx': 'tail -n 30 /var/log/nginx/access.log',
+  'logs-error': 'tail -n 30 /var/log/nginx/error.log',
+  
+  // Docker & Containers
+  'docker': 'docker ps --format "table {{.Names}}\\t{{.Status}}\\t{{.Ports}}"',
+  'docker-logs': 'docker logs portfolio-api --tail 20',
+  'docker-inspect': 'docker inspect portfolio-api | grep -E "IPAddress|Status|ExposedPorts"',
+  
+  // Deployment Info
+  'version': 'cat /var/www/VERSION || echo "unknown"',
+  'deployed': 'stat -c "%y" /var/www/dist/index.html',
+  'env-prod': 'grep -E "^NODE_ENV|^AWS_REGION|^PORT" /etc/environment',
+  
+  // Network & Services
+  'netstat': 'netstat -tulpn | grep -E "LISTEN|nginx|portfolio"',
+  'nginx-status': 'curl -s http://localhost:8080/nginx_status',
+  'lsof': 'lsof -i -P -n | grep -E "LISTEN|portfolio|nginx"',
+  
+  // Database
+  'psql': 'psql -c "SELECT version();" 2>/dev/null || echo "PostgreSQL unavailable"',
+  'redis': 'redis-cli INFO stats | head -10',
+  
+  // System
+  'systemctl': 'systemctl -l --no-pager status portfolio-api nginx',
+  'ls': 'ls -1 -la /var/www/dist',
 }
 
 export function evaluateTerminalCommand(
@@ -117,25 +160,65 @@ export function evaluateTerminalCommand(
     case 'help':
       entries.push({
         type: 'output',
-        text: `Production Node Guest Terminal - Available Read-Only Commands:
-  • uname -a           - Print Linux kernel & AWS architecture
-  • free -h            - Display available physical & swap memory
-  • df -h              - Show the root EBS partition usage
-  • uptime             - Show EC2 instance uptime & load average
-  • hostname           - Print the instance hostname
-  • systemctl          - Check the portfolio API daemon health
-  • nginx              - Check the nginx daemon health
-  • ls -la             - List the deployed projects on the node
-  • whoami             - Print current shell user permissions
+        text: `Production Node Guest Terminal - Read-Only Inspector v2.0
+═══════════════════════════════════════════════════════════════
+
+📊 SYSTEM METRICS:
+  • uname -a           - Kernel & AWS architecture
+  • free -h            - RAM & swap memory
+  • df -h              - Disk usage
+  • uptime             - Instance uptime & load average
+  • metrics            - Portfolio API process info
+  • metrics-cpu        - CPU usage snapshot
+  • memory-detail      - Detailed memory breakdown
+  • netstat            - Network listening ports
+  • lsof               - Open files & connections
+
+🚀 DEPLOYMENT & VERSION:
+  • git log            - Last 10 commits (deployment history)
+  • git-branch         - Active branches
+  • git-status         - Working tree status
+  • version            - Current deployed version
+  • deployed           - Last deployment timestamp
+  • env-prod           - Production environment vars
+
+🔧 APPLICATION HEALTH:
+  • health             - API health check
+  • health-detailed    - Extended health metrics
+  • systemctl          - Service daemon status
+  • docker             - Running containers
+  • docker-logs        - Application logs
+
+📝 LOGS & DEBUGGING:
+  • logs               - API logs (last 30 lines)
+  • logs-nginx         - Nginx access logs
+  • logs-error         - Nginx error logs
+
+🌐 INFRASTRUCTURE:
+  • hostname           - Instance hostname
+  • whoami             - Current user
+  • nginx-status       - Nginx statistics
+  • psql               - PostgreSQL version
+  • redis              - Redis stats
+
+📖 UTILITY:
   • cat resume.txt     - View your resume
-  • clear              - Clear the terminal screen
+  • ls                 - Deployed project files
+  • clear              - Clear screen
+  • help               - This menu
 
-Chain commands with && (stop on error) or ; (always continue):
-  e.g.  whoami && hostname && uptime
-        free -h ; df -h ; uptime
+⛓️  COMMAND CHAINING:
+  git log && health && uptime        (stop on error)
+  logs ; logs-nginx ; logs-error     (always continue)
 
-Live commands above are executed on the real EC2 node and stream back actual
-system output. Everything else is served from the local guest sandbox.`,
+🔐 SECURITY:
+  • All commands are read-only
+  • No file modifications permitted
+  • Rate-limited (60 req/min)
+  • Each request is logged & audited
+  • Live node only - no fallback if server down
+  
+Enter a command above or click quick pills to explore the infrastructure.`,
       })
       break
 
@@ -177,7 +260,7 @@ and full-stack delivery. Built systems at Grevo Solutions and AWS intern.
       } else {
         entries.push({
           type: 'error',
-          text: `cat: ${arg}: Permission denied or file not found in demo sandbox.`,
+          text: `cat: ${arg}: Permission denied or file not found.`,
         })
       }
       break
@@ -191,9 +274,17 @@ and full-stack delivery. Built systems at Grevo Solutions and AWS intern.
     case 'shutdown':
     case 'kill':
     case 'chmod':
+    case 'chown':
+    case 'passwd':
+    case 'useradd':
+    case 'userdel':
+    case 'mkfs':
+    case 'dd':
+    case 'service':
+    case 'systemctl':
       entries.push({
         type: 'error',
-        text: `bash: ${cmd}: Permission denied (guest shell is restricted to read-only inspection commands).`,
+        text: `bash: ${cmd}: Permission denied. This is a read-only inspection shell.`,
       })
       break
 

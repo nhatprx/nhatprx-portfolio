@@ -7,6 +7,8 @@ import {
   runRemoteCommand,
 } from './terminal/terminalEvaluator'
 import { DEFAULT_IDENTITY, type Identity } from '../data/identity'
+import { initTerminalSecurity, sanitizeTerminalOutput } from '../services/terminalApi'
+import { generateClientId } from '../services/terminalSecurity'
 
 interface Ec2TerminalProps {
   /** The global identity, so `cat resume.txt` shows the same contact info as the rest of the site. */
@@ -24,11 +26,36 @@ export default function Ec2Terminal({ identity = DEFAULT_IDENTITY }: Ec2Terminal
   const inputRef = useRef<HTMLInputElement>(null)
   const [isScrollable, setIsScrollable] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
+  const [serverDown, setServerDown] = useState(false)
+
+  // Initialize security context on mount
+  useEffect(() => {
+    const clientId = generateClientId()
+    initTerminalSecurity({ clientId })
+  }, [])
 
   // Load initial greeting
   useEffect(() => {
     INITIAL_GREETING().then(greeting => {
       setHistory(greeting)
+      setServerDown(false)
+    }).catch(() => {
+      // Server down - show error message
+      setServerDown(true)
+      setHistory([
+        {
+          type: 'system',
+          text: 'Welcome to Ubuntu (GNU/Linux AWS)',
+        },
+        {
+          type: 'error',
+          text: '✗ Server unreachable - Terminal requires backend access',
+        },
+        {
+          type: 'system',
+          text: 'This is a read-only inspection shell for the live EC2 node.\nWithout backend connection, terminal is unavailable.',
+        },
+      ])
     })
   }, [])
 
@@ -100,13 +127,22 @@ export default function Ec2Terminal({ identity = DEFAULT_IDENTITY }: Ec2Terminal
   const executeCommand = async (cmdStr: string) => {
     const raw = cmdStr.trim()
     if (!raw) return
+    
+    // Prevent execution if server is down
+    if (serverDown) {
+      setHistory((prev) => [...prev, {
+        type: 'error',
+        text: 'bash: command not found - Server is unreachable',
+      }])
+      return
+    }
 
     setCmdHistory((prev) => [...prev, raw])
     setHistoryIndex(-1)
     setInputVal('')
 
-    // Live commands run on the real EC2 node; the rest fall back to the
-    // local guest sandbox so the terminal still works offline.
+    // Live commands run on the real EC2 node; local sandbox is disabled
+    // (real terminal behavior: no fallback when server is down)
     const inputLine: HistoryEntry = { type: 'input', text: `ubuntu@nhatprx-server:~$ ${raw}` }
     setIsRunning(true)
     try {
@@ -120,19 +156,25 @@ export default function Ec2Terminal({ identity = DEFAULT_IDENTITY }: Ec2Terminal
         return
       }
     } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'remote command failed'
       setHistory((prev) => [
         ...prev,
         inputLine,
         {
           type: 'error',
-          text: err instanceof Error ? err.message : 'remote command failed',
+          text: errorMsg,
         },
       ])
+      // Check if it's a rate limit or server error
+      if (errorMsg.includes('Server unreachable') || errorMsg.includes('rate limit')) {
+        setServerDown(errorMsg.includes('Server unreachable'))
+      }
       return
     } finally {
       setIsRunning(false)
     }
 
+    // Local evaluation (only for non-remote commands like help, clear, cat)
     const result = evaluateTerminalCommand(raw, identity)
     if (result.isClear) {
       setHistory([])
@@ -192,19 +234,42 @@ export default function Ec2Terminal({ identity = DEFAULT_IDENTITY }: Ec2Terminal
           <span className="text-xs text-white/70 font-semibold tracking-wide">
             ubuntu@nhatprx-server:~
           </span>
+          {serverDown && (
+            <span className="text-[10px] px-2 py-0.5 bg-red-500/20 border border-red-500/40 text-red-300 rounded font-mono">
+              SERVER DOWN
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <span
-            className={`w-1.5 h-1.5 rounded-full ${isRunning ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400 animate-pulse'}`}
+            className={`w-1.5 h-1.5 rounded-full ${
+              serverDown
+                ? 'bg-red-500 animate-pulse'
+                : isRunning
+                  ? 'bg-amber-400 animate-pulse'
+                  : 'bg-emerald-400 animate-pulse'
+            }`}
           />
-          <span className="text-[10px] text-emerald-400/80 tracking-widest uppercase">
-            {isRunning ? 'exec · live node' : 'ap-southeast-1 · linux-x86_64'}
+          <span className={`text-[10px] tracking-widest uppercase ${
+            serverDown
+              ? 'text-red-400/80'
+              : isRunning
+                ? 'text-amber-400/80'
+                : 'text-emerald-400/80'
+          }`}>
+            {serverDown
+              ? 'OFFLINE · UNREACHABLE'
+              : isRunning
+                ? 'EXEC · LIVE NODE'
+                : 'AP-SOUTHEAST-1 · LINUX-X86_64'}
           </span>
         </div>
       </div>
 
       {/* Quick Command Action Bar */}
-      <div className="px-4 py-2 border-b border-white/5 flex items-center gap-1.5 overflow-x-auto shrink-0 scrollbar-none">
+      <div className={`px-4 py-2 border-b border-white/5 flex items-center gap-1.5 overflow-x-auto shrink-0 scrollbar-none ${
+        serverDown ? 'opacity-50 pointer-events-none' : ''
+      }`}>
         <span className="text-[10px] text-white/30 mr-1 shrink-0">QUICK:</span>
         {QUICK_COMMANDS.map((qc) => (
           <button
@@ -214,7 +279,8 @@ export default function Ec2Terminal({ identity = DEFAULT_IDENTITY }: Ec2Terminal
               e.stopPropagation()
               executeCommand(qc)
             }}
-            className="text-[11px] px-2 py-0.5 rounded-none border border-white/10 bg-white/[0.03] text-white/70 hover:text-white hover:border-white/30 hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
+            disabled={serverDown}
+            className="text-[11px] px-2 py-0.5 rounded-none border border-white/10 bg-white/[0.03] text-white/70 hover:text-white hover:border-white/30 hover:bg-white/10 transition-colors shrink-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {qc}
           </button>
