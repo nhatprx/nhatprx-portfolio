@@ -22,13 +22,19 @@ export default function App() {
   const [allTranslations, setAllTranslations] = useState(() => getStoredTranslations())
 
   // Load the shared content (S3-backed) so every visitor sees the latest edits.
+  // Poll every 30s to pick up fresh changes from S3 without page reload.
   useEffect(() => {
     let isMounted = true
-    loadRemoteTranslations().then((remote) => {
-      if (isMounted) setAllTranslations(remote)
-    })
+    const load = () => {
+      loadRemoteTranslations().then((remote) => {
+        if (isMounted) setAllTranslations(remote)
+      })
+    }
+    load()
+    const interval = setInterval(load, 30000)
     return () => {
       isMounted = false
+      clearInterval(interval)
     }
   }, [])
   const [isAdminOpen, setIsAdminOpen] = useState(() => {

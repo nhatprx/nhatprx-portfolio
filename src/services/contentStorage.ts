@@ -48,11 +48,8 @@ export async function loadRemoteTranslations(): Promise<Record<SupportedLang, Tr
   try {
     const remote = await fetchRemoteContent<Record<SupportedLang, TranslationDict>>()
     if (!remote) return getStoredTranslations()
-    try {
-      localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(remote))
-    } catch {
-      // localStorage is only a cache here; failing to write it is not fatal.
-    }
+    // Always persist the fresh remote data to localStorage immediately
+    saveStoredTranslations(remote)
     return mergeTranslations(remote)
   } catch (err) {
     console.warn('Remote content unavailable, using local cache:', err)
