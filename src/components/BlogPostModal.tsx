@@ -101,32 +101,32 @@ export default function BlogPostModal({
       aria-labelledby="modal-post-title"
       data-lenis-prevent
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 md:p-12 bg-black/55 backdrop-blur-[2px] overscroll-contain"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-8 md:p-12 bg-black/55 backdrop-blur-[2px] overscroll-contain"
     >
       {/* Floating Modal Window Card Overlay (at least 70vw on desktop) */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-[94vw] md:w-[85vw] lg:w-[75vw] xl:w-[72vw] max-w-7xl max-h-[88vh] bg-black/95 border border-white/25 flex flex-col shadow-[0_25px_70px_rgba(0,0,0,0.9)] overflow-hidden text-left font-sans animate-modal-pop"
+        className="w-[96vw] sm:w-[85vw] lg:w-[75vw] xl:w-[72vw] max-w-7xl max-h-[92vh] sm:max-h-[88vh] bg-black/95 border border-white/25 flex flex-col shadow-[0_25px_70px_rgba(0,0,0,0.9)] overflow-hidden text-left font-sans animate-modal-pop"
       >
         {/* Window Chrome Title Bar */}
-        <div className="flex items-center justify-between px-6 py-3.5 border-b border-white/10 bg-white/[0.03] shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-[11px] text-white/50 tracking-wider truncate max-w-[220px] sm:max-w-md">
+        <div className="flex items-center justify-between gap-3 px-3 sm:px-6 py-2.5 sm:py-3.5 border-b border-white/10 bg-white/[0.03] shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="font-mono text-[10px] sm:text-[11px] text-white/50 tracking-wider truncate max-w-[140px] sm:max-w-md">
               notes/{post.slug}.md
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <span className="font-mono text-[10px] text-white/40 hidden sm:inline">
               {post.date} · {post.readTime}
             </span>
             <button
               onClick={onClose}
               aria-label="Close dialog"
-              className="flex items-center gap-1.5 font-mono text-xs text-white/70 hover:text-white border border-white/15 px-3 py-1 hover:border-white/40 transition-colors cursor-pointer bg-white/[0.02]"
+              className="flex items-center gap-1.5 font-mono text-xs text-white/70 hover:text-white border border-white/15 px-2 sm:px-3 py-1 hover:border-white/40 transition-colors cursor-pointer bg-white/[0.02]"
             >
               <span>✕</span>
-              <span>{t.blog.modalClose}</span>
+              <span className="hidden xs:inline">{t.blog.modalClose}</span>
               <span className="text-[10px] text-white/30 hidden sm:inline">[ESC]</span>
             </button>
           </div>
@@ -136,7 +136,7 @@ export default function BlogPostModal({
         <div
           ref={contentRef}
           data-lenis-prevent
-          className="flex-1 overflow-y-auto overscroll-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-6 sm:p-10 space-y-8 select-text font-sans"
+          className="flex-1 overflow-y-auto overscroll-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-4 sm:p-10 space-y-6 sm:space-y-8 select-text font-sans"
         >
           {/* Post Header */}
           <header className="border-b border-white/10 pb-6">

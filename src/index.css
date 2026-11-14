@@ -3,6 +3,10 @@
 @theme {
   --font-sans: 'Chakra Petch', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  /* Small phones (iPhone SE / older Android). Below this the header and the
+     card carousel cannot fit their controls side by side. */
+  --breakpoint-xs: 375px;
 }
 
 /* Hide scrollbars across the entire application */

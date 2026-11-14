@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import AdminField from '../AdminField'
 import { FIELD_RULES, applyFieldRule, validateField } from '../utils/fieldRules'
 import { handleBulletInputKeyDown } from '../utils/validation'
@@ -32,6 +33,9 @@ export default function ExperienceModal({
   onClose,
   onSave,
 }: ExperienceModalProps) {
+  // Guidance hints appear only while the field is focused.
+  const [focusedField, setFocusedField] = useState<'bullets' | 'tech' | null>(null)
+
   // Each bullet is limited to its own budget; the textarea cap is the sum.
   const bulletBudget = FIELD_RULES.workBullet.max * 5
   const bullets = bulletText
@@ -165,6 +169,8 @@ export default function ExperienceModal({
                 setExpDraft({ ...expDraft, bullets: nextBullets })
               }, 5)
             }
+            onFocus={() => setFocusedField('bullets')}
+            onBlur={() => setFocusedField(null)}
             className={`w-full bg-white/[0.03] border p-2.5 text-xs text-white leading-relaxed focus:outline-none resize-none h-36 font-mono ${
               bulletError
                 ? 'border-rose-500/80 bg-rose-500/[0.04] focus:border-rose-400 focus:ring-1 focus:ring-rose-500/40'
@@ -176,11 +182,11 @@ export default function ExperienceModal({
             <p role="alert" className="mt-1 text-[10px] text-rose-300/90 leading-snug">
               ⚠ {bulletError}
             </p>
-          ) : (
+          ) : focusedField === 'bullets' ? (
             <p className="mt-1 text-[10px] text-white/30 leading-snug">
               {FIELD_RULES.workBullet.hint} Max {FIELD_RULES.workBullet.max} characters per bullet.
             </p>
-          )}
+          ) : null}
         </div>
 
         {/* Tech Stack Chip Manager */}
@@ -227,6 +233,8 @@ export default function ExperienceModal({
                     onAddTech()
                   }
                 }}
+                onFocus={() => setFocusedField('tech')}
+                onBlur={() => setFocusedField(null)}
                 className={`bg-transparent border px-2 py-1 text-xs text-white placeholder-white/30 focus:outline-none w-28 ${
                   techError
                     ? 'border-rose-500/80 bg-rose-500/[0.04] focus:border-rose-400'
@@ -250,11 +258,11 @@ export default function ExperienceModal({
             <p role="alert" className="mt-1 text-[10px] text-rose-300/90 leading-snug">
               ⚠ {techError}
             </p>
-          ) : (
+          ) : focusedField === 'tech' ? (
             <p className="mt-1 text-[10px] text-white/30 leading-snug">
               {FIELD_RULES.workTech.hint}
             </p>
-          )}
+          ) : null}
         </div>
 
         {/* Modal Actions */}

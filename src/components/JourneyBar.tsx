@@ -28,7 +28,7 @@ export default function JourneyBar({
 
   return (
     <div
-      className={`fixed bottom-6 right-0 w-full lg:w-1/2 pr-6 sm:pr-10 lg:pr-14 pl-6 sm:pl-10 lg:pl-4 xl:pl-6 2xl:pl-8 z-40 flex items-center gap-2 transition-all duration-300 pointer-events-none ${
+      className={`fixed bottom-4 sm:bottom-6 right-0 w-full xl:w-1/2 pr-3 sm:pr-10 xl:pr-14 pl-3 sm:pl-10 xl:pl-4 2xl:pl-8 z-40 flex items-center gap-2 transition-all duration-300 pointer-events-none ${
         showTopBtn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
       }`}
     >
@@ -45,7 +45,7 @@ export default function JourneyBar({
                 key={step.id}
                 type="button"
                 onClick={() => onScrollTo(`#${step.id}`)}
-                className={`h-full px-1 border transition-all cursor-pointer flex items-center justify-center text-xs truncate ${
+                className={`h-full px-0.5 sm:px-1 border transition-all cursor-pointer flex items-center justify-center text-xs truncate ${
                   isActive
                     ? 'border-emerald-400/80 bg-emerald-400/15 text-emerald-300 font-semibold shadow-[0_0_10px_rgba(52,211,153,0.15)]'
                     : 'border-transparent text-white/50 hover:text-white hover:bg-white/5'
@@ -53,9 +53,9 @@ export default function JourneyBar({
                 title={`Jump to ${step.label}`}
               >
                 <span
-                  className={`text-[10px] font-bold ${
+                  className={`text-[9px] sm:text-[10px] font-bold ${
                     isActive ? 'text-emerald-300' : 'text-emerald-400/80'
-                  } mr-1 shrink-0`}
+                  } mr-0.5 sm:mr-1 shrink-0`}
                 >
                   {step.num}
                 </span>

@@ -45,7 +45,7 @@ export default function WorkSection({
   return (
     <section
       id="work"
-      className="relative pt-20 sm:pt-24 lg:pt-24 pb-20 sm:pb-24 lg:pb-24 px-6 sm:px-10 lg:px-14 flex flex-col scroll-mt-28 sm:scroll-mt-32"
+      className="relative pt-20 sm:pt-24 lg:pt-24 pb-20 sm:pb-24 lg:pb-24 px-5 sm:px-10 lg:px-14 flex flex-col scroll-mt-28 sm:scroll-mt-32"
     >
       <div id="experience" className="absolute -top-28 sm:-top-32" />
       <div id="projects" className="absolute -top-28 sm:-top-32" />
@@ -76,11 +76,11 @@ export default function WorkSection({
 
         {/* Section Switcher Tabs & Counter */}
         <div className="flex items-center justify-between gap-3 mb-5">
-          <div className="inline-flex p-1 border border-white/15 bg-white/[0.03]">
+          <div className="inline-flex p-1 border border-white/15 bg-white/[0.03] min-w-0 max-w-full">
             <button
               type="button"
               onClick={() => setWorkTab('experience')}
-              className={`px-3.5 py-1.5 font-mono text-xs tracking-wider transition-all cursor-pointer ${
+              className={`px-2.5 sm:px-3.5 py-1.5 font-mono text-[11px] sm:text-xs tracking-wider transition-all cursor-pointer truncate ${
                 isExp
                   ? 'bg-white text-black font-semibold shadow-sm'
                   : 'text-white/50 hover:text-white'
@@ -91,7 +91,7 @@ export default function WorkSection({
             <button
               type="button"
               onClick={() => setWorkTab('projects')}
-              className={`px-3.5 py-1.5 font-mono text-xs tracking-wider transition-all cursor-pointer ${
+              className={`px-2.5 sm:px-3.5 py-1.5 font-mono text-[11px] sm:text-xs tracking-wider transition-all cursor-pointer truncate ${
                 !isExp
                   ? 'bg-white text-black font-semibold shadow-sm'
                   : 'text-white/50 hover:text-white'
@@ -101,18 +101,18 @@ export default function WorkSection({
             </button>
           </div>
 
-          <span className="font-mono text-xs text-white/50">
+          <span className="font-mono text-xs text-white/50 shrink-0">
             0{realIndex + 1} / 0{N}
           </span>
         </div>
 
         {/* Card Display with Side Switch Buttons */}
-        <div className="relative w-full story-reveal story-delay-1">
+        <div className="relative w-full story-reveal story-delay-1 pl-0 sm:pl-0">
           <button
             type="button"
             onClick={() => setCurrentActive((realIndex - 1 + N) % N)}
             aria-label="Previous card"
-            className="absolute -left-3 sm:-left-4.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 border border-white/20 bg-neutral-950/95 hover:border-emerald-400 hover:bg-emerald-950/50 text-white/70 hover:text-emerald-300 transition-all flex items-center justify-center cursor-pointer shadow-lg hover:shadow-[0_0_12px_rgba(52,211,153,0.3)] active:scale-95 group"
+            className="absolute -left-1 sm:-left-4.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 border border-white/20 bg-neutral-950/95 hover:border-emerald-400 hover:bg-emerald-950/50 text-white/70 hover:text-emerald-300 transition-all flex items-center justify-center cursor-pointer shadow-lg hover:shadow-[0_0_12px_rgba(52,211,153,0.3)] active:scale-95 group"
           >
             <ChevronLeftIcon className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
           </button>
@@ -134,7 +134,7 @@ export default function WorkSection({
               return (
                 <article
                   key={`exp-${realIndex}`}
-                  className="border border-white/15 bg-white/[0.025] p-5 sm:p-6 transition-all duration-200 h-[390px] sm:h-[405px] flex flex-col justify-between animate-card-switch"
+                  className="border border-white/15 bg-white/[0.025] p-4 sm:p-6 transition-all duration-200 min-h-[360px] sm:min-h-[405px] max-h-[70vh] sm:max-h-none flex flex-col justify-between animate-card-switch"
                 >
                   <div className="overflow-y-auto pr-1 min-h-0 flex-1 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.15)_transparent]">
                     <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 mb-1">
@@ -204,7 +204,7 @@ export default function WorkSection({
               return (
                 <article
                   key={`proj-${realIndex}`}
-                  className="border border-white/15 bg-white/[0.025] p-5 sm:p-6 transition-all duration-200 h-[390px] sm:h-[405px] flex flex-col justify-between animate-card-switch"
+                  className="border border-white/15 bg-white/[0.025] p-4 sm:p-6 transition-all duration-200 min-h-[360px] sm:min-h-[405px] max-h-[70vh] sm:max-h-none flex flex-col justify-between animate-card-switch"
                 >
                   <div className="overflow-y-auto pr-1 min-h-0 flex-1 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.15)_transparent]">
                     <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 mb-1">
@@ -276,7 +276,7 @@ export default function WorkSection({
             type="button"
             onClick={() => setCurrentActive((realIndex + 1) % N)}
             aria-label="Next card"
-            className="absolute -right-3 sm:-right-4.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 border border-white/20 bg-neutral-950/95 hover:border-emerald-400 hover:bg-emerald-950/50 text-white/70 hover:text-emerald-300 transition-all flex items-center justify-center cursor-pointer shadow-lg hover:shadow-[0_0_12px_rgba(52,211,153,0.3)] active:scale-95 group"
+            className="absolute -right-1 sm:-right-4.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 border border-white/20 bg-neutral-950/95 hover:border-emerald-400 hover:bg-emerald-950/50 text-white/70 hover:text-emerald-300 transition-all flex items-center justify-center cursor-pointer shadow-lg hover:shadow-[0_0_12px_rgba(52,211,153,0.3)] active:scale-95 group"
           >
             <ChevronRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
           </button>

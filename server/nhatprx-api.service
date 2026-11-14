@@ -9,6 +9,8 @@ WorkingDirectory=/home/ubuntu/nhatprx-api
 Environment=PORT=8787
 Environment=AWS_REGION=ap-southeast-1
 Environment=PORTFOLIO_BUCKET=nhatprx-portfolio-resumes-815802019553
+Environment=BEDROCK_MODEL_ID=anthropic.claude-3-5-haiku-20241022-v1:0
+Environment=BEDROCK_MAX_TOKENS=4096
 Environment=PASSKEY_HASH_FILE=/var/lib/nhatprx-api/passkey.hash
 Environment=TOKEN_SECRET_FILE=/var/lib/nhatprx-api/token.secret
 ExecStart=/usr/local/bin/node /home/ubuntu/nhatprx-api/index.mjs

@@ -56,10 +56,13 @@ jobs:
           # Sync built dist directory to Nginx web root
           rsync -avz --delete dist/ "$EC2_USER@$EC2_HOST:/var/www/html/"
 
-          # Deploy the admin API (S3 presign + content store) and restart it
+          # Deploy the admin API (S3 presign + content store + Bedrock) and restart it
+          # `nginx/` holds the vhost, which is installed once via setup-tls.sh,
+          # not on every deploy.
           rsync -avz --delete \
             --exclude node_modules \
             --exclude .testdata \
+            --exclude nginx \
             server/ "$EC2_USER@$EC2_HOST:/home/ubuntu/nhatprx-api/"
 
           ssh "$EC2_USER@$EC2_HOST" "cd /home/ubuntu/nhatprx-api && npm ci --omit=dev"

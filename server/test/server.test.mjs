@@ -109,3 +109,34 @@ test('a protected request without a token is rejected', async () => {
   })
   assert.equal(res.status, 401)
 })
+
+test('the terminal executes an allowlisted command', async () => {
+  const res = await fetch(`${baseUrl}/api/terminal/exec`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ command: 'hostname' }),
+  })
+  assert.equal(res.status, 200)
+  const body = await res.json()
+  assert.ok(body.stdout, 'expected stdout in the response body')
+})
+
+test('the terminal rejects a command outside the allowlist', async () => {
+  const res = await fetch(`${baseUrl}/api/terminal/exec`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ command: 'rm -rf /' }),
+  })
+  assert.equal(res.status, 400)
+  const body = await res.json()
+  assert.ok(body.error, 'expected an error message')
+})
+
+test('the terminal does not leak command errors as 200', async () => {
+  const res = await fetch(`${baseUrl}/api/terminal/exec`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ command: '' }),
+  })
+  assert.equal(res.status, 400)
+})

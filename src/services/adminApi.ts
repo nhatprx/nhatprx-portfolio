@@ -113,6 +113,41 @@ export async function fetchRemoteContent<T>(): Promise<T | null> {
   return (body?.content ?? null) as T | null
 }
 
+/** Translates portfolio sections through the authenticated server-side Bedrock API. */
+export async function translatePortfolio({
+  source,
+  sourceLang,
+  targetLang,
+  onProgress,
+}: {
+  source: Record<string, unknown>
+  sourceLang: string
+  targetLang: string
+  onProgress?: (message: string) => void
+}): Promise<Record<string, unknown>> {
+  const sections = ['about', 'skills', 'experience', 'projects', 'blog']
+  const translated: Record<string, unknown> = { ...source }
+
+  for (const sectionName of sections) {
+    const section = source[sectionName]
+    if (!section || typeof section !== 'object' || Array.isArray(section)) continue
+
+    onProgress?.(`Đang dịch ${sectionName} bằng AWS Bedrock...`)
+    const response = await request<{ content?: Record<string, unknown> }>('/api/translate', {
+      method: 'POST',
+      body: JSON.stringify({ source, sourceLang, targetLang }),
+    })
+
+    const translatedSection = response.content?.[sectionName]
+    if (!translatedSection || typeof translatedSection !== 'object') {
+      throw new Error(`Bedrock did not return the ${sectionName} section`)
+    }
+    translated[sectionName] = translatedSection
+  }
+
+  return translated
+}
+
 /** Persists the portfolio content JSON to S3. */
 export async function saveRemoteContent(content: unknown): Promise<void> {
   await request('/api/content', {

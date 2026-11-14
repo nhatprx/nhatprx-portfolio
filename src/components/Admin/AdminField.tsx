@@ -29,6 +29,9 @@ interface AdminFieldProps {
  *
  * The control itself is never blocked from receiving text - the red border and
  * the hint tell the user what to fix, and the caller decides whether to save.
+ *
+ * The guidance hint is only shown while the field is focused, so a form of
+ * dozens of fields stays clean but the rules are still one click away.
  */
 export default function AdminField({
   label,
@@ -45,6 +48,7 @@ export default function AdminField({
   autoFocus,
   onBlur,
 }: AdminFieldProps) {
+  const [isFocused, setIsFocused] = useState(false)
   const val = value ?? ''
   const computedError = error !== undefined ? error : validateField(val, rule, allowEmpty)
   const isInvalid = !!computedError
@@ -75,7 +79,11 @@ export default function AdminField({
           value={val}
           placeholder={placeholder}
           autoFocus={autoFocus}
-          onBlur={onBlur}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => {
+            setIsFocused(false)
+            onBlur?.()
+          }}
           onChange={(e) => onChange(e.target.value)}
           className={baseControl}
           aria-invalid={isInvalid}
@@ -87,7 +95,11 @@ export default function AdminField({
           value={val}
           placeholder={placeholder}
           autoFocus={autoFocus}
-          onBlur={onBlur}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => {
+            setIsFocused(false)
+            onBlur?.()
+          }}
           onChange={(e) => onChange(e.target.value)}
           className={baseControl}
           aria-invalid={isInvalid}
@@ -108,7 +120,7 @@ export default function AdminField({
         <p className="mt-1 text-[10px] text-rose-300/90 leading-snug">
           {rule.label ?? 'This field'} is {currentLength - rule.max} characters over the limit.
         </p>
-      ) : rule.hint ? (
+      ) : isFocused && rule.hint ? (
         <p className="mt-1 text-[10px] text-white/30 leading-snug">{rule.hint}</p>
       ) : null}
     </div>

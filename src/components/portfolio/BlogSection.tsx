@@ -43,7 +43,7 @@ export default function BlogSection({ t, onSelectBlog }: BlogSectionProps) {
   return (
     <section
       id="blog"
-      className="relative pt-20 sm:pt-24 lg:pt-24 pb-20 sm:pb-24 lg:pb-24 px-6 sm:px-10 lg:px-14 flex flex-col scroll-mt-28 sm:scroll-mt-32"
+      className="relative pt-20 sm:pt-24 lg:pt-24 pb-20 sm:pb-24 lg:pb-24 px-5 sm:px-10 lg:px-14 flex flex-col scroll-mt-28 sm:scroll-mt-32"
     >
       <div className="w-full text-left story-reveal">
         <p className="font-mono text-xs tracking-[0.35em] text-emerald-400 uppercase mb-2 font-medium">

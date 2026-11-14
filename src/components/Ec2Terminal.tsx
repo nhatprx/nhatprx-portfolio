@@ -4,6 +4,7 @@ import {
   INITIAL_GREETING,
   QUICK_COMMANDS,
   evaluateTerminalCommand,
+  runRemoteCommand,
 } from './terminal/terminalEvaluator'
 import { DEFAULT_IDENTITY, type Identity } from '../data/identity'
 
@@ -22,6 +23,7 @@ export default function Ec2Terminal({ identity = DEFAULT_IDENTITY }: Ec2Terminal
   const isInitialMount = useRef(true)
   const inputRef = useRef<HTMLInputElement>(null)
   const [isScrollable, setIsScrollable] = useState(false)
+  const [isRunning, setIsRunning] = useState(false)
 
   useEffect(() => {
     if (isInitialMount.current) {
@@ -88,22 +90,49 @@ export default function Ec2Terminal({ identity = DEFAULT_IDENTITY }: Ec2Terminal
     }
   }, [])
 
-  const executeCommand = (cmdStr: string) => {
+  const executeCommand = async (cmdStr: string) => {
     const raw = cmdStr.trim()
     if (!raw) return
 
     setCmdHistory((prev) => [...prev, raw])
     setHistoryIndex(-1)
+    setInputVal('')
+
+    // Live commands run on the real EC2 node; the rest fall back to the
+    // local guest sandbox so the terminal still works offline.
+    const inputLine: HistoryEntry = { type: 'input', text: `ubuntu@nhatprx-server:~$ ${raw}` }
+    setIsRunning(true)
+    try {
+      const stdout = await runRemoteCommand(raw)
+      if (stdout !== null) {
+        setHistory((prev) => [
+          ...prev,
+          inputLine,
+          { type: 'output', text: stdout || '(no output)' },
+        ])
+        return
+      }
+    } catch (err) {
+      setHistory((prev) => [
+        ...prev,
+        inputLine,
+        {
+          type: 'error',
+          text: err instanceof Error ? err.message : 'remote command failed',
+        },
+      ])
+      return
+    } finally {
+      setIsRunning(false)
+    }
 
     const result = evaluateTerminalCommand(raw, identity)
     if (result.isClear) {
       setHistory([])
-      setInputVal('')
       return
     }
 
     setHistory((prev) => [...prev, ...result.entries])
-    setInputVal('')
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -158,9 +187,11 @@ export default function Ec2Terminal({ identity = DEFAULT_IDENTITY }: Ec2Terminal
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${isRunning ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400 animate-pulse'}`}
+          />
           <span className="text-[10px] text-emerald-400/80 tracking-widest uppercase">
-            ap-southeast-1 · linux-x86_64
+            {isRunning ? 'exec · live node' : 'ap-southeast-1 · linux-x86_64'}
           </span>
         </div>
       </div>
@@ -225,8 +256,8 @@ export default function Ec2Terminal({ identity = DEFAULT_IDENTITY }: Ec2Terminal
 
       {/* Terminal Footer Status Bar */}
       <div className="px-4 py-2 bg-white/[0.02] border-t border-white/10 flex items-center justify-between text-[10px] text-white/30 shrink-0">
-        <span>SSH: 22/TCP · TLS 1.3</span>
-        <span>READ-ONLY SANDBOX · PRESS ENTER TO RUN</span>
+        <span>EC2 NODE · ap-southeast-1 · TLS 1.3</span>
+        <span>{isRunning ? 'EXECUTING ON LIVE NODE...' : 'READ-ONLY ALLOWLIST · PRESS ENTER TO RUN'}</span>
       </div>
     </div>
   )

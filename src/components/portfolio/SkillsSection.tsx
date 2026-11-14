@@ -21,7 +21,7 @@ export default function SkillsSection({ t }: SkillsSectionProps) {
   return (
     <section
       id="skills"
-      className="relative pt-20 sm:pt-24 lg:pt-24 pb-20 sm:pb-24 lg:pb-24 px-6 sm:px-10 lg:px-14 flex flex-col scroll-mt-28 sm:scroll-mt-32"
+      className="relative pt-20 sm:pt-24 lg:pt-24 pb-20 sm:pb-24 lg:pb-24 px-5 sm:px-10 lg:px-14 flex flex-col scroll-mt-28 sm:scroll-mt-32"
     >
       <div id="tech-stack" className="absolute -top-28 sm:-top-32" />
 

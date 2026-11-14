@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { SKILL_GROUP_LIMITS } from '../types'
 import type { TranslationDict } from '../../../data/translations'
 import { FIELD_RULES, applyFieldRule, validateField } from '../utils/fieldRules'
@@ -19,6 +20,9 @@ export default function AddSkillModal({
   onClose,
   onAdd,
 }: AddSkillModalProps) {
+  // Guidance hints appear only while the field is focused.
+  const [isFocused, setIsFocused] = useState(false)
+
   const cat = currentDict.skills.categories[modalCatIndex]
   const rule = SKILL_GROUP_LIMITS[modalCatIndex] || { maxItems: 10, maxLen: 30 }
 
@@ -86,6 +90,8 @@ export default function AddSkillModal({
                 onAdd()
               }
             }}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             className={`w-full bg-white/[0.03] border p-2 text-xs focus:outline-none ${
               error
                 ? 'border-rose-500/80 bg-rose-500/[0.04] text-rose-100 focus:border-rose-400 focus:ring-1 focus:ring-rose-500/40'
@@ -97,11 +103,11 @@ export default function AddSkillModal({
             <p role="alert" className="mt-1 text-[10px] text-rose-300/90 leading-snug">
               ⚠ {error}
             </p>
-          ) : (
+          ) : isFocused ? (
             <p className="mt-1 text-[10px] text-white/30 leading-snug">
               {effectiveRule.hint}
             </p>
-          )}
+          ) : null}
         </div>
 
         <div className="flex justify-end gap-2 pt-2 border-t border-white/10">

@@ -35,7 +35,7 @@ export default function HeroAboutSection({
   return (
     <section
       id="about"
-      className="relative pt-36 pb-20 sm:pt-40 sm:pb-24 lg:pt-36 lg:pb-20 lg:min-h-screen px-6 sm:px-10 lg:px-14 flex flex-col justify-end text-left scroll-mt-28 sm:scroll-mt-32"
+      className="relative pt-36 pb-20 sm:pt-40 sm:pb-24 lg:pt-36 lg:pb-20 lg:min-h-screen px-5 sm:px-10 lg:px-14 flex flex-col justify-end text-left scroll-mt-28 sm:scroll-mt-32"
     >
       <div id="hero" className="absolute top-0" />
 
@@ -46,7 +46,7 @@ export default function HeroAboutSection({
             {t.hero.role}
           </p>
 
-          <h1 className="text-5xl sm:text-6xl xl:text-7xl font-bold tracking-tight text-white leading-[0.98]">
+          <h1 className="text-4xl xs:text-[2.75rem] sm:text-6xl xl:text-7xl font-bold tracking-tight text-white leading-[0.98] break-words">
             {t.identity.displayName} <span className="text-white/25">.</span>
           </h1>
 
@@ -70,10 +70,13 @@ export default function HeroAboutSection({
             </a>
           </div>
 
-          {/* Mobile-only Terminal & Telemetry */}
+          {/* Inline Terminal & Telemetry
+              Mobile (<768px): live metric only.
+              Tablet (768-1279px): terminal + live metric, stacked full width.
+              Desktop (>=1280px): both move to the fixed right column. */}
           {showTerminalInMobile && (
-            <div className="lg:hidden mt-8 mb-4 w-full space-y-3">
-              <div className="hidden md:block h-[360px] w-full shadow-xl">
+            <div className="xl:hidden mt-8 mb-4 w-full space-y-3">
+              <div className="hidden md:block h-[320px] sm:h-[360px] w-full shadow-xl">
                 <Ec2Terminal identity={t.identity} />
               </div>
               <div className="w-full shadow-xl">

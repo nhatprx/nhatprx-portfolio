@@ -162,11 +162,11 @@ export default function App() {
         {/* Top Content Fade Mask / Shield (Hides content scrolling past header) */}
         <div
           aria-hidden="true"
-          className="fixed top-0 left-0 w-full lg:w-1/2 h-24 sm:h-26 lg:h-28 pointer-events-none z-30 bg-gradient-to-b from-black via-black/90 to-transparent"
+          className="fixed top-0 left-0 w-full xl:w-1/2 h-24 sm:h-28 xl:h-32 pointer-events-none z-30 bg-gradient-to-b from-black via-black/90 to-transparent"
         />
 
         {/* Top Header - Floating Slab Strictly Constrained to Left Column */}
-        <div className="fixed top-0 left-0 w-full lg:w-1/2 z-40 p-4 sm:p-6 lg:px-10 lg:pt-6 pointer-events-none">
+        <div className="fixed top-0 left-0 w-full xl:w-1/2 z-40 p-3 sm:p-6 xl:px-10 xl:pt-6 pointer-events-none">
           <SiteHeader
             t={t}
             lang={lang}
@@ -180,7 +180,7 @@ export default function App() {
 
         {/* Left Scrollable Content Column (50/50 Split) */}
         <div
-          className={`w-full lg:w-1/2 lg:min-h-screen flex flex-col transition-all duration-700 delay-100 ease-out motion-reduce:transition-none motion-reduce:transform-none ${
+          className={`w-full xl:w-1/2 xl:min-h-screen flex flex-col transition-all duration-700 delay-100 ease-out motion-reduce:transition-none motion-reduce:transform-none ${
             !isInitialLoading ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
           }`}
         >
@@ -201,7 +201,7 @@ export default function App() {
         {/* Desktop Fixed Terminal & Live Metric on the Right (Aligned to Top Header & Bottom Baseline) */}
         <aside
           aria-label="Interactive Live Cloud Node Terminal & Telemetry"
-          className={`hidden lg:flex fixed top-0 right-0 bottom-0 w-1/2 pt-6 pb-12 sm:pb-16 lg:pb-20 pr-6 sm:pr-10 lg:pr-14 pl-4 xl:pl-6 2xl:pl-8 flex-col justify-between pointer-events-none z-30 transition-opacity duration-700 delay-150 ease-out motion-reduce:transition-none ${
+          className={`hidden xl:flex fixed top-0 right-0 bottom-0 w-1/2 pt-6 pb-12 sm:pb-16 xl:pb-20 pr-4 sm:pr-10 xl:pr-14 pl-4 2xl:pl-8 flex-col justify-between pointer-events-none z-30 transition-opacity duration-700 delay-150 ease-out motion-reduce:transition-none ${
             !isInitialLoading ? 'opacity-100' : 'opacity-0'
           }`}
         >

@@ -10,8 +10,10 @@
  *   POST /api/admin/logout                            -> { ok }
  *   POST /api/resume/presign  { fileName, contentType, size } -> { uploadUrl, key, publicUrl, fileName, expiresIn }
  *   POST /api/resume/delete   { key }                  -> { ok }
+ *   POST /api/translate       { source, sourceLang, targetLang } -> { content }
  *   GET  /api/content                                 -> { content } | raw JSON
  *   PUT  /api/content         { content }              -> { ok }
+ *   POST /api/terminal/exec   { command }              -> { ok, stdout } | { error }
  *   GET  /api/health                                  -> { ok }
  */
 
@@ -22,6 +24,8 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { runTerminalCommand } from './terminal.mjs'
+import { translateSection } from './bedrock-translate.mjs'
 
 const PORT = Number(process.env.PORT || 8787)
 const REGION = process.env.AWS_REGION || 'ap-southeast-1'
@@ -41,6 +45,8 @@ const TOKEN_TTL_SECONDS = 12 * 3600
 const MAX_RESUME_BYTES = 15 * 1024 * 1024
 const MAX_CONTENT_BYTES = 1024 * 1024
 const MAX_BODY_BYTES = 2 * 1024 * 1024
+const MAX_TRANSLATION_INPUT_BYTES = 512 * 1024
+const TRANSLATION_SECTIONS = ['about', 'skills', 'experience', 'projects', 'blog']
 const ALLOWED_EXTENSIONS = ['.pdf', '.doc', '.docx']
 const ALLOWED_CONTENT_TYPES = [
   'application/pdf',
@@ -202,6 +208,58 @@ async function handlePost(req, res, path) {
 
   if (path === '/api/admin/logout') {
     sendJson(res, 200, { ok: true })
+    return
+  }
+
+  // Public read-only shell for the homepage terminal. Runs on this instance,
+  // so no SSH is involved - only the allowlist in terminal.mjs can execute.
+  if (path === '/api/terminal/exec') {
+    const data = await readJsonBody(req)
+    const command = String(data.command || '')
+    const result = await runTerminalCommand(command)
+    if (!result.ok) {
+      console.log(`[terminal] rejected "${command}": ${result.error}`)
+      sendJson(res, 400, { error: result.error })
+      return
+    }
+    console.log(`[terminal] ran "${command}"`)
+    sendJson(res, 200, { ok: true, stdout: result.stdout })
+    return
+  }
+
+  if (path === '/api/translate') {
+    if (!requireAuth(req, res)) return
+    const data = await readJsonBody(req)
+    const sourceLang = String(data.sourceLang || '')
+    const targetLang = String(data.targetLang || '')
+    const source = data.source
+
+    if (!sourceLang || !targetLang || sourceLang === targetLang) {
+      sendJson(res, 400, { error: 'valid sourceLang and targetLang are required' })
+      return
+    }
+    if (!source || typeof source !== 'object' || Array.isArray(source)) {
+      sendJson(res, 400, { error: 'source content is required' })
+      return
+    }
+    if (Buffer.byteLength(JSON.stringify(source)) > MAX_TRANSLATION_INPUT_BYTES) {
+      sendJson(res, 413, { error: 'translation content too large' })
+      return
+    }
+
+    const translated = { ...source }
+  for (const sectionName of TRANSLATION_SECTIONS) {
+    const section = source[sectionName]
+    if (!section || typeof section !== 'object' || Array.isArray(section)) continue
+    translated[sectionName] = await translateSection({
+      section,
+      sourceLang,
+      targetLang,
+      context: source,
+    })
+  }
+
+    sendJson(res, 200, { content: translated })
     return
   }
 

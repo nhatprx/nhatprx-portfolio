@@ -11,7 +11,7 @@ export default function ContactSection({ t }: ContactSectionProps) {
   return (
     <section
       id="contact"
-      className="relative pt-20 sm:pt-24 lg:pt-24 pb-12 sm:pb-16 lg:pb-16 px-6 sm:px-10 lg:px-14 flex flex-col justify-between scroll-mt-28 sm:scroll-mt-32"
+      className="relative pt-20 sm:pt-24 lg:pt-24 pb-12 sm:pb-16 lg:pb-16 px-5 sm:px-10 lg:px-14 flex flex-col justify-between scroll-mt-28 sm:scroll-mt-32"
     >
       <div className="w-full text-left story-reveal">
         <p className="font-mono text-xs tracking-[0.35em] text-emerald-400 uppercase mb-2 font-medium">
@@ -80,7 +80,7 @@ export default function ContactSection({ t }: ContactSectionProps) {
               <GithubIcon className="w-3.5 h-3.5 text-white/40 group-hover:text-emerald-400 transition-colors" />
             </div>
             <div>
-              <p className="font-mono text-xs sm:text-sm text-white font-medium group-hover:text-emerald-400 transition-colors">
+              <p className="font-mono text-xs sm:text-sm text-white font-medium group-hover:text-emerald-400 transition-colors break-all">
                 {t.identity.githubUrl.replace(/^https?:\/\//, '')}
               </p>
               <span className="font-mono text-[10px] text-white/30 group-hover:text-white/80 mt-2 flex items-center gap-1 transition-colors">

@@ -3,18 +3,21 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Admin API for nhatprx-portfolio: S3 presigned resume uploads + persisted portfolio content.",
+  "description": "Admin API for nhatprx-portfolio: S3 content storage and Bedrock portfolio translation.",
   "main": "index.mjs",
   "scripts": {
     "start": "node index.mjs",
     "check": "node --test test/*.test.mjs",
     "setup:secrets": "node setup-secrets.mjs",
-    "setup:cors": "node setup-cors.mjs"
+    "setup:cors": "node setup-cors.mjs",
+    "setup:budget": "bash setup-budget.sh",
+    "setup:bedrock-iam": "bash setup-bedrock-iam.sh"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.1169.0",
     "@aws-sdk/client-s3": "^3.1169.0",
     "@aws-sdk/s3-request-presigner": "^3.1169.0"
   }

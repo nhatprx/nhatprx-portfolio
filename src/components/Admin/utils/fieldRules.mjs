@@ -156,10 +156,10 @@ const L = {
   work: { title: 48, company: 60, period: 25, summary: 200, bullet: 240, techItem: 18 },
 }
 
-const TEXT_HINT =
-  'Letters, numbers, spaces and . , - & / ( ) : ; ! ? # % ~ + are allowed. Symbols like @ $ ^ * _ = { } [ ] | \\ < > are not.'
-const BODY_HINT =
-  'Plain prose only. Avoid symbols like @ $ ^ * _ = { } [ ] | \\ < > which break the layout.'
+// Short guidance shown while the field is focused. The long explanation of
+// the blocked characters lives in the FORBIDDEN comment above.
+const TEXT_HINT = 'Plain text. Avoid @ $ ^ * _ = { } [ ] | \\ < >.'
+const BODY_HINT = 'Plain prose. Avoid @ $ ^ * _ = { } [ ] | \\ < >.'
 
 export const FIELD_RULES = {
   /* Hero & About */

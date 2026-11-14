@@ -52,23 +52,23 @@ export default function SiteHeader({
       <button
         type="button"
         onClick={onScrollToTop}
-        className="text-left group cursor-pointer"
+        className="text-left group cursor-pointer min-w-0 shrink"
         aria-label="Scroll to top"
       >
-        <p className="font-mono text-[8.5px] sm:text-[9px] tracking-[0.25em] text-emerald-400 uppercase font-medium mb-0.5">
+        <p className="font-mono text-[8.5px] sm:text-[9px] tracking-[0.25em] text-emerald-400 uppercase font-medium mb-0.5 truncate">
           {t.hero.role}
         </p>
-        <h2 className="font-sans text-xl sm:text-2xl font-bold tracking-tight text-white leading-none">
+        <h2 className="font-sans text-lg xs:text-xl sm:text-2xl font-bold tracking-tight text-white leading-none truncate">
           {t.identity.displayName} <span className="text-white/25">.</span>
         </h2>
       </button>
 
-      <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         {/* Scroll-activated Quick CTA Buttons with 2-way Slide & Fade Transition */}
         <div
           className={`flex items-center gap-1.5 sm:gap-2 transition-all duration-500 ease-out overflow-hidden ${
             scrolledHeaderActions
-              ? 'opacity-100 max-w-[360px] p-0.5 translate-x-0 pointer-events-auto'
+              ? 'opacity-100 max-w-[min(360px,45vw)] p-0.5 translate-x-0 pointer-events-auto'
               : 'opacity-0 max-w-0 p-0 translate-x-3 pointer-events-none'
           }`}
         >
@@ -93,7 +93,10 @@ export default function SiteHeader({
             className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1.5 border border-white/20 text-white font-mono text-[10px] sm:text-[11px] font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-all whitespace-nowrap shrink-0"
           >
             <DownloadIcon className="w-3 h-3 text-white/60" />
-            <span>{t.hero.resume}</span>
+            <span className="hidden xs:inline">{t.hero.resume}</span>
+            <span className="xs:hidden" aria-label={t.hero.resume}>
+              <DownloadIcon className="w-3 h-3 text-white/60" />
+            </span>
           </a>
         </div>
 
@@ -123,7 +126,7 @@ export default function SiteHeader({
           </a>
         </div>
 
-        <div className="h-4 w-[1px] bg-white/10" aria-hidden="true" />
+        <div className="h-4 w-[1px] bg-white/10 hidden sm:block" aria-hidden="true" />
 
         {/* Language Dropdown */}
         <div ref={langMenuRef} className="relative">
