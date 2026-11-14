@@ -32,3 +32,6 @@ server/.testdata
 *.njsproj
 *.sln
 *.sw?
+
+# Generated deployment metadata
+VERSION
