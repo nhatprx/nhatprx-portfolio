@@ -268,6 +268,7 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
             onLogout={handleLogout}
             onAutoTranslate={handleAutoTranslate}
             isAutoTranslating={isAutoTranslating}
+            syncStatus={syncStatus}
           />
 
           {/* Sub-container: Sidebar + Editor Content */}
