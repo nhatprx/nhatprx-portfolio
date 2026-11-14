@@ -74,7 +74,6 @@ export default function AdminSidebar({
               : 'border-transparent text-white/50 hover:text-white hover:bg-white/[0.04]'
           }`}
         >
-          <span className="text-[11px] text-white/40">📦</span>
           <span>PRESETS</span>
         </button>
         <button
@@ -86,7 +85,6 @@ export default function AdminSidebar({
               : 'border-transparent text-white/50 hover:text-white hover:bg-white/[0.04]'
           }`}
         >
-          <span className="text-[11px] text-white/40">⚙</span>
           <span>SETTINGS</span>
         </button>
       </div>
