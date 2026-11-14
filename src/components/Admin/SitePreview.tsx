@@ -86,9 +86,8 @@ export default function SitePreview({ dict, lang, activeSection, onLangChange }:
 
   // Auto-scroll preview when activeSection changes in Admin
   useEffect(() => {
-    if (!activeSection) return
+    if (!activeSection || activeSection === 'settings' || activeSection === 'system') return
     const mapTabToId: Record<string, string> = {
-      hero: '#about',
       about: '#about',
       skills: '#skills',
       experience: '#work',

@@ -11,6 +11,7 @@ export type TabType =
   | 'terminal'
   | 'system'
   | 'settings'
+  | 'presets'
 
 export interface AdminTabProps {
   currentDict: TranslationDict

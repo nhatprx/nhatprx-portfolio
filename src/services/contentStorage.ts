@@ -3,11 +3,22 @@ import { resolveIdentity } from '../data/identity'
 import { fetchRemoteContent, saveRemoteContent } from './adminApi'
 
 const TERMINAL_COMMANDS_KEY = 'nhatprx_custom_terminal_commands'
+const PRESETS_KEY = 'nhatprx_content_presets'
 
 /** The languages, in the order the global identity override is scanned. */
 const LANG_ORDER: SupportedLang[] = ['en', 'vi', 'fr', 'ja']
 
 export type CustomTerminalCommands = Record<string, string>
+
+export interface ContentPreset {
+  id: string
+  name: string
+  description: string
+  timestamp: number
+  translations: Record<SupportedLang, TranslationDict>
+  resumeUrl?: string
+  resumeFileName?: string
+}
 
 /**
  * Loads content overrides from the remote API (S3-backed) and merges them on
@@ -149,6 +160,71 @@ export function saveStoredTerminalCommands(commands: CustomTerminalCommands): vo
     localStorage.setItem(TERMINAL_COMMANDS_KEY, JSON.stringify(commands))
   } catch (err) {
     // localStorage save error
+  }
+}
+
+export function getStoredPresets(): ContentPreset[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(PRESETS_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch (err) {
+    // localStorage parse error
+  }
+  return []
+}
+
+export function savePreset(
+  name: string,
+  description: string,
+  translations: Record<SupportedLang, TranslationDict>,
+  resumeUrl?: string,
+  resumeFileName?: string
+): ContentPreset {
+  const preset: ContentPreset = {
+    id: Date.now().toString(),
+    name,
+    description,
+    timestamp: Date.now(),
+    translations,
+    resumeUrl,
+    resumeFileName,
+  }
+
+  try {
+    const presets = getStoredPresets()
+    presets.push(preset)
+    localStorage.setItem(PRESETS_KEY, JSON.stringify(presets))
+  } catch (err) {
+    // localStorage save error
+  }
+
+  return preset
+}
+
+export function deletePreset(id: string): void {
+  try {
+    const presets = getStoredPresets()
+    const filtered = presets.filter((p) => p.id !== id)
+    localStorage.setItem(PRESETS_KEY, JSON.stringify(filtered))
+  } catch (err) {
+    // localStorage delete error
+  }
+}
+
+export function updatePreset(
+  id: string,
+  updates: Partial<Omit<ContentPreset, 'id' | 'timestamp'>>
+): void {
+  try {
+    const presets = getStoredPresets()
+    const idx = presets.findIndex((p) => p.id === id)
+    if (idx !== -1) {
+      presets[idx] = { ...presets[idx], ...updates }
+      localStorage.setItem(PRESETS_KEY, JSON.stringify(presets))
+    }
+  } catch (err) {
+    // localStorage update error
   }
 }
 
