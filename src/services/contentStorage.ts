@@ -41,19 +41,27 @@ export function resetStoredTranslations(): void {
 
 /**
  * Loads content overrides from the remote API (S3-backed) and merges them on
- * top of the factory defaults. Falls back to localStorage when the API is
- * unreachable so the site still renders offline.
+ * top of the factory defaults. Returns fresh data from S3, never stale cache.
+ * Falls back to factory defaults only when S3 is unreachable.
  */
 export async function loadRemoteTranslations(): Promise<Record<SupportedLang, TranslationDict>> {
   try {
     const remote = await fetchRemoteContent<Record<SupportedLang, TranslationDict>>()
-    if (!remote) return getStoredTranslations()
-    // Always persist the fresh remote data to localStorage immediately
-    saveStoredTranslations(remote)
+    if (!remote) {
+      // S3 returned no data; use factory defaults, not stale localStorage
+      return mergeTranslations({})
+    }
+    // Always persist fresh S3 data to localStorage for offline fallback
+    try {
+      saveStoredTranslations(remote)
+    } catch {
+      // localStorage quota exceeded; not fatal, just skip caching
+    }
     return mergeTranslations(remote)
   } catch (err) {
-    console.warn('Remote content unavailable, using local cache:', err)
-    return getStoredTranslations()
+    console.warn('S3 unreachable, falling back to factory defaults (not cache):', err)
+    // On network error, return clean defaults, not stale localStorage
+    return mergeTranslations({})
   }
 }
 

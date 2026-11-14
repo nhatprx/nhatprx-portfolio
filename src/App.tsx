@@ -6,7 +6,7 @@ import { TRANSLATIONS, type SupportedLang, type TranslationDict } from './data/t
 import CustomCursor from './components/CustomCursor'
 import AdminPortal from './components/Admin/AdminPortal'
 import BlogPostModal from './components/BlogPostModal'
-import { getStoredTranslations, loadRemoteTranslations } from './services/contentStorage'
+import { loadRemoteTranslations } from './services/contentStorage'
 import PortfolioContent from './components/PortfolioContent'
 import SiteHeader from './components/SiteHeader'
 import ScreenLoader from './components/ScreenLoader'
@@ -19,18 +19,26 @@ export default function App() {
   const [isLangSwitching, setIsLangSwitching] = useState(false)
   const [loadingLabel, setLoadingLabel] = useState('INITIALIZING ENVIRONMENT...')
 
-  const [allTranslations, setAllTranslations] = useState(() => getStoredTranslations())
+  // Start with factory defaults, immediately replace with S3 data once fetched.
+  // Never use stale localStorage cache on first load.
+  const [allTranslations, setAllTranslations] = useState(() => TRANSLATIONS)
 
-  // Load the shared content (S3-backed) so every visitor sees the latest edits.
-  // Poll every 30s to pick up fresh changes from S3 without page reload.
+  // Load the shared content (S3-backed) on mount and refresh every 30s.
+  // This ensures every visitor always sees the latest edits from S3, never stale cache.
   useEffect(() => {
     let isMounted = true
-    const load = () => {
-      loadRemoteTranslations().then((remote) => {
+    const load = async () => {
+      try {
+        const remote = await loadRemoteTranslations()
         if (isMounted) setAllTranslations(remote)
-      })
+      } catch (err) {
+        console.error('Failed to load S3 content:', err)
+        // Fall back to defaults on error; don't use stale localStorage
+      }
     }
+    // Fetch immediately on mount (don't wait for interval)
     load()
+    // Poll every 30s for fresh changes
     const interval = setInterval(load, 30000)
     return () => {
       isMounted = false
