@@ -1,6 +1,6 @@
-import CharCounter from '../CharCounter'
-import { CONTENT_LIMITS } from '../../../services/autoTranslate'
-import { getInputValidationClass, handleBulletInputKeyDown } from '../utils/validation'
+import AdminField from '../AdminField'
+import { FIELD_RULES, applyFieldRule, validateField } from '../utils/fieldRules'
+import { handleBulletInputKeyDown } from '../utils/validation'
 import type { ProjectItem } from '../../../services/contentStorage'
 
 interface ProjectModalProps {
@@ -23,6 +23,21 @@ export default function ProjectModal({
   setProjDraft, setBulletText, setTechInput,
   onAddTech, onRemoveTech, onDelete, onClose, onSave,
 }: ProjectModalProps) {
+  // Each bullet is limited to its own budget; the textarea cap is the sum.
+  const bulletBudget = FIELD_RULES.workBullet.max * 5
+  const bullets = bulletText
+    .split('\n')
+    .map((l) => l.replace(/^[•\-*]\s*/, '').trim())
+    .filter(Boolean)
+  const overBudgetBullets = bullets.filter((b) => b.length > FIELD_RULES.workBullet.max)
+  const bulletError = overBudgetBullets.length
+    ? `Bullet ${overBudgetBullets.length === 1 ? '' : 's'} exceed ${
+        FIELD_RULES.workBullet.max
+      } characters. Shorten the highlighted line(s).`
+    : null
+
+  const techError = techInput.trim() ? validateField(techInput, FIELD_RULES.workTech, true) : null
+
   return (
     <div
       data-lenis-prevent
@@ -56,103 +71,61 @@ export default function ProjectModal({
 
         {/* Core Fields Grid */}
         <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-[10px] text-white/40 uppercase">Project Title / Name</label>
-              <CharCounter current={projDraft.title?.length || 0} max={CONTENT_LIMITS.work.title} />
-            </div>
-            <input
-              type="text"
-              maxLength={CONTENT_LIMITS.work.title}
-              value={projDraft.title}
-              placeholder="e.g. Distributed Engine"
-              onChange={(e) => setProjDraft({ ...projDraft, title: e.target.value })}
-              className={`w-full bg-white/[0.03] border p-2 text-xs focus:outline-none transition-colors ${getInputValidationClass(
-                projDraft.title
-              )}`}
-            />
-          </div>
+          <AdminField
+            label="Project Title / Name"
+            value={projDraft.title}
+            rule={FIELD_RULES.workTitle}
+            placeholder="e.g. Distributed Engine"            onChange={(val) =>
+              setProjDraft({ ...projDraft, title: applyFieldRule(val, FIELD_RULES.workTitle) })
+            }
+          />
 
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-[10px] text-white/40 uppercase">Category / Meta</label>
-              <CharCounter current={projDraft.meta?.length || 0} max={60} />
-            </div>
-            <input
-              type="text"
-              maxLength={60}
-              value={projDraft.meta}
-              placeholder="e.g. Distributed Systems · Cloud Infrastructure"
-              onChange={(e) => setProjDraft({ ...projDraft, meta: e.target.value })}
-              className={`w-full bg-white/[0.03] border p-2 text-xs focus:outline-none transition-colors ${getInputValidationClass(
-                projDraft.meta
-              )}`}
-            />
-          </div>
+          <AdminField
+            label="Category / Meta"
+            value={projDraft.meta}
+            rule={FIELD_RULES.workCompany}
+            placeholder="e.g. Distributed Systems · Cloud Infrastructure"            onChange={(val) =>
+              setProjDraft({ ...projDraft, meta: applyFieldRule(val, FIELD_RULES.workCompany) })
+            }
+          />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-[10px] text-white/40 uppercase">Period</label>
-              <CharCounter
-                current={projDraft.period?.length || 0}
-                max={CONTENT_LIMITS.work.period}
-              />
-            </div>
-            <input
-              type="text"
-              maxLength={CONTENT_LIMITS.work.period}
-              placeholder="e.g. 2026"
-              value={projDraft.period}
-              onChange={(e) => setProjDraft({ ...projDraft, period: e.target.value })}
-              className={`w-full bg-white/[0.03] border p-2 text-xs focus:outline-none transition-colors ${getInputValidationClass(
-                projDraft.period
-              )}`}
-            />
-          </div>
+          <AdminField
+            label="Period"
+            value={projDraft.period}
+            rule={FIELD_RULES.workPeriod}
+            placeholder="e.g. 2026"            onChange={(val) =>
+              setProjDraft({ ...projDraft, period: applyFieldRule(val, FIELD_RULES.workPeriod) })
+            }
+          />
 
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-[10px] text-white/40 uppercase">Repository / Demo URL</label>
-              <span className="text-[9px] text-white/30">Optional</span>
-            </div>
-            <input
-              type="text"
-              placeholder="https://github.com/..."
-              value={projDraft.repoUrl || ''}
-              onChange={(e) => setProjDraft({ ...projDraft, repoUrl: e.target.value })}
-              className={`w-full bg-white/[0.03] border p-2 text-xs text-white focus:outline-none transition-colors ${getInputValidationClass(
-                projDraft.repoUrl,
-                'url',
-                true
-              )}`}
-            />
-          </div>
+          <AdminField
+            label="Repository / Demo URL"
+            value={projDraft.repoUrl}
+            rule={FIELD_RULES.contactUrl}
+            allowEmpty
+            placeholder="https://github.com/..."            onChange={(val) =>
+              setProjDraft({
+                ...projDraft,
+                repoUrl: applyFieldRule(val.trim(), FIELD_RULES.contactUrl),
+              })
+            }
+          />
         </div>
 
         {/* Description */}
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="text-[10px] text-white/40 uppercase">Project Description</label>
-            <CharCounter
-              current={projDraft.desc?.length || 0}
-              max={CONTENT_LIMITS.work.summary}
-            />
-          </div>
-          <textarea
-            rows={3}
-            value={projDraft.desc}
-            placeholder="High-level engineering problem and architectural solution..."
-            onChange={(e) => setProjDraft({ ...projDraft, desc: e.target.value })}
-            className={`w-full bg-white/[0.03] border p-2.5 text-xs focus:outline-none resize-none transition-colors ${getInputValidationClass(
-              projDraft.desc,
-              'default',
-              true,
-              CONTENT_LIMITS.work.summary
-            )}`}
-          />
-        </div>
+        <AdminField
+          label="Project Description"
+          value={projDraft.desc}
+          rule={FIELD_RULES.workSummary}
+          multiline
+          rows={3}
+          allowEmpty
+          placeholder="High-level engineering problem and architectural solution..."          onChange={(val) =>
+            setProjDraft({ ...projDraft, desc: applyFieldRule(val, FIELD_RULES.workSummary) })
+          }
+        />
 
         {/* Highlights & Bullets */}
         <div>
@@ -166,11 +139,17 @@ export default function ProjectModal({
               >
                 {projDraft.bullets.length}/5 bullets {projDraft.bullets.length >= 5 ? '(MAX)' : ''}
               </span>
-              <CharCounter current={bulletText.length} max={750} />
+              <span
+                className={`text-[9.5px] font-mono tracking-tight shrink-0 ${
+                  bulletText.length > bulletBudget ? 'text-rose-400 font-bold' : 'text-white/30'
+                }`}
+              >
+                {bulletText.length}/{bulletBudget}
+              </span>
             </div>
           </div>
           <textarea
-            maxLength={750}
+            maxLength={bulletBudget}
             value={bulletText}
             placeholder="• Replaced heavy WebDriver with raw CDP WebSockets..."
             onChange={(e) => {
@@ -187,13 +166,27 @@ export default function ProjectModal({
               })
             }}
             onKeyDown={(e) =>
-              handleBulletInputKeyDown(e, bulletText, (updated, bullets) => {
+              handleBulletInputKeyDown(e, bulletText, (updated, nextBullets) => {
                 setBulletText(updated)
-                setProjDraft({ ...projDraft, bullets })
+                setProjDraft({ ...projDraft, bullets: nextBullets })
               }, 5)
             }
-            className="w-full bg-white/[0.03] border border-white/20 p-2.5 text-xs text-white leading-relaxed focus:border-white focus:outline-none resize-none h-36 font-mono"
+            className={`w-full bg-white/[0.03] border p-2.5 text-xs text-white leading-relaxed focus:outline-none resize-none h-36 font-mono ${
+              bulletError
+                ? 'border-rose-500/80 bg-rose-500/[0.04] focus:border-rose-400 focus:ring-1 focus:ring-rose-500/40'
+                : 'border-white/20 focus:border-white'
+            }`}
+            aria-invalid={!!bulletError}
           />
+          {bulletError ? (
+            <p role="alert" className="mt-1 text-[10px] text-rose-300/90 leading-snug">
+              ⚠ {bulletError}
+            </p>
+          ) : (
+            <p className="mt-1 text-[10px] text-white/30 leading-snug">
+              {FIELD_RULES.workBullet.hint} Max {FIELD_RULES.workBullet.max} characters per bullet.
+            </p>
+          )}
         </div>
 
         {/* Tech Stack Chip Manager */}
@@ -232,6 +225,7 @@ export default function ProjectModal({
                 type="text"
                 placeholder="+ Add tech..."
                 value={techInput}
+                maxLength={FIELD_RULES.workTech.max}
                 onChange={(e) => setTechInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.nativeEvent.isComposing && e.keyCode !== 229) {
@@ -239,19 +233,34 @@ export default function ProjectModal({
                     onAddTech()
                   }
                 }}
-                className="bg-transparent border border-white/20 px-2 py-1 text-xs text-white placeholder-white/30 focus:border-white focus:outline-none w-28"
+                className={`bg-transparent border px-2 py-1 text-xs text-white placeholder-white/30 focus:outline-none w-28 ${
+                  techError
+                    ? 'border-rose-500/80 bg-rose-500/[0.04] focus:border-rose-400'
+                    : 'border-white/20 focus:border-white'
+                }`}
+                aria-invalid={!!techError}
               />
               {techInput.trim() && (
                 <button
                   type="button"
                   onClick={onAddTech}
-                  className="px-2.5 py-1 text-xs bg-emerald-400 text-black font-bold hover:bg-emerald-300 cursor-pointer"
+                  disabled={!!techError}
+                  className="px-2.5 py-1 text-xs bg-emerald-400 text-black font-bold hover:bg-emerald-300 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   +
                 </button>
               )}
             </div>
           </div>
+          {techError ? (
+            <p role="alert" className="mt-1 text-[10px] text-rose-300/90 leading-snug">
+              ⚠ {techError}
+            </p>
+          ) : (
+            <p className="mt-1 text-[10px] text-white/30 leading-snug">
+              {FIELD_RULES.workTech.hint}
+            </p>
+          )}
         </div>
 
         {/* Modal Actions */}

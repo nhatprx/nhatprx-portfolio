@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 *.glb
+*.pem
+*.key
+userdata.sh
+
+# API service local artifacts
+server/.testdata
+
+# Temporary AWS policy drafts
+.tmp-*.json
 
 # Editor directories and files
 .vscode/*

@@ -169,7 +169,6 @@ export default function SitePreview({ dict, lang, activeSection, onLangChange }:
           >
             <PortfolioContent
               t={dict}
-              lang={lang}
               isLivePreview={true}
               showTerminalInMobile={false}
               onScrollTo={handleScrollTo}

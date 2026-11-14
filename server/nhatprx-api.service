@@ -1,0 +1,26 @@
+[Unit]
+Description=nhatprx-portfolio admin API (S3 presign + content store)
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/nhatprx-api
+Environment=PORT=8787
+Environment=AWS_REGION=ap-southeast-1
+Environment=PORTFOLIO_BUCKET=nhatprx-portfolio-resumes-815802019553
+Environment=PASSKEY_HASH_FILE=/var/lib/nhatprx-api/passkey.hash
+Environment=TOKEN_SECRET_FILE=/var/lib/nhatprx-api/token.secret
+ExecStart=/usr/local/bin/node /home/ubuntu/nhatprx-api/index.mjs
+Restart=always
+RestartSec=3
+
+# The API only needs outbound S3 access via the instance profile.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/nhatprx-api
+
+[Install]
+WantedBy=multi-user.target

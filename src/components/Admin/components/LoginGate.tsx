@@ -5,6 +5,7 @@ interface LoginGateProps {
   setLoginError: (val: string) => void
   onLogin: (e: React.FormEvent) => void
   onClose: () => void
+  isSubmitting?: boolean
 }
 
 export default function LoginGate({
@@ -14,6 +15,7 @@ export default function LoginGate({
   setLoginError,
   onLogin,
   onClose,
+  isSubmitting = false,
 }: LoginGateProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md select-none font-mono">
@@ -40,6 +42,7 @@ export default function LoginGate({
                 setLoginError('')
               }}
               autoFocus
+              disabled={isSubmitting}
               placeholder="Enter passkey..."
               className="w-full bg-white/[0.04] border border-white/20 px-3.5 py-2.5 text-xs text-white placeholder-white/20 focus:border-white focus:outline-none transition-colors"
             />
@@ -56,9 +59,10 @@ export default function LoginGate({
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-xs font-semibold bg-white text-black hover:bg-white/80 transition-colors cursor-pointer"
+              disabled={isSubmitting}
+              className="px-5 py-2 text-xs font-semibold bg-white text-black hover:bg-white/80 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              AUTHENTICATE →
+              {isSubmitting ? 'AUTHENTICATING...' : 'AUTHENTICATE →'}
             </button>
           </div>
         </form>
@@ -66,4 +70,3 @@ export default function LoginGate({
     </div>
   )
 }
-

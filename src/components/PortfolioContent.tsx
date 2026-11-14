@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { TranslationDict, SupportedLang } from '../data/translations'
+import type { TranslationDict } from '../data/translations'
 import HeroAboutSection from './portfolio/HeroAboutSection'
 import SkillsSection from './portfolio/SkillsSection'
 import WorkSection from './portfolio/WorkSection'
@@ -8,7 +8,6 @@ import ContactSection from './portfolio/ContactSection'
 
 export interface PortfolioContentProps {
   t: TranslationDict
-  lang?: SupportedLang
   isLivePreview?: boolean
   showTerminalInMobile?: boolean
   onSelectBlog?: (slug: string) => void

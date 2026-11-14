@@ -2,12 +2,36 @@ import type { TranslationDict } from '../../../data/translations'
 
 /**
  * Validation utilities for Admin Dashboard form inputs.
- * Detects special characters: ! @ # $ % ^ * _ + = { } [ ] | \ < > ~ ` ?
- * Allows human letters (all Unicode alphabets/accents), digits, spaces, and safe punctuation (. , - ' " / & : ; ( ))
+ *
+ * The rules themselves live in `./fieldRules` - a single registry that owns the
+ * regex, the max length and the guidance message for every editable field.
+ * This module keeps the older helper names working so existing callers do not
+ * break, and adds the merge helper used by the auto-save engine.
+ */
+
+export {
+  sanitizeByKind,
+  clampByMax,
+  applyFieldRule,
+  findForbiddenChars,
+  validateField,
+  formatPhoneWithSpaces,
+  FIELD_RULES,
+  type FieldKind,
+  type FieldRule,
+  type FieldRuleKey,
+} from './fieldRules'
+
+import { validateField, type FieldKind } from './fieldRules'
+
+/**
+ * Detects characters that are not allowed in a free-text field.
+ * Kept in sync with `FORBIDDEN` in ./fieldRules.mjs.
+ * @deprecated Prefer `findForbiddenChars` from ./fieldRules.
  */
 export function hasSpecialChar(val?: string | null): boolean {
   if (!val) return false
-  return /[!@#$%^*_+={}[\]|\\<>~`?]/.test(val)
+  return /[@$^*_={}[\]|\\<>]/.test(val)
 }
 
 /**
@@ -42,24 +66,28 @@ export function isValidPhone(val?: string | null): boolean {
 }
 
 /**
- * Validates location: allows letters, digits, spaces, and commas. Forbidden special chars are not allowed.
+ * Validates location: allows letters, digits, spaces, and commas.
  */
 export function isValidLocation(val?: string | null): boolean {
   if (!val || !val.trim()) return false
-  // All special characters except comma are forbidden
-  return !/[!@#$%^*_+={}[\]|\\<>~`?]/.test(val)
+  return !/[@$^*_={}[\]|\\<>]/.test(val)
 }
 
 export type FieldValidationType = 'default' | 'email' | 'url' | 'phone' | 'location' | 'tech'
 
+/** Maps the legacy validation type onto the shared field rule kinds. */
+const KIND_MAP: Record<FieldValidationType, FieldKind> = {
+  default: 'text',
+  email: 'email',
+  url: 'url',
+  phone: 'phone',
+  location: 'location',
+  tech: 'tech',
+}
+
 /**
- * Checks if a field is invalid based on its specified type:
- * - 'tech': allowed special chars (C++, C#, .NET, etc.)
- * - 'email': requires valid email format
- * - 'url': requires valid URL format
- * - 'phone': max 12 chars without spaces, phone format
- * - 'location': letters, spaces, commas allowed
- * - 'default': forbidden special characters not allowed; cannot be empty unless allowEmpty=true
+ * Checks if a field is invalid based on its specified type.
+ * @deprecated Prefer `validateField` from ./fieldRules.
  */
 export function isFieldInvalid(
   val?: string | null,
@@ -74,22 +102,17 @@ export function isFieldInvalid(
 
   if (type === 'tech') return false
 
-  const isEmpty = !val || val.trim().length === 0
-  if (isEmpty) return !canBeEmpty
-
-  if (maxLimit && val && val.length > maxLimit) return true
-
-  if (type === 'email') return !isValidEmail(val)
-  if (type === 'url') return !isValidUrl(val, canBeEmpty)
-  if (type === 'phone') return !isValidPhone(val)
-  if (type === 'location') return !isValidLocation(val)
-
-  return hasSpecialChar(val)
+  const error = validateField(
+    val ?? '',
+    { kind: KIND_MAP[type], max: maxLimit ?? Number.MAX_SAFE_INTEGER, label: 'This field' },
+    canBeEmpty
+  )
+  return error !== null
 }
 
 /**
- * Returns Tailwind border & focus classes based on validity:
- * Red border when field is invalid; normal subtle border otherwise.
+ * Returns Tailwind border & focus classes based on validity.
+ * @deprecated Prefer the `AdminField` component, which also renders the message.
  */
 export function getInputValidationClass(
   val?: string | null,
@@ -101,15 +124,6 @@ export function getInputValidationClass(
     return 'border-rose-500 text-rose-200 focus:border-rose-400 focus:ring-1 focus:ring-rose-500/50'
   }
   return 'border-white/20 text-white focus:border-white'
-}
-
-/**
- * Formats phone number: max 12 characters WITHOUT spaces, automatically grouped with spaces every 3 chars.
- */
-export function formatPhoneWithSpaces(val: string): string {
-  const clean = val.replace(/\s+/g, '').slice(0, 12)
-  const chunks = clean.match(/.{1,3}/g) || []
-  return chunks.join(' ')
 }
 
 /**
@@ -150,95 +164,86 @@ export function handleBulletInputKeyDown(
 }
 
 /**
- * Merges current edited dictionary into stored dictionary, discarding any invalid field
- * so that an invalid field is never saved while all valid fields are safely auto-saved.
+ * Merges the current edited dictionary into the stored dictionary.
+ *
+ * Only structurally-typed fields (email / url / phone) are reverted when they
+ * are malformed. Free-text fields are always kept: the character blacklist is
+ * a visual hint in the input, and reverting on it made typing silently undo
+ * the user's keystrokes (e.g. a single "_" or "?" anywhere in the text).
  */
 export function mergeValidDict(current: TranslationDict, saved: TranslationDict): TranslationDict {
-  const valid = (val: string | undefined, type: FieldValidationType = 'default', allowEmpty = false) =>
-    isFieldInvalid(val, type, allowEmpty) ? false : true
+  // Free text: never reverted. Malformed text is still flagged in the UI.
+  const text = (val: string | undefined, fallback: string | undefined) =>
+    (val ?? fallback) as string
+
+  // Structured fields: revert only when the value is malformed (not merely empty).
+  const structured = (
+    val: string | undefined,
+    type: FieldValidationType,
+    fallback: string | undefined
+  ) => {
+    if (val === undefined) return fallback as string
+    if (val.trim() === '') return fallback as string
+    return isFieldInvalid(val, type, true) ? (fallback as string) : val
+  }
 
   return {
     ...current,
     hero: {
       ...current.hero,
-      role: valid(current.hero.role) ? current.hero.role : saved.hero.role,
+      role: text(current.hero.role, saved.hero.role),
     },
     about: {
       ...current.about,
-      title: valid(current.about.title) ? current.about.title : saved.about.title,
-      titleSub: valid(current.about.titleSub) ? current.about.titleSub : saved.about.titleSub,
-      p1: valid(current.about.p1) ? current.about.p1 : saved.about.p1,
-      p2: valid(current.about.p2, 'default', true) ? current.about.p2 : saved.about.p2,
-      educationTitle: valid(current.about.educationTitle)
-        ? current.about.educationTitle
-        : saved.about.educationTitle,
-      edu1School: valid(current.about.edu1School) ? current.about.edu1School : saved.about.edu1School,
-      edu1Degree: valid(current.about.edu1Degree) ? current.about.edu1Degree : saved.about.edu1Degree,
-      edu1Major: valid(current.about.edu1Major) ? current.about.edu1Major : saved.about.edu1Major,
-      edu1Location: valid(current.about.edu1Location, 'location')
-        ? current.about.edu1Location
-        : saved.about.edu1Location,
-      edu2School: valid(current.about.edu2School, 'default', true)
-        ? current.about.edu2School
-        : saved.about.edu2School,
-      edu2Degree: valid(current.about.edu2Degree, 'default', true)
-        ? current.about.edu2Degree
-        : saved.about.edu2Degree,
-      edu2Major: valid(current.about.edu2Major, 'default', true)
-        ? current.about.edu2Major
-        : saved.about.edu2Major,
-      edu2Location: valid(current.about.edu2Location, 'location', true)
-        ? current.about.edu2Location
-        : saved.about.edu2Location,
+      title: text(current.about.title, saved.about.title),
+      titleSub: text(current.about.titleSub, saved.about.titleSub),
+      p1: text(current.about.p1, saved.about.p1),
+      p2: text(current.about.p2, saved.about.p2),
+      educationTitle: text(current.about.educationTitle, saved.about.educationTitle),
+      edu1School: text(current.about.edu1School, saved.about.edu1School),
+      edu1Degree: text(current.about.edu1Degree, saved.about.edu1Degree),
+      edu1Major: text(current.about.edu1Major, saved.about.edu1Major),
+      edu1Location: text(current.about.edu1Location, saved.about.edu1Location),
+      edu2School: text(current.about.edu2School, saved.about.edu2School),
+      edu2Degree: text(current.about.edu2Degree, saved.about.edu2Degree),
+      edu2Major: text(current.about.edu2Major, saved.about.edu2Major),
+      edu2Location: text(current.about.edu2Location, saved.about.edu2Location),
     },
     skills: {
       ...current.skills,
-      title: valid(current.skills.title) ? current.skills.title : saved.skills.title,
-      titleSub: valid(current.skills.titleSub) ? current.skills.titleSub : saved.skills.titleSub,
+      title: text(current.skills.title, saved.skills.title),
+      titleSub: text(current.skills.titleSub, saved.skills.titleSub),
       categories: current.skills.categories.map((cat, i) => ({
         ...cat,
-        title: valid(cat.title) ? cat.title : (saved.skills.categories[i]?.title ?? cat.title),
+        title: text(cat.title, saved.skills.categories[i]?.title ?? cat.title),
         skills: cat.skills, // tech stack names allow special characters
       })),
     },
     experience: {
       ...current.experience,
-      title: valid(current.experience.title) ? current.experience.title : saved.experience.title,
-      titleSub: valid(current.experience.titleSub)
-        ? current.experience.titleSub
-        : saved.experience.titleSub,
+      title: text(current.experience.title, saved.experience.title),
+      titleSub: text(current.experience.titleSub, saved.experience.titleSub),
       items: current.experience.items,
     },
     projects: {
       ...current.projects,
-      title: valid(current.projects.title) ? current.projects.title : saved.projects.title,
-      titleSub: valid(current.projects.titleSub)
-        ? current.projects.titleSub
-        : saved.projects.titleSub,
+      title: text(current.projects.title, saved.projects.title),
+      titleSub: text(current.projects.titleSub, saved.projects.titleSub),
       items: current.projects.items,
     },
     contact: {
       ...current.contact,
-      title: valid(current.contact.title) ? current.contact.title : saved.contact.title,
-      titleSub: valid(current.contact.titleSub)
-        ? current.contact.titleSub
-        : saved.contact.titleSub,
-      desc: valid(current.contact.desc) ? current.contact.desc : saved.contact.desc,
-      directEmail: valid(current.contact.directEmail, 'email')
-        ? current.contact.directEmail
-        : saved.contact.directEmail,
-      directPhone: valid(current.contact.directPhone, 'phone')
-        ? current.contact.directPhone
-        : saved.contact.directPhone,
-      githubUrl: valid(current.contact.githubUrl, 'url')
-        ? current.contact.githubUrl
-        : saved.contact.githubUrl,
-      linkedinUrl: valid(current.contact.linkedinUrl, 'url')
-        ? current.contact.linkedinUrl
-        : saved.contact.linkedinUrl,
-      availabilityLocation: valid(current.contact.availabilityLocation, 'location')
-        ? current.contact.availabilityLocation
-        : saved.contact.availabilityLocation,
+      title: text(current.contact.title, saved.contact.title),
+      titleSub: text(current.contact.titleSub, saved.contact.titleSub),
+      desc: text(current.contact.desc, saved.contact.desc),
+      directEmail: structured(current.contact.directEmail, 'email', saved.contact.directEmail),
+      directPhone: structured(current.contact.directPhone, 'phone', saved.contact.directPhone),
+      githubUrl: structured(current.contact.githubUrl, 'url', saved.contact.githubUrl),
+      linkedinUrl: structured(current.contact.linkedinUrl, 'url', saved.contact.linkedinUrl),
+      availabilityLocation: text(
+        current.contact.availabilityLocation,
+        saved.contact.availabilityLocation
+      ),
     },
   }
 }

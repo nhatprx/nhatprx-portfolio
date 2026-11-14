@@ -1,6 +1,6 @@
-import CharCounter from '../CharCounter'
-import { CONTENT_LIMITS } from '../../../services/autoTranslate'
-import { getInputValidationClass, handleBulletInputKeyDown } from '../utils/validation'
+import AdminField from '../AdminField'
+import { FIELD_RULES, applyFieldRule, validateField } from '../utils/fieldRules'
+import { handleBulletInputKeyDown } from '../utils/validation'
 import type { ExperienceItem } from '../../../services/contentStorage'
 
 interface ExperienceModalProps {
@@ -32,6 +32,21 @@ export default function ExperienceModal({
   onClose,
   onSave,
 }: ExperienceModalProps) {
+  // Each bullet is limited to its own budget; the textarea cap is the sum.
+  const bulletBudget = FIELD_RULES.workBullet.max * 5
+  const bullets = bulletText
+    .split('\n')
+    .map((l) => l.replace(/^[•\-*]\s*/, '').trim())
+    .filter(Boolean)
+  const overBudgetBullets = bullets.filter((b) => b.length > FIELD_RULES.workBullet.max)
+  const bulletError = overBudgetBullets.length
+    ? `Bullet ${overBudgetBullets.length === 1 ? '' : 's'} exceed ${
+        FIELD_RULES.workBullet.max
+      } characters. Shorten the highlighted line(s).`
+    : null
+
+  const techError = techInput.trim() ? validateField(techInput, FIELD_RULES.workTech, true) : null
+
   return (
     <div
       data-lenis-prevent
@@ -65,77 +80,46 @@ export default function ExperienceModal({
 
         {/* Core Details Grid */}
         <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-[10px] text-white/40 uppercase">Role Title</label>
-              <CharCounter current={expDraft.role?.length || 0} max={CONTENT_LIMITS.work.title} />
-            </div>
-            <input
-              type="text"
-              maxLength={CONTENT_LIMITS.work.title}
-              value={expDraft.role}
-              placeholder="e.g. Senior Software Engineer"
-              onChange={(e) => setExpDraft({ ...expDraft, role: e.target.value })}
-              className={`w-full bg-white/[0.03] border p-2 text-xs focus:outline-none transition-colors ${getInputValidationClass(
-                expDraft.role
-              )}`}
-            />
-          </div>
+          <AdminField
+            label="Role Title"
+            value={expDraft.role}
+            rule={FIELD_RULES.workTitle}
+            placeholder="e.g. Senior Software Engineer"            onChange={(val) =>
+              setExpDraft({ ...expDraft, role: applyFieldRule(val, FIELD_RULES.workTitle) })
+            }
+          />
 
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-[10px] text-white/40 uppercase">Company Name</label>
-              <CharCounter current={expDraft.company?.length || 0} max={60} />
-            </div>
-            <input
-              type="text"
-              maxLength={60}
-              value={expDraft.company}
-              placeholder="e.g. Grevo Solutions"
-              onChange={(e) => setExpDraft({ ...expDraft, company: e.target.value })}
-              className={`w-full bg-white/[0.03] border p-2 text-xs focus:outline-none transition-colors ${getInputValidationClass(
-                expDraft.company
-              )}`}
-            />
-          </div>
-        </div>
-
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="text-[10px] text-white/40 uppercase">Period</label>
-            <CharCounter current={expDraft.period?.length || 0} max={CONTENT_LIMITS.work.period} />
-          </div>
-          <input
-            type="text"
-            maxLength={CONTENT_LIMITS.work.period}
-            placeholder="e.g. MAR 2025 — PRESENT"
-            value={expDraft.period}
-            onChange={(e) => setExpDraft({ ...expDraft, period: e.target.value })}
-            className={`w-full bg-white/[0.03] border p-2 text-xs focus:outline-none transition-colors ${getInputValidationClass(
-              expDraft.period
-            )}`}
+          <AdminField
+            label="Company Name"
+            value={expDraft.company}
+            rule={FIELD_RULES.workCompany}
+            placeholder="e.g. Grevo Solutions"            onChange={(val) =>
+              setExpDraft({ ...expDraft, company: applyFieldRule(val, FIELD_RULES.workCompany) })
+            }
           />
         </div>
+
+        <AdminField
+          label="Period"
+          value={expDraft.period}
+          rule={FIELD_RULES.workPeriod}
+          placeholder="e.g. MAR 2025 - PRESENT"          onChange={(val) =>
+            setExpDraft({ ...expDraft, period: applyFieldRule(val, FIELD_RULES.workPeriod) })
+          }
+        />
 
         {/* Summary */}
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="text-[10px] text-white/40 uppercase">Executive Summary</label>
-            <CharCounter current={expDraft.summary?.length || 0} max={CONTENT_LIMITS.work.summary} />
-          </div>
-          <textarea
-            rows={3}
-            value={expDraft.summary}
-            placeholder="High-level overview of role responsibilities and team leadership..."
-            onChange={(e) => setExpDraft({ ...expDraft, summary: e.target.value })}
-            className={`w-full bg-white/[0.03] border p-2.5 text-xs focus:outline-none resize-none transition-colors ${getInputValidationClass(
-              expDraft.summary,
-              'default',
-              true,
-              CONTENT_LIMITS.work.summary
-            )}`}
-          />
-        </div>
+        <AdminField
+          label="Executive Summary"
+          value={expDraft.summary}
+          rule={FIELD_RULES.workSummary}
+          multiline
+          rows={3}
+          allowEmpty
+          placeholder="High-level overview of role responsibilities and team leadership..."          onChange={(val) =>
+            setExpDraft({ ...expDraft, summary: applyFieldRule(val, FIELD_RULES.workSummary) })
+          }
+        />
 
         {/* Highlights & Bullets */}
         <div>
@@ -149,11 +133,17 @@ export default function ExperienceModal({
               >
                 {expDraft.bullets.length}/5 bullets {expDraft.bullets.length >= 5 ? '(MAX)' : ''}
               </span>
-              <CharCounter current={bulletText.length} max={750} />
+              <span
+                className={`text-[9.5px] font-mono tracking-tight shrink-0 ${
+                  bulletText.length > bulletBudget ? 'text-rose-400 font-bold' : 'text-white/30'
+                }`}
+              >
+                {bulletText.length}/{bulletBudget}
+              </span>
             </div>
           </div>
           <textarea
-            maxLength={750}
+            maxLength={bulletBudget}
             value={bulletText}
             placeholder="• Architected distributed microservices handling 8,000 req/s..."
             onChange={(e) => {
@@ -170,13 +160,27 @@ export default function ExperienceModal({
               })
             }}
             onKeyDown={(e) =>
-              handleBulletInputKeyDown(e, bulletText, (updated, bullets) => {
+              handleBulletInputKeyDown(e, bulletText, (updated, nextBullets) => {
                 setBulletText(updated)
-                setExpDraft({ ...expDraft, bullets })
+                setExpDraft({ ...expDraft, bullets: nextBullets })
               }, 5)
             }
-            className="w-full bg-white/[0.03] border border-white/20 p-2.5 text-xs text-white leading-relaxed focus:border-white focus:outline-none resize-none h-36 font-mono"
+            className={`w-full bg-white/[0.03] border p-2.5 text-xs text-white leading-relaxed focus:outline-none resize-none h-36 font-mono ${
+              bulletError
+                ? 'border-rose-500/80 bg-rose-500/[0.04] focus:border-rose-400 focus:ring-1 focus:ring-rose-500/40'
+                : 'border-white/20 focus:border-white'
+            }`}
+            aria-invalid={!!bulletError}
           />
+          {bulletError ? (
+            <p role="alert" className="mt-1 text-[10px] text-rose-300/90 leading-snug">
+              ⚠ {bulletError}
+            </p>
+          ) : (
+            <p className="mt-1 text-[10px] text-white/30 leading-snug">
+              {FIELD_RULES.workBullet.hint} Max {FIELD_RULES.workBullet.max} characters per bullet.
+            </p>
+          )}
         </div>
 
         {/* Tech Stack Chip Manager */}
@@ -215,6 +219,7 @@ export default function ExperienceModal({
                 type="text"
                 placeholder="+ Add tech..."
                 value={techInput}
+                maxLength={FIELD_RULES.workTech.max}
                 onChange={(e) => setTechInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.nativeEvent.isComposing && e.keyCode !== 229) {
@@ -222,19 +227,34 @@ export default function ExperienceModal({
                     onAddTech()
                   }
                 }}
-                className="bg-transparent border border-white/20 px-2 py-1 text-xs text-white placeholder-white/30 focus:border-white focus:outline-none w-28"
+                className={`bg-transparent border px-2 py-1 text-xs text-white placeholder-white/30 focus:outline-none w-28 ${
+                  techError
+                    ? 'border-rose-500/80 bg-rose-500/[0.04] focus:border-rose-400'
+                    : 'border-white/20 focus:border-white'
+                }`}
+                aria-invalid={!!techError}
               />
               {techInput.trim() && (
                 <button
                   type="button"
                   onClick={onAddTech}
-                  className="px-2.5 py-1 text-xs bg-emerald-400 text-black font-bold hover:bg-emerald-300 cursor-pointer"
+                  disabled={!!techError}
+                  className="px-2.5 py-1 text-xs bg-emerald-400 text-black font-bold hover:bg-emerald-300 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   +
                 </button>
               )}
             </div>
           </div>
+          {techError ? (
+            <p role="alert" className="mt-1 text-[10px] text-rose-300/90 leading-snug">
+              ⚠ {techError}
+            </p>
+          ) : (
+            <p className="mt-1 text-[10px] text-white/30 leading-snug">
+              {FIELD_RULES.workTech.hint}
+            </p>
+          )}
         </div>
 
         {/* Modal Actions */}

@@ -1,17 +1,17 @@
-import { useState } from 'react'
 import {
-  setAdminPasskey,
   resetStoredTranslations,
   getStoredTranslations,
+  saveRemoteTranslations,
   type SupportedLang,
   type TranslationDict,
 } from '../../../services/contentStorage'
+import type { ToastVariant } from '../Toast'
 
 interface SystemTabProps {
   translations: Record<SupportedLang, TranslationDict>
   setTranslations: React.Dispatch<React.SetStateAction<Record<SupportedLang, TranslationDict>>>
   onUpdateTranslations: (data: Record<SupportedLang, TranslationDict>) => void
-  showToast: (msg: string) => void
+  showToast: (msg: string, variant?: ToastVariant) => void
 }
 
 export default function SystemTab({
@@ -20,8 +20,6 @@ export default function SystemTab({
   onUpdateTranslations,
   showToast,
 }: SystemTabProps) {
-  const [newPasskey, setNewPasskey] = useState('')
-
   return (
     <div className="space-y-6 font-mono">
       {/* Top Header Bar */}
@@ -37,21 +35,23 @@ export default function SystemTab({
           Data Reset & Factory Defaults
         </h2>
         <p className="text-xs text-white/60 leading-relaxed">
-          Wipe all customized content overrides from local storage and restore default factory translations for all languages.
+          Wipe all customized content overrides (local cache and S3) and restore default factory
+          translations for all languages. Uploaded resume files stay in the bucket.
         </p>
         <div>
           <button
             type="button"
-            onClick={() => {
+            onClick={async () => {
               if (
                 confirm(
-                  'Are you sure you want to reset all data to default? All custom edits in localStorage will be wiped.'
+                  'Are you sure you want to reset all data to default? All custom edits will be wiped.'
                 )
               ) {
                 resetStoredTranslations()
                 const defaults = getStoredTranslations()
                 setTranslations(defaults)
                 onUpdateTranslations(defaults)
+                await saveRemoteTranslations(defaults)
                 showToast('Reset data to default successfully!')
               }
             }}
@@ -95,29 +95,44 @@ export default function SystemTab({
         <h2 className="text-xs font-bold text-white uppercase tracking-wider border-b border-white/10 pb-2">
           Security & Passkey
         </h2>
-        <div className="max-w-md space-y-2">
-          <label className="block text-[10px] text-white/40 uppercase">Change Admin Passkey</label>
-          <div className="flex gap-2">
-            <input
-              type="password"
-              placeholder="New passkey..."
-              value={newPasskey}
-              onChange={(e) => setNewPasskey(e.target.value)}
-              className="flex-1 bg-white/[0.03] border border-white/20 p-2 text-xs text-white focus:outline-none focus:border-white font-mono"
-            />
-            <button
-              type="button"
-              onClick={() => {
-                if (!newPasskey.trim()) return
-                setAdminPasskey(newPasskey)
-                setNewPasskey('')
-                showToast('Admin passkey updated!')
-              }}
-              className="px-4 py-2 bg-white text-black text-xs font-bold hover:bg-white/80 cursor-pointer"
-            >
-              UPDATE
-            </button>
-          </div>
+        <p className="text-xs text-white/60 leading-relaxed">
+          The admin passkey is verified server-side (PBKDF2 hash on the API host). It cannot be
+          changed from this dashboard because that would require storing a new hash on the server.
+        </p>
+        <div className="border border-white/10 bg-black/40 p-3 text-[11px] font-mono text-white/50">
+          <div className="text-white/30 uppercase text-[9.5px] mb-1">To rotate the passkey</div>
+          Run this on the server host:
+          <pre className="mt-1.5 whitespace-pre-wrap break-all text-emerald-400/90">
+{`sudo bash ~/nhatprx-api/setup-secrets.sh "your-new-passkey"
+sudo systemctl restart nhatprx-api`}
+          </pre>
+        </div>
+      </div>
+
+      {/* Local Development Setup */}
+      <div className="border border-white/15 p-5 bg-white/[0.02] space-y-4">
+        <h2 className="text-xs font-bold text-white uppercase tracking-wider border-b border-white/10 pb-2">
+          Local Development Setup
+        </h2>
+        <p className="text-xs text-white/60 leading-relaxed">
+          Run the API from the <span className="text-emerald-400/90">server/</span> folder so it
+          picks up the local secrets and proxies correctly.
+        </p>
+        <div className="border border-white/10 bg-black/40 p-3 text-[11px] font-mono text-white/50">
+          <div className="text-white/30 uppercase text-[9.5px] mb-1">One-time setup</div>
+          <pre className="mt-1.5 whitespace-pre-wrap break-all text-emerald-400/90">
+{`cd server
+npm install
+npm run setup:secrets   # writes .testdata/passkey.hash (passkey: admin2026)
+npm run setup:cors      # allows browser PUT uploads to the resume bucket`}
+          </pre>
+        </div>
+        <div className="border border-white/10 bg-black/40 p-3 text-[11px] font-mono text-white/50">
+          <div className="text-white/30 uppercase text-[9.5px] mb-1">Run the API</div>
+          <pre className="mt-1.5 whitespace-pre-wrap break-all text-emerald-400/90">
+{`cd server && npm start   # listens on 127.0.0.1:8787
+npm run dev             # in a second terminal, proxies /api to the API`}
+          </pre>
         </div>
       </div>
     </div>

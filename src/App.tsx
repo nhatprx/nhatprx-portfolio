@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import 'lenis/dist/lenis.css'
 import Ec2Terminal from './components/Ec2Terminal'
 import ServerTelemetry from './components/ServerTelemetry'
-import { TRANSLATIONS, type SupportedLang } from './data/translations'
+import { TRANSLATIONS, type SupportedLang, type TranslationDict } from './data/translations'
 import CustomCursor from './components/CustomCursor'
 import AdminPortal from './components/Admin/AdminPortal'
 import BlogPostModal from './components/BlogPostModal'
-import { getStoredTranslations } from './services/contentStorage'
+import { getStoredTranslations, loadRemoteTranslations } from './services/contentStorage'
 import PortfolioContent from './components/PortfolioContent'
 import SiteHeader from './components/SiteHeader'
 import ScreenLoader from './components/ScreenLoader'
@@ -20,6 +20,17 @@ export default function App() {
   const [loadingLabel, setLoadingLabel] = useState('INITIALIZING ENVIRONMENT...')
 
   const [allTranslations, setAllTranslations] = useState(() => getStoredTranslations())
+
+  // Load the shared content (S3-backed) so every visitor sees the latest edits.
+  useEffect(() => {
+    let isMounted = true
+    loadRemoteTranslations().then((remote) => {
+      if (isMounted) setAllTranslations(remote)
+    })
+    return () => {
+      isMounted = false
+    }
+  }, [])
   const [isAdminOpen, setIsAdminOpen] = useState(() => {
     if (typeof window === 'undefined') return false
     return window.location.hash === '#admin' || window.location.pathname === '/admin'
@@ -98,6 +109,16 @@ export default function App() {
     return () => observer.disconnect()
   }, [lang, workTab])
 
+  // Stable identity: AdminPortal's auto-save effect depends on this callback.
+  // An inline arrow would change identity on every App render, re-triggering
+  // that effect and looping the render cycle (which blocks typing).
+  const handleUpdateTranslations = useCallback(
+    (updated: Record<SupportedLang, TranslationDict>) => {
+      setAllTranslations(updated)
+    },
+    []
+  )
+
   const handleLangChange = (newLang: SupportedLang) => {
     if (newLang === lang) return
 
@@ -121,7 +142,7 @@ export default function App() {
   }
 
   return (
-    <div className="relative min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black">
+    <div className="relative min-h-screen bg-black text-white font-sans selection:bg-emerald-400 selection:text-black">
       {/* Animated faint grey grid background */}
       <div className="pointer-events-none fixed inset-0 z-0 bg-grid-animated opacity-75" />
       <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_30%,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
@@ -165,7 +186,6 @@ export default function App() {
         >
           <PortfolioContent
             t={t}
-            lang={lang}
             showTerminalInMobile={true}
             onSelectBlog={(slug) => setActiveBlogSlug(slug)}
             onScrollTo={(target) => scrollTo(target)}
@@ -232,7 +252,7 @@ export default function App() {
               window.history.replaceState(null, '', window.location.pathname)
             }
           }}
-          onUpdateTranslations={(updated) => setAllTranslations(updated)}
+          onUpdateTranslations={handleUpdateTranslations}
         />
       )}
     </div>

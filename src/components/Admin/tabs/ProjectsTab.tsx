@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { AdminTabProps } from '../types'
 import type { ProjectItem } from '../../../services/contentStorage'
 import ProjectModal from '../modals/ProjectModal'
+import { FIELD_RULES, validateField } from '../utils/fieldRules'
 
 export default function ProjectsTab({
   currentDict,
@@ -48,8 +49,16 @@ export default function ProjectsTab({
     if (!projDraft) return
     const val = techInput.trim()
     if (!val) return
+
+    const error = validateField(val, FIELD_RULES.workTech, true)
+    if (error) {
+      showToast(error, 'error')
+      return
+    }
     if (!projDraft.tech.some((t) => t.toLowerCase() === val.toLowerCase())) {
       setProjDraft({ ...projDraft, tech: [...projDraft.tech, val] })
+    } else {
+      showToast(`"${val}" is already in the technology list.`, 'warning')
     }
     setTechInput('')
   }
@@ -77,9 +86,23 @@ export default function ProjectsTab({
 
   const handleSave = () => {
     if (!projDraft) return
-    if (!projDraft.title.trim() || !projDraft.meta.trim() || !projDraft.period.trim()) {
-      showToast('Title, category/meta, and period are required')
-      return
+
+    // Validate every field before writing anything, and tell the user exactly
+    // what is wrong instead of saving a broken entry.
+    const checks: { value: string | undefined; rule: (typeof FIELD_RULES)[keyof typeof FIELD_RULES] }[] = [
+      { value: projDraft.title, rule: FIELD_RULES.workTitle },
+      { value: projDraft.meta, rule: FIELD_RULES.workCompany },
+      { value: projDraft.period, rule: FIELD_RULES.workPeriod },
+      { value: projDraft.desc, rule: FIELD_RULES.workSummary },
+      { value: projDraft.repoUrl, rule: FIELD_RULES.contactUrl },
+    ]
+    for (const { value, rule } of checks) {
+      const allowEmpty = rule === FIELD_RULES.workSummary || rule === FIELD_RULES.contactUrl
+      const error = validateField(value, rule, allowEmpty)
+      if (error) {
+        showToast(error, 'error')
+        return
+      }
     }
 
     const cleanBullets = bulletText
@@ -88,7 +111,16 @@ export default function ProjectsTab({
       .filter(Boolean)
 
     if (cleanBullets.length === 0) {
-      showToast('At least one bullet achievement is required')
+      showToast('At least one bullet achievement is required.', 'error')
+      return
+    }
+
+    const tooLong = cleanBullets.find((b) => b.length > FIELD_RULES.workBullet.max)
+    if (tooLong) {
+      showToast(
+        `A bullet is ${tooLong.length} characters long (max ${FIELD_RULES.workBullet.max}). Shorten it before saving.`,
+        'error'
+      )
       return
     }
 

@@ -8,6 +8,7 @@ import BlogTab from '../tabs/BlogTab'
 import ContactTab from '../tabs/ContactTab'
 import TerminalTab from '../tabs/TerminalTab'
 import SystemTab from '../tabs/SystemTab'
+import type { ToastVariant } from '../Toast'
 
 interface AdminTabContentProps {
   activeTab: TabType
@@ -19,7 +20,7 @@ interface AdminTabContentProps {
   setTranslations: React.Dispatch<React.SetStateAction<Record<SupportedLang, TranslationDict>>>
   updateCurrentDict: (updater: (prev: TranslationDict) => TranslationDict) => void
   onUpdateTranslations: (data: Record<SupportedLang, TranslationDict>) => void
-  showToast: (msg: string) => void
+  showToast: (msg: string, variant?: ToastVariant) => void
 }
 
 export default function AdminTabContent({
@@ -34,6 +35,25 @@ export default function AdminTabContent({
   onUpdateTranslations,
   showToast,
 }: AdminTabContentProps) {
+  const handleUpdateResumeAcrossAllLangs = (resumeUrl: string, resumeFileName: string) => {
+    setTranslations((prev) => {
+      const next = { ...prev }
+      for (const code of ['en', 'vi', 'fr', 'ja'] as SupportedLang[]) {
+        if (next[code]) {
+          next[code] = {
+            ...next[code],
+            hero: {
+              ...next[code].hero,
+              resumeUrl,
+              resumeFileName,
+            },
+          }
+        }
+      }
+      return next
+    })
+  }
+
   switch (activeTab) {
     case 'about':
       return (
@@ -42,6 +62,7 @@ export default function AdminTabContent({
           selectedLang={selectedLang}
           updateCurrentDict={updateCurrentDict}
           showToast={showToast}
+          updateResumeAcrossAllLangs={handleUpdateResumeAcrossAllLangs}
         />
       )
     case 'skills':

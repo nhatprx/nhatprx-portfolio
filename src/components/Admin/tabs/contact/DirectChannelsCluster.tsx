@@ -1,9 +1,6 @@
 import type { TranslationDict } from '../../../../data/translations'
-import CharCounter from '../../CharCounter'
-import {
-  formatPhoneWithSpaces,
-  getInputValidationClass,
-} from '../../utils/validation'
+import AdminField from '../../AdminField'
+import { FIELD_RULES, applyFieldRule, formatPhoneWithSpaces } from '../../utils/fieldRules'
 
 interface DirectChannelsClusterProps {
   currentDict: TranslationDict
@@ -38,94 +35,80 @@ export default function DirectChannelsCluster({
       {isOpen && (
         <div className="p-4 pt-1 border-t border-white/10 space-y-3.5 bg-white/[0.01]">
           <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-[10px] text-white/40 uppercase">Primary Email</label>
-              </div>
-              <input
-                type="email"
-                value={currentDict.contact.directEmail || ''}
-                placeholder="nhatprx@gmail.com"
-                onChange={(e) =>
-                  updateCurrentDict((d) => ({
-                    ...d,
-                    contact: { ...d.contact, directEmail: e.target.value.trim() },
-                  }))
-                }
-                className={`w-full bg-white/[0.03] border p-2 text-xs focus:outline-none transition-colors font-mono ${getInputValidationClass(
-                  currentDict.contact.directEmail,
-                  'email'
-                )}`}
-              />
-            </div>
+            <AdminField
+              label="Primary Email"
+              value={currentDict.contact.directEmail}
+              rule={FIELD_RULES.contactEmail}
+              allowEmpty
+              placeholder="nhatprx@gmail.com"              className="font-mono"
+              onChange={(val) =>
+                updateCurrentDict((d) => ({
+                  ...d,
+                  contact: {
+                    ...d.contact,
+                    directEmail: applyFieldRule(val.trim(), FIELD_RULES.contactEmail),
+                  },
+                }))
+              }
+            />
 
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-[10px] text-white/40 uppercase">Phone Number</label>
-                <CharCounter current={cleanPhone.length} max={12} />
-              </div>
-              <input
-                type="text"
-                maxLength={16}
-                value={currentDict.contact.directPhone || ''}
-                placeholder="090 123 4567"
-                onChange={(e) => {
-                  const formatted = formatPhoneWithSpaces(e.target.value)
-                  updateCurrentDict((d) => ({
-                    ...d,
-                    contact: { ...d.contact, directPhone: formatted },
-                  }))
-                }}
-                className={`w-full bg-white/[0.03] border p-2 text-xs focus:outline-none transition-colors font-mono ${getInputValidationClass(
-                  currentDict.contact.directPhone,
-                  'phone'
-                )}`}
-              />
-            </div>
+            <AdminField
+              label="Phone Number"
+              value={currentDict.contact.directPhone}
+              rule={FIELD_RULES.contactPhone}
+              allowEmpty
+              placeholder="090 123 4567"              className="font-mono"
+              aside={
+                <span className="text-[9px] text-white/30 font-mono">
+                  {cleanPhone.length} digits
+                </span>
+              }
+              onChange={(val) =>
+                updateCurrentDict((d) => ({
+                  ...d,
+                  contact: {
+                    ...d.contact,
+                    directPhone: formatPhoneWithSpaces(val),
+                  },
+                }))
+              }
+            />
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-[10px] text-white/40 uppercase">GitHub Profile URL</label>
-              </div>
-              <input
-                type="url"
-                value={currentDict.contact.githubUrl || ''}
-                placeholder="https://github.com/nhatprx"
-                onChange={(e) =>
-                  updateCurrentDict((d) => ({
-                    ...d,
-                    contact: { ...d.contact, githubUrl: e.target.value.trim() },
-                  }))
-                }
-                className={`w-full bg-white/[0.03] border p-2 text-xs focus:outline-none transition-colors font-mono ${getInputValidationClass(
-                  currentDict.contact.githubUrl,
-                  'url'
-                )}`}
-              />
-            </div>
+            <AdminField
+              label="GitHub Profile URL"
+              value={currentDict.contact.githubUrl}
+              rule={FIELD_RULES.contactUrl}
+              allowEmpty
+              placeholder="https://github.com/nhatprx"              className="font-mono"
+              onChange={(val) =>
+                updateCurrentDict((d) => ({
+                  ...d,
+                  contact: {
+                    ...d.contact,
+                    githubUrl: applyFieldRule(val.trim(), FIELD_RULES.contactUrl),
+                  },
+                }))
+              }
+            />
 
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-[10px] text-white/40 uppercase">LinkedIn Profile URL</label>
-              </div>
-              <input
-                type="url"
-                value={currentDict.contact.linkedinUrl || ''}
-                placeholder="https://www.linkedin.com/in/nhatprx/"
-                onChange={(e) =>
-                  updateCurrentDict((d) => ({
-                    ...d,
-                    contact: { ...d.contact, linkedinUrl: e.target.value.trim() },
-                  }))
-                }
-                className={`w-full bg-white/[0.03] border p-2 text-xs focus:outline-none transition-colors font-mono ${getInputValidationClass(
-                  currentDict.contact.linkedinUrl,
-                  'url'
-                )}`}
-              />
-            </div>
+            <AdminField
+              label="LinkedIn Profile URL"
+              value={currentDict.contact.linkedinUrl}
+              rule={FIELD_RULES.contactUrl}
+              allowEmpty
+              placeholder="https://www.linkedin.com/in/nhatprx/"              className="font-mono"
+              onChange={(val) =>
+                updateCurrentDict((d) => ({
+                  ...d,
+                  contact: {
+                    ...d.contact,
+                    linkedinUrl: applyFieldRule(val.trim(), FIELD_RULES.contactUrl),
+                  },
+                }))
+              }
+            />
           </div>
         </div>
       )}

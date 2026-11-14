@@ -1,10 +1,8 @@
 import { TRANSLATIONS, type SupportedLang, type TranslationDict, type LocalizedBlogPost, type ExperienceItem, type ProjectItem } from '../data/translations'
+import { fetchRemoteContent, saveRemoteContent } from './adminApi'
 
 const CONTENT_STORAGE_KEY = 'nhatprx_content_overrides'
 const TERMINAL_COMMANDS_KEY = 'nhatprx_custom_terminal_commands'
-const ADMIN_PASS_KEY = 'nhatprx_admin_pass'
-const ADMIN_SESSION_KEY = 'nhatprx_admin_session'
-const DEFAULT_PASSKEY = 'admin2026'
 
 export type CustomTerminalCommands = Record<string, string>
 
@@ -13,70 +11,7 @@ export function getStoredTranslations(): Record<SupportedLang, TranslationDict> 
   try {
     const raw = localStorage.getItem(CONTENT_STORAGE_KEY)
     if (raw) {
-      const parsed = JSON.parse(raw)
-      const mergeLang = (code: SupportedLang): TranslationDict => {
-        const base = TRANSLATIONS[code]
-        const custom = parsed[code] || {}
-        const customBlog = custom.blog || {}
-        // Ensure new default posts are never hidden by an older localStorage snapshot
-        const posts = (customBlog.posts?.length ?? 0) >= base.blog.posts.length
-          ? customBlog.posts
-          : base.blog.posts
-
-        return {
-          ...base,
-          ...custom,
-          about: {
-            ...base.about,
-            ...(custom.about || {}),
-            languages: custom.about?.languages && custom.about.languages.length > 0 ? custom.about.languages : base.about.languages,
-            languagesTitle: custom.about?.languagesTitle || base.about.languagesTitle,
-            tag: base.about.tag,
-          },
-          skills: {
-            ...base.skills,
-            ...(custom.skills || {}),
-            tag: base.skills.tag,
-            categories: base.skills.categories.map((baseCat, idx) => {
-              const customCat = custom.skills?.categories?.[idx]
-              if (!customCat) return baseCat
-              return {
-                ...baseCat,
-                ...customCat,
-                title: customCat.title ?? baseCat.title,
-                skills: Array.isArray(customCat.skills) ? customCat.skills : baseCat.skills,
-                gridClass: baseCat.gridClass,
-                fullWidth: baseCat.fullWidth,
-              }
-            }),
-          },
-          experience: {
-            ...base.experience,
-            ...(custom.experience || {}),
-            tag: base.experience.tag,
-            items: Array.isArray(custom.experience?.items)
-              ? custom.experience.items
-              : base.experience.items,
-          },
-          projects: {
-            ...base.projects,
-            ...(custom.projects || {}),
-            tag: base.projects.tag,
-            items: Array.isArray(custom.projects?.items)
-              ? custom.projects.items
-              : base.projects.items,
-          },
-          blog: { ...base.blog, ...customBlog, tag: base.blog.tag, posts },
-          contact: { ...base.contact, ...(custom.contact || {}), tag: base.contact.tag },
-        }
-      }
-
-      return {
-        en: mergeLang('en'),
-        vi: mergeLang('vi'),
-        fr: mergeLang('fr'),
-        ja: mergeLang('ja'),
-      }
+      return mergeTranslations(JSON.parse(raw))
     }
   } catch (err) {
     console.error('Failed to parse stored translations:', err)
@@ -100,6 +35,127 @@ export function resetStoredTranslations(): void {
   }
 }
 
+/**
+ * Loads content overrides from the remote API (S3-backed) and merges them on
+ * top of the factory defaults. Falls back to localStorage when the API is
+ * unreachable so the site still renders offline.
+ */
+export async function loadRemoteTranslations(): Promise<Record<SupportedLang, TranslationDict>> {
+  try {
+    const remote = await fetchRemoteContent<Record<SupportedLang, TranslationDict>>()
+    if (!remote) return getStoredTranslations()
+    try {
+      localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(remote))
+    } catch {
+      // localStorage is only a cache here; failing to write it is not fatal.
+    }
+    return mergeTranslations(remote)
+  } catch (err) {
+    console.warn('Remote content unavailable, using local cache:', err)
+    return getStoredTranslations()
+  }
+}
+
+/**
+ * Persists content overrides to the remote API (S3-backed) and mirrors them to
+ * localStorage as an offline cache.
+ */
+export async function saveRemoteTranslations(
+  data: Record<SupportedLang, TranslationDict>
+): Promise<boolean> {
+  try {
+    await saveRemoteContent(data)
+    return true
+  } catch (err) {
+    console.error('Failed to save translations to remote storage:', err)
+    return false
+  }
+}
+
+/** Merges a partial override payload on top of the factory defaults. */
+function mergeTranslations(
+  parsed: Partial<Record<SupportedLang, Partial<TranslationDict>>>
+): Record<SupportedLang, TranslationDict> {
+  const mergeLang = (code: SupportedLang): TranslationDict => {
+    const base = TRANSLATIONS[code]
+    const custom: Partial<TranslationDict> = parsed[code] ?? {}
+    const customBlog: Partial<TranslationDict['blog']> = custom.blog ?? {}
+    // Ensure new default posts are never hidden by an older stored snapshot
+    const customPosts = customBlog.posts
+    const posts =
+      customPosts && customPosts.length >= base.blog.posts.length ? customPosts : base.blog.posts
+
+    const customHero: Partial<TranslationDict['hero']> = custom.hero ?? {}
+    const safeResumeUrl = customHero.resumeUrl?.startsWith('blob:')
+      ? base.hero.resumeUrl
+      : customHero.resumeUrl || base.hero.resumeUrl
+    const safeResumeFileName = customHero.resumeFileName || base.hero.resumeFileName
+
+    return {
+      ...base,
+      ...custom,
+      hero: {
+        ...base.hero,
+        ...customHero,
+        resumeUrl: safeResumeUrl,
+        resumeFileName: safeResumeFileName,
+      },
+      about: {
+        ...base.about,
+        ...(custom.about || {}),
+        languages:
+          custom.about?.languages && custom.about.languages.length > 0
+            ? custom.about.languages
+            : base.about.languages,
+        languagesTitle: custom.about?.languagesTitle || base.about.languagesTitle,
+        tag: base.about.tag,
+      },
+      skills: {
+        ...base.skills,
+        ...(custom.skills || {}),
+        tag: base.skills.tag,
+        categories: base.skills.categories.map((baseCat, idx) => {
+          const customCat = custom.skills?.categories?.[idx]
+          if (!customCat) return baseCat
+          return {
+            ...baseCat,
+            ...customCat,
+            title: customCat.title ?? baseCat.title,
+            skills: Array.isArray(customCat.skills) ? customCat.skills : baseCat.skills,
+            gridClass: baseCat.gridClass,
+            fullWidth: baseCat.fullWidth,
+          }
+        }),
+      },
+      experience: {
+        ...base.experience,
+        ...(custom.experience || {}),
+        tag: base.experience.tag,
+        items: Array.isArray(custom.experience?.items)
+          ? custom.experience.items
+          : base.experience.items,
+      },
+      projects: {
+        ...base.projects,
+        ...(custom.projects || {}),
+        tag: base.projects.tag,
+        items: Array.isArray(custom.projects?.items)
+          ? custom.projects.items
+          : base.projects.items,
+      },
+      blog: { ...base.blog, ...customBlog, tag: base.blog.tag, posts },
+      contact: { ...base.contact, ...(custom.contact || {}), tag: base.contact.tag },
+    }
+  }
+
+  return {
+    en: mergeLang('en'),
+    vi: mergeLang('vi'),
+    fr: mergeLang('fr'),
+    ja: mergeLang('ja'),
+  }
+}
+
 export function getStoredTerminalCommands(): CustomTerminalCommands {
   if (typeof window === 'undefined') return {}
   try {
@@ -116,28 +172,6 @@ export function saveStoredTerminalCommands(commands: CustomTerminalCommands): vo
     localStorage.setItem(TERMINAL_COMMANDS_KEY, JSON.stringify(commands))
   } catch (err) {
     console.error('Failed to save terminal commands to localStorage:', err)
-  }
-}
-
-export function getAdminPasskey(): string {
-  if (typeof window === 'undefined') return DEFAULT_PASSKEY
-  return localStorage.getItem(ADMIN_PASS_KEY) || DEFAULT_PASSKEY
-}
-
-export function setAdminPasskey(pass: string): void {
-  localStorage.setItem(ADMIN_PASS_KEY, pass.trim() || DEFAULT_PASSKEY)
-}
-
-export function isAdminAuthenticated(): boolean {
-  if (typeof window === 'undefined') return false
-  return sessionStorage.getItem(ADMIN_SESSION_KEY) === 'authenticated'
-}
-
-export function setAdminAuthenticated(auth: boolean): void {
-  if (auth) {
-    sessionStorage.setItem(ADMIN_SESSION_KEY, 'authenticated')
-  } else {
-    sessionStorage.removeItem(ADMIN_SESSION_KEY)
   }
 }
 

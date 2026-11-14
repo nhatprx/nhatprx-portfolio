@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { type AdminTabProps, SKILL_GROUP_LIMITS } from '../types'
-import CharCounter from '../CharCounter'
-import { CONTENT_LIMITS } from '../../../services/autoTranslate'
-import { getInputValidationClass } from '../utils/validation'
+import AdminField from '../AdminField'
+import { FIELD_RULES, applyFieldRule } from '../utils/fieldRules'
 import AddSkillModal from '../modals/AddSkillModal'
 
 export default function SkillsTab({
@@ -27,15 +26,21 @@ export default function SkillsTab({
     const cat = currentDict.skills.categories[modalCatIndex]
 
     if (cat.skills.length >= rule.maxItems) {
-      showToast(`Limit reached: maximum ${rule.maxItems} items for ${cat.title}`)
+      showToast(
+        `Limit reached: maximum ${rule.maxItems} items for "${cat.title}". Remove one before adding another.`,
+        'error'
+      )
       return
     }
     if (val.length > rule.maxLen) {
-      showToast(`Item exceeds limit of ${rule.maxLen} characters`)
+      showToast(
+        `"${val}" is ${val.length - rule.maxLen} characters over the limit (max ${rule.maxLen}).`,
+        'error'
+      )
       return
     }
     if (cat.skills.some((s) => s.toLowerCase() === val.toLowerCase())) {
-      showToast(`'${val}' already exists in ${cat.title}`)
+      showToast(`"${val}" is already listed in "${cat.title}".`, 'warning')
       return
     }
 
@@ -50,7 +55,7 @@ export default function SkillsTab({
 
     setModalInput('')
     setModalCatIndex(null)
-    showToast(`Added '${val}' to ${cat.title}`)
+    showToast(`Added "${val}" to ${cat.title}`)
   }
 
   const handleRemoveSkill = (catIdx: number, skillIdx: number) => {
@@ -100,62 +105,44 @@ export default function SkillsTab({
         {activeCluster === 'headings' && (
           <div className="p-4 pt-1 border-t border-white/10 space-y-3 bg-white/[0.01]">
             <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-[10px] text-white/40 uppercase">Section Heading</label>
-                  <CharCounter
-                    current={currentDict.skills.title?.length || 0}
-                    max={CONTENT_LIMITS.skills.title}
-                  />
-                </div>
-                <input
-                  type="text"
-                  maxLength={CONTENT_LIMITS.skills.title}
-                  value={currentDict.skills.title}
-                  onChange={(e) =>
-                    updateCurrentDict((d) => ({
-                      ...d,
-                      skills: { ...d.skills, title: e.target.value },
-                    }))
-                  }
-                  className={`w-full bg-white/[0.03] border p-2 text-xs focus:outline-none transition-colors ${getInputValidationClass(
-                    currentDict.skills.title
-                  )}`}
-                />
-              </div>
+              <AdminField
+                label="Section Heading"
+                value={currentDict.skills.title}
+                rule={FIELD_RULES.skillsTitle}
+                placeholder="Technical"                onChange={(val) =>
+                  updateCurrentDict((d) => ({
+                    ...d,
+                    skills: {
+                      ...d.skills,
+                      title: applyFieldRule(val, FIELD_RULES.skillsTitle),
+                    },
+                  }))
+                }
+              />
 
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-[10px] text-white/40 uppercase">Subtitle</label>
-                  <CharCounter
-                    current={currentDict.skills.titleSub?.length || 0}
-                    max={CONTENT_LIMITS.skills.titleSub}
-                  />
-                </div>
-                <input
-                  type="text"
-                  maxLength={CONTENT_LIMITS.skills.titleSub}
-                  value={currentDict.skills.titleSub}
-                  onChange={(e) =>
+              <AdminField
+                label="Subtitle"
+                value={currentDict.skills.titleSub}
+                rule={FIELD_RULES.skillsTitleSub}
+                placeholder="stack."                onChange={(val) =>
+                  updateCurrentDict((d) => ({
+                    ...d,
+                    skills: {
+                      ...d.skills,
+                      titleSub: applyFieldRule(val, FIELD_RULES.skillsTitleSub),
+                    },
+                  }))
+                }
+                onBlur={() => {
+                  const val = (currentDict.skills.titleSub || '').trim()
+                  if (val && !val.endsWith('.') && !val.endsWith('。')) {
                     updateCurrentDict((d) => ({
                       ...d,
-                      skills: { ...d.skills, titleSub: e.target.value },
+                      skills: { ...d.skills, titleSub: `${val}.` },
                     }))
                   }
-                  onBlur={(e) => {
-                    const val = e.target.value.trim()
-                    if (val && !val.endsWith('.') && !val.endsWith('。')) {
-                      updateCurrentDict((d) => ({
-                        ...d,
-                        skills: { ...d.skills, titleSub: `${val}.` },
-                      }))
-                    }
-                  }}
-                  className={`w-full bg-white/[0.03] border p-2 text-xs focus:outline-none transition-colors ${getInputValidationClass(
-                    currentDict.skills.titleSub
-                  )}`}
-                />
-              </div>
+                }}
+              />
             </div>
           </div>
         )}
@@ -201,22 +188,15 @@ export default function SkillsTab({
             {/* Expanded Cluster Form */}
             {isOpen && (
               <div className="p-4 pt-1 border-t border-white/10 space-y-3 bg-white/[0.01]">
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-[10px] text-white/40 uppercase">Group Title</label>
-                    <CharCounter current={cat.title?.length || 0} max={30} />
-                  </div>
-                  <input
-                    type="text"
-                    maxLength={30}
-                    value={cat.title}
-                    placeholder="Group Title"
-                    onChange={(e) => handleUpdateCatTitle(cIdx, e.target.value)}
-                    className={`w-full bg-white/[0.03] border p-2 text-xs font-bold tracking-wider focus:outline-none transition-colors ${getInputValidationClass(
-                      cat.title
-                    )}`}
-                  />
-                </div>
+                <AdminField
+                  label="Group Title"
+                  value={cat.title}
+                  rule={FIELD_RULES.skillGroupTitle}
+                  placeholder="Group Title"                  className="font-bold tracking-wider"
+                  onChange={(val) =>
+                    handleUpdateCatTitle(cIdx, applyFieldRule(val, FIELD_RULES.skillGroupTitle))
+                  }
+                />
 
                 {/* Stacks Badges Area */}
                 <div>

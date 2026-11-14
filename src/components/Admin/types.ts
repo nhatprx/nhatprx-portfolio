@@ -1,4 +1,5 @@
 import type { SupportedLang, TranslationDict } from '../../services/contentStorage'
+import type { ToastVariant } from './Toast'
 
 export type TabType =
   | 'about'
@@ -15,7 +16,8 @@ export interface AdminTabProps {
   currentDict: TranslationDict
   selectedLang: SupportedLang
   updateCurrentDict: (updater: (prev: TranslationDict) => TranslationDict) => void
-  showToast: (msg: string) => void
+  showToast: (msg: string, variant?: ToastVariant) => void
+  updateResumeAcrossAllLangs?: (resumeUrl: string, resumeFileName: string) => void
 }
 
 export const SKILL_GROUP_LIMITS: Record<number, { maxItems: number; maxLen: number; label: string }> = {

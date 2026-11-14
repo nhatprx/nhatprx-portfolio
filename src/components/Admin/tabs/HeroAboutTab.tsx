@@ -10,6 +10,7 @@ export default function HeroAboutTab({
   currentDict,
   updateCurrentDict,
   showToast,
+  updateResumeAcrossAllLangs,
 }: AdminTabProps) {
   const [activeCluster, setActiveCluster] = useState<Section1ClusterKey>(null)
 
@@ -33,6 +34,7 @@ export default function HeroAboutTab({
         onToggle={() => toggleCluster('hero')}
         updateCurrentDict={updateCurrentDict}
         showToast={showToast}
+        updateResumeAcrossAllLangs={updateResumeAcrossAllLangs}
       />
 
       {/* CLUSTER 02: ABOUT NARRATIVE */}

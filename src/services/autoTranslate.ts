@@ -4,6 +4,9 @@ import type {
   ProjectItem,
   LocalizedBlogPost,
 } from '../data/translations'
+import { CONTENT_LIMITS } from './contentLimits'
+
+export { CONTENT_LIMITS } from './contentLimits'
 
 type BlogSection = LocalizedBlogPost['content']['sections'][number]
 
@@ -72,9 +75,6 @@ export async function translateList(
   }
   return results
 }
-
-export { CONTENT_LIMITS } from './contentLimits'
-import { CONTENT_LIMITS } from './contentLimits'
 
 /**
  * Translates an entire ExperienceItem from English

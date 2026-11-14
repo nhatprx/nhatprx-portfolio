@@ -27,7 +27,7 @@ export default function BlogSectionBlock({
         value={sec.heading}
         onChange={(e) => {
           const s = [...blogDraft.content.sections]
-          s[sIdx].heading = e.target.value
+          s[sIdx] = { ...s[sIdx], heading: e.target.value }
           setBlogDraft({
             ...blogDraft,
             content: { ...blogDraft.content, sections: s },
@@ -42,7 +42,7 @@ export default function BlogSectionBlock({
         value={sec.body.join('\n\n')}
         onChange={(e) => {
           const s = [...blogDraft.content.sections]
-          s[sIdx].body = e.target.value.split('\n\n')
+          s[sIdx] = { ...s[sIdx], body: e.target.value.split('\n\n') }
           setBlogDraft({
             ...blogDraft,
             content: { ...blogDraft.content, sections: s },
@@ -63,9 +63,12 @@ export default function BlogSectionBlock({
             value={sec.code?.language || ''}
             onChange={(e) => {
               const s = [...blogDraft.content.sections]
-              s[sIdx].code = {
-                language: e.target.value,
-                snippet: s[sIdx].code?.snippet || '',
+              s[sIdx] = {
+                ...s[sIdx],
+                code: {
+                  language: e.target.value,
+                  snippet: s[sIdx].code?.snippet || '',
+                },
               }
               setBlogDraft({
                 ...blogDraft,
@@ -81,9 +84,12 @@ export default function BlogSectionBlock({
           value={sec.code?.snippet || ''}
           onChange={(e) => {
             const s = [...blogDraft.content.sections]
-            s[sIdx].code = {
-              language: s[sIdx].code?.language || 'text',
-              snippet: e.target.value,
+            s[sIdx] = {
+              ...s[sIdx],
+              code: {
+                language: s[sIdx].code?.language || 'text',
+                snippet: e.target.value,
+              },
             }
             setBlogDraft({
               ...blogDraft,

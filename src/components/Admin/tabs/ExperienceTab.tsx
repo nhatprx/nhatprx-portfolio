@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { AdminTabProps } from '../types'
 import type { ExperienceItem } from '../../../services/contentStorage'
 import ExperienceModal from '../modals/ExperienceModal'
+import { FIELD_RULES, validateField } from '../utils/fieldRules'
 
 export default function ExperienceTab({
   currentDict,
@@ -47,8 +48,16 @@ export default function ExperienceTab({
     if (!expDraft) return
     const val = techInput.trim()
     if (!val) return
+
+    const error = validateField(val, FIELD_RULES.workTech, true)
+    if (error) {
+      showToast(error, 'error')
+      return
+    }
     if (!expDraft.tech.some((t) => t.toLowerCase() === val.toLowerCase())) {
       setExpDraft({ ...expDraft, tech: [...expDraft.tech, val] })
+    } else {
+      showToast(`"${val}" is already in the technology list.`, 'warning')
     }
     setTechInput('')
   }
@@ -76,9 +85,21 @@ export default function ExperienceTab({
 
   const handleSave = () => {
     if (!expDraft) return
-    if (!expDraft.role.trim() || !expDraft.company.trim() || !expDraft.period.trim()) {
-      showToast('Role, company, and period are required')
-      return
+
+    // Validate every field before writing anything, and tell the user exactly
+    // what is wrong instead of saving a broken entry.
+    const checks: { value: string | undefined; rule: (typeof FIELD_RULES)[keyof typeof FIELD_RULES] }[] = [
+      { value: expDraft.role, rule: FIELD_RULES.workTitle },
+      { value: expDraft.company, rule: FIELD_RULES.workCompany },
+      { value: expDraft.period, rule: FIELD_RULES.workPeriod },
+      { value: expDraft.summary, rule: FIELD_RULES.workSummary },
+    ]
+    for (const { value, rule } of checks) {
+      const error = validateField(value, rule, rule === FIELD_RULES.workSummary)
+      if (error) {
+        showToast(error, 'error')
+        return
+      }
     }
 
     const cleanBullets = bulletText
@@ -87,7 +108,16 @@ export default function ExperienceTab({
       .filter(Boolean)
 
     if (cleanBullets.length === 0) {
-      showToast('At least one bullet achievement is required')
+      showToast('At least one bullet achievement is required.', 'error')
+      return
+    }
+
+    const tooLong = cleanBullets.find((b) => b.length > FIELD_RULES.workBullet.max)
+    if (tooLong) {
+      showToast(
+        `A bullet is ${tooLong.length} characters long (max ${FIELD_RULES.workBullet.max}). Shorten it before saving.`,
+        'error'
+      )
       return
     }
 

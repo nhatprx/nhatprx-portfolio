@@ -1,12 +1,13 @@
 import type { TranslationDict } from '../../../../data/translations'
-import CharCounter from '../../CharCounter'
-import { CONTENT_LIMITS } from '../../../../services/autoTranslate'
-import { getInputValidationClass } from '../../utils/validation'
+import AdminField from '../../AdminField'
+import { FIELD_RULES, applyFieldRule } from '../../utils/fieldRules'
 
 function toTitleCase(val: string): string {
   if (!val) return ''
   return val.replace(/\b([a-z])/g, (char) => char.toUpperCase())
 }
+
+type EduField = 'School' | 'Location' | 'Degree' | 'Major'
 
 interface EduCardFormProps {
   title: string
@@ -16,8 +17,8 @@ interface EduCardFormProps {
   degree?: string
   major?: string
   allowEmpty?: boolean
-  onChangeField: (field: 'School' | 'Location' | 'Degree' | 'Major', val: string) => void
-  onBlurField: (field: 'School' | 'Location' | 'Degree' | 'Major', val: string) => void
+  onChangeField: (field: EduField, val: string) => void
+  onBlurField: (field: EduField, val: string) => void
 }
 
 function EduCardForm({
@@ -38,79 +39,48 @@ function EduCardForm({
       </span>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="text-[10px] text-white/40 uppercase">University</label>
-            <CharCounter current={school.length} max={CONTENT_LIMITS.about.eduSchool} />
-          </div>
-          <input
-            type="text"
-            maxLength={CONTENT_LIMITS.about.eduSchool}
-            value={school}
-            onChange={(e) => onChangeField('School', e.target.value)}
-            onBlur={(e) => onBlurField('School', e.target.value)}
-            className={`w-full bg-white/[0.03] border p-2 text-xs focus:outline-none transition-colors ${getInputValidationClass(
-              school,
-              allowEmpty
-            )}`}
-          />
-        </div>
+        <AdminField
+          label="University"
+          value={school}
+          rule={FIELD_RULES.eduSchool}
+          allowEmpty={allowEmpty}
+          placeholder="FPT University"          onChange={(val) => onChangeField('School', applyFieldRule(val, FIELD_RULES.eduSchool))}
+          onBlur={() => onBlurField('School', school.trim())}
+        />
 
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="text-[10px] text-white/40 uppercase">Location</label>
-            <CharCounter current={location.length} max={CONTENT_LIMITS.about.eduLocation} />
-          </div>
-          <input
-            type="text"
-            maxLength={CONTENT_LIMITS.about.eduLocation}
-            value={location}
-            onChange={(e) => onChangeField('Location', e.target.value)}
-            onBlur={(e) => onBlurField('Location', e.target.value)}
-            className={`w-full bg-white/[0.03] border p-2 text-xs focus:outline-none transition-colors ${getInputValidationClass(
-              location,
-              allowEmpty
-            )}`}
-          />
-        </div>
+        <AdminField
+          label="Location"
+          value={location}
+          rule={FIELD_RULES.eduLocation}
+          allowEmpty={allowEmpty}
+          placeholder="Ho Chi Minh City, Vietnam"          onChange={(val) =>
+            onChangeField('Location', applyFieldRule(val, FIELD_RULES.eduLocation))
+          }
+          onBlur={() => onBlurField('Location', location.trim())}
+        />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="text-[10px] text-white/40 uppercase">Degree Title</label>
-            <CharCounter current={degree.length} max={CONTENT_LIMITS.about.eduDegree} />
-          </div>
-          <input
-            type="text"
-            maxLength={CONTENT_LIMITS.about.eduDegree}
-            value={degree}
-            onChange={(e) => onChangeField('Degree', e.target.value)}
-            onBlur={(e) => onBlurField('Degree', e.target.value)}
-            className={`w-full bg-white/[0.03] border p-2 text-xs uppercase focus:outline-none transition-colors ${getInputValidationClass(
-              degree,
-              allowEmpty
-            )}`}
-          />
-        </div>
+        <AdminField
+          label="Degree Title"
+          value={degree}
+          rule={FIELD_RULES.eduDegree}
+          allowEmpty={allowEmpty}
+          placeholder="Bachelor of Engineering"          className="uppercase"
+          onChange={(val) =>
+            onChangeField('Degree', applyFieldRule(val, FIELD_RULES.eduDegree).toUpperCase())
+          }
+          onBlur={() => onBlurField('Degree', degree.trim().toUpperCase())}
+        />
 
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="text-[10px] text-white/40 uppercase">Major</label>
-            <CharCounter current={major.length} max={CONTENT_LIMITS.about.eduMajor} />
-          </div>
-          <input
-            type="text"
-            maxLength={CONTENT_LIMITS.about.eduMajor}
-            value={major}
-            onChange={(e) => onChangeField('Major', e.target.value)}
-            onBlur={(e) => onBlurField('Major', e.target.value)}
-            className={`w-full bg-white/[0.03] border p-2 text-xs focus:outline-none transition-colors ${getInputValidationClass(
-              major,
-              allowEmpty
-            )}`}
-          />
-        </div>
+        <AdminField
+          label="Major"
+          value={major}
+          rule={FIELD_RULES.eduMajor}
+          allowEmpty={allowEmpty}
+          placeholder="Computer Science"          onChange={(val) => onChangeField('Major', applyFieldRule(val, FIELD_RULES.eduMajor))}
+          onBlur={() => onBlurField('Major', major.trim())}
+        />
       </div>
     </div>
   )
@@ -129,7 +99,7 @@ export default function EducationCluster({
   onToggle,
   updateCurrentDict,
 }: EducationClusterProps) {
-  const updateCard1 = (field: 'School' | 'Location' | 'Degree' | 'Major', val: string) => {
+  const updateCard1 = (field: EduField, val: string) => {
     updateCurrentDict((d) => ({
       ...d,
       about: {
@@ -140,7 +110,7 @@ export default function EducationCluster({
     }))
   }
 
-  const updateCard2 = (field: 'School' | 'Location' | 'Degree' | 'Major', val: string) => {
+  const updateCard2 = (field: EduField, val: string) => {
     updateCurrentDict((d) => ({
       ...d,
       about: {
@@ -168,6 +138,22 @@ export default function EducationCluster({
 
       {isOpen && (
         <div className="p-4 pt-1 border-t border-white/10 space-y-4 bg-white/[0.01]">
+          {/* Section heading shown above the education cards on the public site */}
+          <AdminField
+            label="Education Section Heading"
+            value={currentDict.about.educationTitle}
+            rule={FIELD_RULES.educationTitle}
+            placeholder="EDUCATION"            onChange={(val) =>
+              updateCurrentDict((d) => ({
+                ...d,
+                about: {
+                  ...d.about,
+                  educationTitle: applyFieldRule(val, FIELD_RULES.educationTitle),
+                },
+              }))
+            }
+          />
+
           <EduCardForm
             title="Education Card 01 (Primary)"
             titleColor="text-emerald-400"

@@ -1,14 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
-import type { TranslationDict } from '../../data/translations'
+import { ensureDot, type TranslationDict } from '../../data/translations'
 import { ChevronLeftIcon, ChevronRightIcon } from '../Icons'
-
-function ensureDot(str?: string): string {
-  if (!str) return ''
-  const trimmed = str.trim()
-  if (!trimmed) return ''
-  if (trimmed.endsWith('.') || trimmed.endsWith('。')) return trimmed
-  return `${trimmed}.`
-}
 
 interface BlogSectionProps {
   t: TranslationDict

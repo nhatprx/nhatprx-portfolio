@@ -4,18 +4,19 @@ import {
   saveStoredTranslations,
   getStoredTerminalCommands,
   saveStoredTerminalCommands,
-  getAdminPasskey,
-  isAdminAuthenticated,
-  setAdminAuthenticated,
+  loadRemoteTranslations,
+  saveRemoteTranslations,
   type SupportedLang,
   type TranslationDict,
   type CustomTerminalCommands,
 } from '../../services/contentStorage'
+import { login as apiLogin, logout as apiLogout, isLoggedIn } from '../../services/adminApi'
 import SitePreview from './SitePreview'
 import AdminHeader from './components/AdminHeader'
 import AdminSidebar from './components/AdminSidebar'
 import AdminTabContent from './components/AdminTabContent'
 import LoginGate from './components/LoginGate'
+import Toast, { type ToastVariant } from './Toast'
 import type { TabType } from './types'
 import { mergeValidDict } from './utils/validation'
 
@@ -25,9 +26,10 @@ interface AdminPortalProps {
 }
 
 export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPortalProps) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => isAdminAuthenticated())
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => isLoggedIn())
   const [inputPass, setInputPass] = useState('')
   const [loginError, setLoginError] = useState('')
+  const [isAuthenticating, setIsAuthenticating] = useState(false)
 
   // Admin Data State
   const [translations, setTranslations] = useState<Record<SupportedLang, TranslationDict>>(() =>
@@ -39,9 +41,9 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
   const [selectedLang, setSelectedLang] = useState<SupportedLang>('en')
   const [activeTab, setActiveTab] = useState<TabType>('about')
   const [mobilePane, setMobilePane] = useState<'editor' | 'preview'>('editor')
-  const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string; variant: ToastVariant } | null>(null)
 
-  // Auto-Save Engine (syncs automatically to localStorage and live site on every change)
+  // Auto-Save Engine (syncs automatically to localStorage, S3 and the live site on every change)
   const isFirstMount = useRef(true)
   const lastPersistedRef = useRef(translations)
 
@@ -64,15 +66,32 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
 
       saveStoredTranslations(updatedToSave)
       saveStoredTerminalCommands(terminalCommands)
-      onUpdateTranslations(translations)
+      // Publish the same sanitized dict that is persisted, otherwise the live
+      // site shows a different value than the one stored in S3.
+      onUpdateTranslations(updatedToSave)
+      void saveRemoteTranslations(updatedToSave)
     }, 350)
 
     return () => clearTimeout(timer)
   }, [translations, terminalCommands, onUpdateTranslations, selectedLang])
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg)
-    setTimeout(() => setToastMessage(null), 3000)
+  // Pull the shared content from S3 once the admin is authenticated.
+  useEffect(() => {
+    if (!isAuthenticated) return
+    let active = true
+    loadRemoteTranslations().then((remote) => {
+      if (!active) return
+      setTranslations(remote)
+      lastPersistedRef.current = remote
+      onUpdateTranslations(remote)
+    })
+    return () => {
+      active = false
+    }
+  }, [isAuthenticated, onUpdateTranslations])
+
+  const showToast = (msg: string, variant: ToastVariant = 'success') => {
+    setToast({ message: msg, variant })
   }
 
   const handleCloseAndSync = () => {
@@ -87,23 +106,30 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
     saveStoredTranslations(updatedToSave)
     saveStoredTerminalCommands(terminalCommands)
     onUpdateTranslations(translations)
+    void saveRemoteTranslations(updatedToSave)
     onClose()
   }
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    const validPass = getAdminPasskey()
-    if (inputPass.trim() === validPass) {
-      setAdminAuthenticated(true)
-      setIsAuthenticated(true)
-      setLoginError('')
-    } else {
+    if (!inputPass.trim()) {
       setLoginError('Authentication failed: Invalid passkey')
+      return
+    }
+    setIsAuthenticating(true)
+    setLoginError('')
+    try {
+      await apiLogin(inputPass.trim())
+      setIsAuthenticated(true)
+    } catch {
+      setLoginError('Authentication failed: Invalid passkey')
+    } finally {
+      setIsAuthenticating(false)
     }
   }
 
   const handleLogout = () => {
-    setAdminAuthenticated(false)
+    apiLogout()
     setIsAuthenticated(false)
   }
 
@@ -125,6 +151,7 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
         setLoginError={setLoginError}
         onLogin={handleLogin}
         onClose={onClose}
+        isSubmitting={isAuthenticating}
       />
     )
   }
@@ -135,11 +162,12 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
       className="fixed inset-0 z-50 flex bg-black text-white font-mono select-text overflow-hidden overscroll-contain"
     >
       {/* Toast Alert */}
-      {toastMessage && (
-        <div className="fixed top-4 right-4 z-50 bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 px-4 py-2 text-xs font-mono backdrop-blur-md shadow-2xl flex items-center gap-2">
-          <span>●</span>
-          <span>{toastMessage}</span>
-        </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          variant={toast.variant}
+          onDismiss={() => setToast(null)}
+        />
       )}
 
       {/* Main Split Layout: Left = Homepage Content Preview, Right = Dashboard Area (in place of Terminal) */}

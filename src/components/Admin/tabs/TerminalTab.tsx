@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import type { CustomTerminalCommands } from '../../../services/contentStorage'
+import type { ToastVariant } from '../Toast'
 
 interface TerminalTabProps {
   terminalCommands: CustomTerminalCommands
   setTerminalCommands: React.Dispatch<React.SetStateAction<CustomTerminalCommands>>
-  showToast: (msg: string) => void
+  showToast: (msg: string, variant?: ToastVariant) => void
 }
 
 export default function TerminalTab({
@@ -19,7 +20,7 @@ export default function TerminalTab({
   const handleSaveTerminalCommand = () => {
     const name = terminalDraft.name.toLowerCase().trim()
     if (!name) {
-      showToast('Please enter a command name.')
+      showToast('Please enter a command name.', 'error')
       return
     }
     setTerminalCommands((prev) => {

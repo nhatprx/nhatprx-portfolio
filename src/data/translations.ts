@@ -7,6 +7,14 @@ import type { SupportedLang, TranslationDict } from './translationTypes'
 export * from './translationTypes'
 export * from './blogSnippets'
 
+export function ensureDot(str?: string): string {
+  if (!str) return ''
+  const trimmed = str.trim()
+  if (!trimmed) return ''
+  if (trimmed.endsWith('.') || trimmed.endsWith('。')) return trimmed
+  return `${trimmed}.`
+}
+
 export const TRANSLATIONS: Record<SupportedLang, TranslationDict> = {
   en,
   vi,
