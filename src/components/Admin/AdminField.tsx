@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import CharCounter from './CharCounter'
 import { validateField, type FieldRule } from './utils/fieldRules'
 

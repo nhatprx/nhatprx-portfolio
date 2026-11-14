@@ -230,4 +230,12 @@ export const FIELD_RULES = {
     label: 'Location',
     hint: 'Use "City, Country" format. Letters, numbers, spaces and commas only.',
   },
+
+  /* Identity (global - shared by every language) */
+  identityName: {
+    kind: 'text',
+    max: 40,
+    label: 'Display name',
+    hint: 'Shown in the header, the hero and the footer on every language.',
+  },
 }

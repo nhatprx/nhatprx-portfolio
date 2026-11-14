@@ -1,4 +1,5 @@
 import type { TranslationDict } from '../translationTypes'
+import { DEFAULT_IDENTITY } from '../identity'
 import {
   CODE_SNIPPET_PYTHON,
   CODE_SNIPPET_C,
@@ -9,7 +10,8 @@ import {
 } from '../blogSnippets'
 
 export const fr: TranslationDict = {
-    label: 'Français',
+  label: 'Français',
+  identity: DEFAULT_IDENTITY,
     nav: {
       liveLab: 'SERVEUR EN DIRECT',
       about: 'À PROPOS',

@@ -47,7 +47,7 @@ export default function HeroAboutSection({
           </p>
 
           <h1 className="text-5xl sm:text-6xl xl:text-7xl font-bold tracking-tight text-white leading-[0.98]">
-            nhatprx <span className="text-white/25">.</span>
+            {t.identity.displayName} <span className="text-white/25">.</span>
           </h1>
 
           {/* Action Buttons */}
@@ -74,7 +74,7 @@ export default function HeroAboutSection({
           {showTerminalInMobile && (
             <div className="lg:hidden mt-8 mb-4 w-full space-y-3">
               <div className="hidden md:block h-[360px] w-full shadow-xl">
-                <Ec2Terminal />
+                <Ec2Terminal identity={t.identity} />
               </div>
               <div className="w-full shadow-xl">
                 <ServerTelemetry />

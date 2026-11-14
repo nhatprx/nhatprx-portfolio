@@ -54,6 +54,25 @@ export default function AdminTabContent({
     })
   }
 
+  // The identity is global: one edit is written to every language so the
+  // header, hero, footer and contact section always agree.
+  const handleUpdateIdentityAcrossAllLangs = (
+    patch: Partial<TranslationDict['identity']>
+  ) => {
+    setTranslations((prev) => {
+      const next = { ...prev }
+      for (const code of ['en', 'vi', 'fr', 'ja'] as SupportedLang[]) {
+        if (next[code]) {
+          next[code] = {
+            ...next[code],
+            identity: { ...next[code].identity, ...patch },
+          }
+        }
+      }
+      return next
+    })
+  }
+
   switch (activeTab) {
     case 'about':
       return (
@@ -107,6 +126,7 @@ export default function AdminTabContent({
           currentDict={currentDict}
           selectedLang={selectedLang}
           updateCurrentDict={updateCurrentDict}
+          updateIdentityAcrossAllLangs={handleUpdateIdentityAcrossAllLangs}
           showToast={showToast}
         />
       )

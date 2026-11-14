@@ -5,8 +5,14 @@ import {
   QUICK_COMMANDS,
   evaluateTerminalCommand,
 } from './terminal/terminalEvaluator'
+import { DEFAULT_IDENTITY, type Identity } from '../data/identity'
 
-export default function Ec2Terminal() {
+interface Ec2TerminalProps {
+  /** The global identity, so `cat resume.txt` shows the same contact info as the rest of the site. */
+  identity?: Identity
+}
+
+export default function Ec2Terminal({ identity = DEFAULT_IDENTITY }: Ec2TerminalProps) {
   const [history, setHistory] = useState<HistoryEntry[]>(INITIAL_GREETING)
   const [inputVal, setInputVal] = useState('')
   const [cmdHistory, setCmdHistory] = useState<string[]>([])
@@ -89,7 +95,7 @@ export default function Ec2Terminal() {
     setCmdHistory((prev) => [...prev, raw])
     setHistoryIndex(-1)
 
-    const result = evaluateTerminalCommand(raw)
+    const result = evaluateTerminalCommand(raw, identity)
     if (result.isClear) {
       setHistory([])
       setInputVal('')

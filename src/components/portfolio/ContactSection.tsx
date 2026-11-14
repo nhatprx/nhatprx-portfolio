@@ -28,7 +28,7 @@ export default function ContactSection({ t }: ContactSectionProps) {
         {/* Direct Channels Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5 mb-5 story-reveal story-delay-1">
           <a
-            href={`mailto:${t.contact.directEmail || 'nhatprx@gmail.com'}`}
+            href={`mailto:${t.identity.email}`}
             className="group p-4 sm:p-4.5 border border-white/10 hover:border-white/30 bg-white/[0.015] hover:bg-white/[0.04] transition-all flex flex-col justify-between"
           >
             <div className="flex items-center justify-between mb-2.5">
@@ -39,7 +39,7 @@ export default function ContactSection({ t }: ContactSectionProps) {
             </div>
             <div>
               <p className="font-mono text-xs sm:text-sm text-white font-medium group-hover:text-emerald-400 transition-colors truncate">
-                {t.contact.directEmail || 'nhatprx@gmail.com'}
+                {t.identity.email}
               </p>
               <span className="font-mono text-[10px] text-white/30 group-hover:text-white/80 mt-2 flex items-center gap-1 transition-colors">
                 Compose Email →
@@ -48,7 +48,7 @@ export default function ContactSection({ t }: ContactSectionProps) {
           </a>
 
           <a
-            href={`tel:${(t.contact.directPhone || '+84 879 888 965').replace(/\s+/g, '')}`}
+            href={`tel:${t.identity.phone.replace(/\s+/g, '')}`}
             className="group p-4 sm:p-4.5 border border-white/10 hover:border-white/30 bg-white/[0.015] hover:bg-white/[0.04] transition-all flex flex-col justify-between"
           >
             <div className="flex items-center justify-between mb-2.5">
@@ -59,7 +59,7 @@ export default function ContactSection({ t }: ContactSectionProps) {
             </div>
             <div>
               <p className="font-mono text-xs sm:text-sm text-white font-medium group-hover:text-emerald-400 transition-colors">
-                {t.contact.directPhone || '+84 879 888 965'}
+                {t.identity.phone}
               </p>
               <span className="font-mono text-[10px] text-white/30 group-hover:text-white/80 mt-2 flex items-center gap-1 transition-colors">
                 Direct Call / SMS →
@@ -68,7 +68,7 @@ export default function ContactSection({ t }: ContactSectionProps) {
           </a>
 
           <a
-            href={t.contact.githubUrl || 'https://github.com/nhatprx'}
+            href={t.identity.githubUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="group p-4 sm:p-4.5 border border-white/10 hover:border-white/30 bg-white/[0.015] hover:bg-white/[0.04] transition-all flex flex-col justify-between"
@@ -81,7 +81,7 @@ export default function ContactSection({ t }: ContactSectionProps) {
             </div>
             <div>
               <p className="font-mono text-xs sm:text-sm text-white font-medium group-hover:text-emerald-400 transition-colors">
-                {(t.contact.githubUrl || 'https://github.com/nhatprx').replace(/^https?:\/\//, '')}
+                {t.identity.githubUrl.replace(/^https?:\/\//, '')}
               </p>
               <span className="font-mono text-[10px] text-white/30 group-hover:text-white/80 mt-2 flex items-center gap-1 transition-colors">
                 View Repositories →
@@ -90,7 +90,7 @@ export default function ContactSection({ t }: ContactSectionProps) {
           </a>
 
           <a
-            href={t.contact.linkedinUrl || 'https://www.linkedin.com/in/nhatprx/'}
+            href={t.identity.linkedinUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="group p-4 sm:p-4.5 border border-white/10 hover:border-white/30 bg-white/[0.015] hover:bg-white/[0.04] transition-all flex flex-col justify-between"
@@ -103,7 +103,7 @@ export default function ContactSection({ t }: ContactSectionProps) {
             </div>
             <div>
               <p className="font-mono text-xs sm:text-sm text-white font-medium group-hover:text-emerald-400 transition-colors truncate">
-                {(t.contact.linkedinUrl || 'https://www.linkedin.com/in/nhatprx/').replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                {t.identity.linkedinUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')}
               </p>
               <span className="font-mono text-[10px] text-white/30 group-hover:text-white/80 mt-2 flex items-center gap-1 transition-colors">
                 Connect on LinkedIn →
@@ -142,7 +142,7 @@ export default function ContactSection({ t }: ContactSectionProps) {
       {/* Footer */}
       <footer className="pt-8 border-t border-white/5 text-xs font-mono text-white/20">
         <span>
-          &copy; {CURRENT_YEAR} nhatprx. {t.footer.rights}
+          &copy; {CURRENT_YEAR} {t.identity.displayName}. {t.footer.rights}
         </span>
       </footer>
     </section>

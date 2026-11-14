@@ -1,4 +1,5 @@
 import type { TranslationDict } from '../translationTypes'
+import { DEFAULT_IDENTITY } from '../identity'
 import {
   CODE_SNIPPET_PYTHON,
   CODE_SNIPPET_C,
@@ -9,7 +10,8 @@ import {
 } from '../blogSnippets'
 
 export const ja: TranslationDict = {
-    label: '日本語',
+  label: '日本語',
+  identity: DEFAULT_IDENTITY,
     nav: {
       liveLab: '実機サーバー',
       about: '概要',

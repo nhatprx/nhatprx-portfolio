@@ -2,17 +2,25 @@ import { useState } from 'react'
 import type { AdminTabProps } from '../types'
 import AdminField from '../AdminField'
 import { FIELD_RULES, applyFieldRule } from '../utils/fieldRules'
-import DirectChannelsCluster from './contact/DirectChannelsCluster'
+import IdentityCluster from './contact/IdentityCluster'
 
-type ContactClusterKey = 'headings' | 'channels' | 'availability' | null
+type ContactClusterKey = 'headings' | 'identity' | 'availability' | null
+
+interface ContactTabProps extends AdminTabProps {
+  /** Applies the identity to every language so one edit reaches the whole site. */
+  updateIdentityAcrossAllLangs: (
+    identity: Partial<AdminTabProps['currentDict']['identity']>
+  ) => void
+}
 
 export default function ContactTab({
   currentDict,
   updateCurrentDict,
-}: AdminTabProps) {
+  updateIdentityAcrossAllLangs,
+}: ContactTabProps) {
   const [activeCluster, setActiveCluster] = useState<ContactClusterKey>(null)
 
-  const toggleCluster = (key: 'headings' | 'channels' | 'availability') => {
+  const toggleCluster = (key: 'headings' | 'identity' | 'availability') => {
     setActiveCluster((prev) => (prev === key ? null : key))
   }
 
@@ -105,12 +113,12 @@ export default function ContactTab({
         )}
       </div>
 
-      {/* CLUSTER 02: DIRECT CONTACT CHANNELS */}
-      <DirectChannelsCluster
+      {/* CLUSTER 02: GLOBAL IDENTITY & CONTACT CHANNELS */}
+      <IdentityCluster
         currentDict={currentDict}
-        updateCurrentDict={updateCurrentDict}
-        isOpen={activeCluster === 'channels'}
-        onToggle={() => toggleCluster('channels')}
+        updateIdentityAcrossAllLangs={updateIdentityAcrossAllLangs}
+        isOpen={activeCluster === 'identity'}
+        onToggle={() => toggleCluster('identity')}
       />
 
       {/* CLUSTER 03: CURRENT AVAILABILITY & STATUS */}

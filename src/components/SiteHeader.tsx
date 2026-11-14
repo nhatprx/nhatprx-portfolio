@@ -59,7 +59,7 @@ export default function SiteHeader({
           {t.hero.role}
         </p>
         <h2 className="font-sans text-xl sm:text-2xl font-bold tracking-tight text-white leading-none">
-          nhatprx <span className="text-white/25">.</span>
+          {t.identity.displayName} <span className="text-white/25">.</span>
         </h2>
       </button>
 
@@ -104,7 +104,7 @@ export default function SiteHeader({
           }`}
         >
           <a
-            href={t.contact.githubUrl || 'https://github.com/nhatprx'}
+            href={t.identity.githubUrl}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="GitHub Profile"
@@ -113,7 +113,7 @@ export default function SiteHeader({
             <GithubIcon className="w-3.5 h-3.5" />
           </a>
           <a
-            href={t.contact.linkedinUrl || 'https://www.linkedin.com/in/nhatprx/'}
+            href={t.identity.linkedinUrl}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="LinkedIn Profile"

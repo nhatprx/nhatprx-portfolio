@@ -1,4 +1,5 @@
 import { getStoredTerminalCommands } from '../../services/contentStorage'
+import { DEFAULT_IDENTITY, type Identity } from '../../data/identity'
 import type { HistoryEntry } from './types'
 
 export const INITIAL_GREETING: HistoryEntry[] = [
@@ -27,7 +28,10 @@ export const QUICK_COMMANDS = [
   'help',
 ]
 
-export function evaluateTerminalCommand(raw: string): {
+export function evaluateTerminalCommand(
+  raw: string,
+  identity: Identity = DEFAULT_IDENTITY
+): {
   entries: HistoryEntry[]
   isClear?: boolean
 } {
@@ -167,10 +171,10 @@ drwxr-xr-x 7 ubuntu ubuntu 4096 Nov 08 11:20 lordnine-automation
         entries.push({
           type: 'output',
           text: `===========================================================
-PHAM MINH NHAT (nhatprx) - Software Engineer
+${identity.displayName.toUpperCase()} - Software Engineer
 Location: Ho Chi Minh City, Vietnam
-GitHub: https://github.com/nhatprx
-LinkedIn: https://linkedin.com/in/nhatprx/
+GitHub: ${identity.githubUrl}
+LinkedIn: ${identity.linkedinUrl}
 ===========================================================
 [PROFILE]
 Software Engineer experienced in backend systems, cloud infra (AWS, GCP),

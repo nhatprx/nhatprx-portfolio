@@ -207,7 +207,7 @@ export default function App() {
         >
           <div className="w-full h-full flex flex-col gap-3.5 pointer-events-auto min-h-0">
             <div className="flex-1 w-full shadow-2xl min-h-[360px]">
-              <Ec2Terminal />
+              <Ec2Terminal identity={t.identity} />
             </div>
 
             {/* Streamlined Minimal Live Telemetry Metric under Terminal */}

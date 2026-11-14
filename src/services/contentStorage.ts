@@ -1,8 +1,12 @@
 import { TRANSLATIONS, type SupportedLang, type TranslationDict, type LocalizedBlogPost, type ExperienceItem, type ProjectItem } from '../data/translations'
+import { resolveIdentity } from '../data/identity'
 import { fetchRemoteContent, saveRemoteContent } from './adminApi'
 
 const CONTENT_STORAGE_KEY = 'nhatprx_content_overrides'
 const TERMINAL_COMMANDS_KEY = 'nhatprx_custom_terminal_commands'
+
+/** The languages, in the order the global identity override is scanned. */
+const LANG_ORDER: SupportedLang[] = ['en', 'vi', 'fr', 'ja']
 
 export type CustomTerminalCommands = Record<string, string>
 
@@ -76,6 +80,11 @@ export async function saveRemoteTranslations(
 function mergeTranslations(
   parsed: Partial<Record<SupportedLang, Partial<TranslationDict>>>
 ): Record<SupportedLang, TranslationDict> {
+  // The identity is global: collect the first override found across all
+  // languages, then spread that single copy into every merged locale. This is
+  // what makes an edit in the admin apply to every locale at once.
+  const identity = resolveIdentity(parsed, LANG_ORDER)
+
   const mergeLang = (code: SupportedLang): TranslationDict => {
     const base = TRANSLATIONS[code]
     const custom: Partial<TranslationDict> = parsed[code] ?? {}
@@ -94,6 +103,7 @@ function mergeTranslations(
     return {
       ...base,
       ...custom,
+      identity,
       hero: {
         ...base.hero,
         ...customHero,

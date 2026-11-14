@@ -125,6 +125,19 @@ export interface TranslationDict {
     modalReadInModal: string
     posts: LocalizedBlogPost[]
   }
+  /**
+   * Global identity - the single source of truth for who the site owner is.
+   *
+   * Stored once and shared by every language so a link edited in the admin
+   * applies to the header, the contact section and the footer on all locales.
+   */
+  identity: {
+    displayName: string
+    email: string
+    phone: string
+    githubUrl: string
+    linkedinUrl: string
+  }
   contact: {
     tag: string
     title: string
@@ -136,10 +149,6 @@ export interface TranslationDict {
     sendingBtn: string
     successMsg: string
     errorMsg: string
-    directEmail?: string
-    directPhone?: string
-    githubUrl?: string
-    linkedinUrl?: string
     availabilityLocation?: string
     isAvailableForRoles?: boolean
   }

@@ -128,6 +128,7 @@ test('the shipped default content passes validation', () => {
     ['+84 879 888 965', FIELD_RULES.contactPhone],
     ['https://github.com/nhatprx', FIELD_RULES.contactUrl],
     ['Ho Chi Minh City, Vietnam', FIELD_RULES.contactLocation],
+    ['Pham Minh Nhat', FIELD_RULES.identityName],
   ]
 
   for (const [value, rule] of samples) {

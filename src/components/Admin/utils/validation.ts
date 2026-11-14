@@ -231,15 +231,18 @@ export function mergeValidDict(current: TranslationDict, saved: TranslationDict)
       titleSub: text(current.projects.titleSub, saved.projects.titleSub),
       items: current.projects.items,
     },
+    identity: {
+      displayName: text(current.identity.displayName, saved.identity.displayName),
+      email: structured(current.identity.email, 'email', saved.identity.email),
+      phone: structured(current.identity.phone, 'phone', saved.identity.phone),
+      githubUrl: structured(current.identity.githubUrl, 'url', saved.identity.githubUrl),
+      linkedinUrl: structured(current.identity.linkedinUrl, 'url', saved.identity.linkedinUrl),
+    },
     contact: {
       ...current.contact,
       title: text(current.contact.title, saved.contact.title),
       titleSub: text(current.contact.titleSub, saved.contact.titleSub),
       desc: text(current.contact.desc, saved.contact.desc),
-      directEmail: structured(current.contact.directEmail, 'email', saved.contact.directEmail),
-      directPhone: structured(current.contact.directPhone, 'phone', saved.contact.directPhone),
-      githubUrl: structured(current.contact.githubUrl, 'url', saved.contact.githubUrl),
-      linkedinUrl: structured(current.contact.linkedinUrl, 'url', saved.contact.linkedinUrl),
       availabilityLocation: text(
         current.contact.availabilityLocation,
         saved.contact.availabilityLocation
