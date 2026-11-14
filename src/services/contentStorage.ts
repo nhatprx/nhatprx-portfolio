@@ -67,10 +67,8 @@ function mergeTranslations(
     const base = TRANSLATIONS[code]
     const custom: Partial<TranslationDict> = parsed[code] ?? {}
     const customBlog: Partial<TranslationDict['blog']> = custom.blog ?? {}
-    // Ensure new default posts are never hidden by an older stored snapshot
-    const customPosts = customBlog.posts
-    const posts =
-      customPosts && customPosts.length >= base.blog.posts.length ? customPosts : base.blog.posts
+    // Use custom posts if provided, otherwise factory defaults
+    const posts = Array.isArray(customBlog.posts) ? customBlog.posts : base.blog.posts
 
     const customHero: Partial<TranslationDict['hero']> = custom.hero ?? {}
     const safeResumeUrl = customHero.resumeUrl?.startsWith('blob:')

@@ -7,7 +7,7 @@ import {
   runRemoteCommand,
 } from './terminal/terminalEvaluator'
 import { DEFAULT_IDENTITY, type Identity } from '../data/identity'
-import { initTerminalSecurity, sanitizeTerminalOutput } from '../services/terminalApi'
+import { initTerminalSecurity } from '../services/terminalApi'
 import { generateClientId } from '../services/terminalSecurity'
 
 interface Ec2TerminalProps {
@@ -329,8 +329,8 @@ export default function Ec2Terminal({ identity = DEFAULT_IDENTITY }: Ec2Terminal
 
       {/* Terminal Footer Status Bar */}
       <div className="px-4 py-2 bg-white/[0.02] border-t border-white/10 flex items-center justify-between text-[10px] text-white/30 shrink-0">
-        <span>EC2 NODE · ap-southeast-1 · TLS 1.3</span>
-        <span>{isRunning ? 'EXECUTING ON LIVE NODE...' : 'READ-ONLY ALLOWLIST · PRESS ENTER TO RUN'}</span>
+        <span>EC2 NODE · ap-southeast-1 · TLS 1.3 · STRICT SECURITY MODE</span>
+        <span>{serverDown ? 'UNAVAILABLE - BACKEND REQUIRED' : isRunning ? 'EXECUTING ON LIVE NODE...' : 'RATE LIMITED · 60/MIN · JWT VALIDATED'}</span>
       </div>
     </div>
   )
