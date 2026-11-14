@@ -194,8 +194,10 @@ async function handleGet(req, res, path) {
 
   if (path === '/api/content') {
     try {
+      console.log(`[api] fetching content from S3: bucket=${BUCKET}, key=${CONTENT_KEY}`)
       const out = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: CONTENT_KEY }))
       const body = await out.Body.transformToString()
+      console.log(`[api] successfully fetched content from S3, size=${Buffer.byteLength(body)}`)
       res.writeHead(200, {
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(body),
@@ -205,6 +207,7 @@ async function handleGet(req, res, path) {
     } catch (err) {
       // S3 masks a missing key as AccessDenied unless the caller may ListBucket.
       const code = err?.name || err?.Code || err?.$metadata?.httpStatusCode
+      console.warn(`[api] S3 fetch failed: code=${code}, message=${err?.message}`)
       if (code === 'NoSuchKey' || code === 404) {
         sendJson(res, 200, { content: null })
         return
