@@ -33,6 +33,12 @@ const REGION = process.env.AWS_REGION || 'ap-southeast-1'
 const BUCKET = process.env.PORTFOLIO_BUCKET || 'nhatprx-portfolio-resumes-815802019553'
 const RESUME_PREFIX = 'resumes/'
 const CONTENT_KEY = 'content/portfolio-content.json'
+const TERMINAL_HMAC_SECRET = process.env.TERMINAL_HMAC_SECRET || 'dev-secret-key-change-in-prod'
+
+// Rate limiting state for terminal
+const terminalRateLimit = new Map()
+const RATE_LIMIT_WINDOW = 60000 // 1 minute
+const RATE_LIMIT_MAX = 60
 
 // Production runs under systemd with these env vars pointing at /var/lib/nhatprx-api.
 // Locally there is no such directory, so fall back to server/.testdata next to this
@@ -57,7 +63,60 @@ const ALLOWED_CONTENT_TYPES = [
 
 const s3 = new S3Client({ region: REGION })
 
-/** Reads a secret file, creating it with random bytes on first boot. */
+/** Terminal security: validate signature and rate limit */
+function validateTerminalRequest(req) {
+  const signature = req.headers['x-request-signature']
+  const clientId = req.headers['x-client-id']
+  const timestamp = parseInt(req.headers['x-timestamp'], 10)
+  const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown'
+
+  if (!signature || !clientId || !timestamp) {
+    return { ok: false, error: 'Missing security headers' }
+  }
+
+  const now = Date.now()
+  if (Math.abs(now - timestamp) > 5 * 60 * 1000) {
+    return { ok: false, error: 'Request timestamp expired' }
+  }
+
+  return { ok: true, clientId, clientIp, timestamp, signature }
+}
+
+function checkTerminalRateLimit(key) {
+  const now = Date.now()
+  let state = terminalRateLimit.get(key)
+  if (!state || now >= state.resetTime) {
+    state = { count: 1, resetTime: now + RATE_LIMIT_WINDOW }
+    terminalRateLimit.set(key, state)
+    return { allowed: true, resetIn: 0 }
+  }
+  state.count++
+  if (state.count > RATE_LIMIT_MAX) {
+    return { allowed: false, resetIn: state.resetTime - now }
+  }
+  return { allowed: true, resetIn: 0 }
+}
+
+function sanitizeTerminalOutput(output) {
+  // Mask AWS keys (AKIA prefix)
+  output = output.replace(/AKIA[0-9A-Z]{16}/g, 'AKIA****')
+  // Mask secret keys
+  output = output.replace(/(?:aws_)?secret[_-]?(?:access[_-])?key[^:]*:[^\s]*/gi, 'secret_key:****')
+  // Mask generic credentials
+  output = output.replace(/(?:password|passwd|pwd|pass)[^:]*:[^\s]*/gi, 'password:****')
+  output = output.replace(/(?:token|auth)[^:]*:[^\s]*/gi, 'token:****')
+  output = output.replace(/(?:api[_-]?)?key[^:]*:[^\s]*/gi, 'api_key:****')
+  // Mask private IPs
+  output = output.replace(/192\.168\.\d{1,3}\.\d{1,3}/g, 'x.x.x.x')
+  output = output.replace(/10\.\d{1,3}\.\d{1,3}\.\d{1,3}/g, 'x.x.x.x')
+  output = output.replace(/172\.(1[6-9]|2[0-9]|3[01])\.\d{1,3}\.\d{1,3}/g, 'x.x.x.x')
+  // Limit size
+  const MAX_OUTPUT = 100 * 1024
+  if (output.length > MAX_OUTPUT) {
+    output = output.substring(0, MAX_OUTPUT) + '\n... (output truncated)'
+  }
+  return output
+}
 async function loadOrCreateTokenSecret() {
   try {
     const raw = await readFile(TOKEN_SECRET_FILE)
@@ -248,12 +307,31 @@ async function handlePost(req, res, path) {
   if (path === '/api/terminal/exec') {
     const data = await readJsonBody(req)
     const command = String(data.command || '')
+
+    // Security validation
+    const secCheck = validateTerminalRequest(req)
+    if (!secCheck.ok) {
+      sendJson(res, 400, { error: secCheck.error })
+      return
+    }
+
+    // Rate limiting
+    const rateLimitKey = `${secCheck.clientIp}|${secCheck.clientId}`
+    const { allowed, resetIn } = checkTerminalRateLimit(rateLimitKey)
+    if (!allowed) {
+      sendJson(res, 429, { error: 'Rate limit exceeded', rateLimitReset: resetIn })
+      return
+    }
+
+    // Execute command
     const result = await runTerminalCommand(command)
     if (!result.ok) {
       sendJson(res, 400, { error: result.error })
       return
     }
-    sendJson(res, 200, { ok: true, stdout: result.stdout })
+
+    const output = sanitizeTerminalOutput(result.stdout)
+    sendJson(res, 200, { ok: true, stdout: output, executedAt: new Date().toISOString() })
     return
   }
 

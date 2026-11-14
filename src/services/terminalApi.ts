@@ -75,8 +75,6 @@ export async function execTerminalCommand(command: string): Promise<TerminalExec
     },
     body: JSON.stringify({ 
       command,
-      timestamp,
-      clientId,
     }),
   })
 
