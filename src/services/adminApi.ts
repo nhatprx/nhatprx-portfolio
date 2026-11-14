@@ -110,6 +110,7 @@ export async function fetchRemoteContent<T>(): Promise<T | null> {
   const res = await fetch('/api/content')
   if (!res.ok) throw new ApiError(res.status, `Failed to load content (${res.status})`)
   const body = await res.json()
+  console.log('[fetchRemoteContent] Response status:', res.status, 'Body:', body)
   return (body?.content ?? null) as T | null
 }
 

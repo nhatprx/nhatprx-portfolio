@@ -198,12 +198,15 @@ async function handleGet(req, res, path) {
       const out = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: CONTENT_KEY }))
       const body = await out.Body.transformToString()
       console.log(`[api] successfully fetched content from S3, size=${Buffer.byteLength(body)}`)
+      // Parse the JSON to wrap it in { content: ... } to match client expectations
+      const parsed = JSON.parse(body)
+      const wrapped = JSON.stringify({ content: parsed })
       res.writeHead(200, {
         'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body),
+        'Content-Length': Buffer.byteLength(wrapped),
         'Cache-Control': 'no-store',
       })
-      res.end(body)
+      res.end(wrapped)
     } catch (err) {
       // S3 masks a missing key as AccessDenied unless the caller may ListBucket.
       const code = err?.name || err?.Code || err?.$metadata?.httpStatusCode
