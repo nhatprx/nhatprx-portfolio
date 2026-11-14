@@ -19,13 +19,10 @@ export async function loadRemoteTranslations(): Promise<Record<SupportedLang, Tr
     const remote = await fetchRemoteContent<Record<SupportedLang, TranslationDict>>()
     if (!remote) {
       // S3 returned no data; use factory defaults
-      console.log('[loadRemoteTranslations] S3 returned null, using factory defaults')
       return mergeTranslations({})
     }
-    console.log('[loadRemoteTranslations] Successfully loaded content from S3')
     return mergeTranslations(remote)
   } catch (err) {
-    console.warn('[loadRemoteTranslations] S3 unreachable, falling back to factory defaults:', err)
     // On network error, return clean defaults
     return mergeTranslations({})
   }
@@ -42,7 +39,6 @@ export async function saveRemoteTranslations(
     await saveRemoteContent(data)
     return true
   } catch (err) {
-    console.error('Failed to save translations to S3:', err)
     return false
   }
 }
@@ -143,7 +139,7 @@ export function getStoredTerminalCommands(): CustomTerminalCommands {
     const raw = localStorage.getItem(TERMINAL_COMMANDS_KEY)
     if (raw) return JSON.parse(raw)
   } catch (err) {
-    console.error('Failed to parse custom terminal commands:', err)
+    // localStorage parse error
   }
   return {}
 }
@@ -152,7 +148,7 @@ export function saveStoredTerminalCommands(commands: CustomTerminalCommands): vo
   try {
     localStorage.setItem(TERMINAL_COMMANDS_KEY, JSON.stringify(commands))
   } catch (err) {
-    console.error('Failed to save terminal commands to localStorage:', err)
+    // localStorage save error
   }
 }
 

@@ -213,7 +213,6 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
       }))
       showToast(`Đã dịch và áp dụng cho ${targetLangs.join(', ').toUpperCase()}.`)
     } catch (error) {
-      console.error('Auto translation failed:', error)
       showToast('Không thể dịch bằng AWS Bedrock. Nội dung nguồn đã được giữ nguyên.', 'error')
     } finally {
       setIsAutoTranslating(false)

@@ -194,16 +194,13 @@ async function handleGet(req, res, path) {
 
   if (path === '/api/content') {
     try {
-      console.log(`[api] fetching content from S3: bucket=${BUCKET}, key=${CONTENT_KEY}`)
       const out = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: CONTENT_KEY }))
       const body = await out.Body.transformToString()
-      console.log(`[api] successfully fetched content from S3, size=${Buffer.byteLength(body)}`)
       // Parse the JSON to wrap it in { content: ... } to match client expectations
       let parsed
       try {
         parsed = JSON.parse(body)
       } catch (parseErr) {
-        console.error(`[api] JSON parse error: ${parseErr.message}`)
         sendJson(res, 500, { error: 'invalid JSON in S3 content' })
         return
       }
@@ -217,15 +214,6 @@ async function handleGet(req, res, path) {
     } catch (err) {
       // S3 masks a missing key as AccessDenied unless the caller may ListBucket.
       const code = err?.name || err?.Code || err?.$metadata?.httpStatusCode
-      console.warn(`[api] S3 fetch failed: code=${code}, message=${err?.message}`)
-      console.warn(`[api] Full error object:`, JSON.stringify({
-        name: err?.name,
-        Code: err?.Code,
-        message: err?.message,
-        httpStatusCode: err?.$metadata?.httpStatusCode,
-        statusCode: err?.statusCode,
-        $metadata: err?.$metadata,
-      }, null, 2))
       if (code === 'NoSuchKey' || code === 404) {
         sendJson(res, 200, { content: null })
         return

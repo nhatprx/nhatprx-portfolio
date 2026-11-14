@@ -22,7 +22,6 @@ export default function App() {
   // Start with factory defaults, immediately replace with S3 data once fetched.
   // Never use stale localStorage cache on first load.
   const [allTranslations, setAllTranslations] = useState(() => {
-    console.log('[App] Initial state: factory defaults, fetching S3 in progress...')
     return TRANSLATIONS
   })
 
@@ -31,15 +30,12 @@ export default function App() {
   useEffect(() => {
     let isMounted = true
     const load = async () => {
-      console.log('[App] Fetching content from S3...')
       try {
         const remote = await loadRemoteTranslations()
         if (isMounted) {
-          console.log('[App] S3 fetch complete, updating UI')
           setAllTranslations(remote)
         }
       } catch (err) {
-        console.error('[App] Failed to load S3 content:', err)
         // Fall back to defaults on error; don't use stale localStorage
       }
     }
