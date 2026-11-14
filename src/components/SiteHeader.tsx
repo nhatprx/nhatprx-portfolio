@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import type { TranslationDict, SupportedLang } from '../data/translations'
-import { DownloadIcon, GithubIcon, LinkedinIcon } from './Icons'
+import { DownloadIcon, GithubIcon, LinkedinIcon, MailIcon } from './Icons'
 
 const LANG_OPTIONS: { code: SupportedLang; label: string; short: string }[] = [
   { code: 'en', label: 'English', short: 'EN' },
@@ -79,10 +79,12 @@ export default function SiteHeader({
               e.preventDefault()
               if (onScrollToContact) onScrollToContact()
             }}
-            className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1.5 bg-white text-black font-mono text-[10px] sm:text-[11px] font-bold tracking-wider hover:bg-white/85 transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] cursor-pointer whitespace-nowrap shrink-0"
+            className="inline-flex items-center justify-center gap-1 px-2 sm:px-2.5 py-1.5 bg-white text-black font-mono text-[10px] sm:text-[11px] font-bold tracking-wider hover:bg-white/85 transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] cursor-pointer whitespace-nowrap shrink-0"
+            title={t.hero.getInTouch}
           >
-            <span>{t.hero.getInTouch}</span>
-            <span aria-hidden="true" className="text-[10px]">
+            <MailIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-black/70" />
+            <span className="hidden xs:inline">{t.hero.getInTouch}</span>
+            <span aria-hidden="true" className="hidden xs:inline text-[10px]">
               →
             </span>
           </a>
@@ -90,13 +92,11 @@ export default function SiteHeader({
             href={t.hero.resumeUrl || '/%5Bnhatprx%5D%20PERSONAL%20RESUME.pdf'}
             download={t.hero.resumeFileName || '[nhatprx] PERSONAL RESUME.pdf'}
             tabIndex={scrolledHeaderActions ? 0 : -1}
-            className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1.5 border border-white/20 text-white font-mono text-[10px] sm:text-[11px] font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-all whitespace-nowrap shrink-0"
+            className="inline-flex items-center justify-center gap-1 px-2 sm:px-2.5 py-1.5 border border-white/20 text-white font-mono text-[10px] sm:text-[11px] font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-all whitespace-nowrap shrink-0"
+            title={t.hero.resume}
           >
-            <DownloadIcon className="w-3 h-3 text-white/60" />
+            <DownloadIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white/60" />
             <span className="hidden xs:inline">{t.hero.resume}</span>
-            <span className="xs:hidden" aria-label={t.hero.resume}>
-              <DownloadIcon className="w-3 h-3 text-white/60" />
-            </span>
           </a>
         </div>
 
