@@ -199,7 +199,14 @@ async function handleGet(req, res, path) {
       const body = await out.Body.transformToString()
       console.log(`[api] successfully fetched content from S3, size=${Buffer.byteLength(body)}`)
       // Parse the JSON to wrap it in { content: ... } to match client expectations
-      const parsed = JSON.parse(body)
+      let parsed
+      try {
+        parsed = JSON.parse(body)
+      } catch (parseErr) {
+        console.error(`[api] JSON parse error: ${parseErr.message}`)
+        sendJson(res, 500, { error: 'invalid JSON in S3 content' })
+        return
+      }
       const wrapped = JSON.stringify({ content: parsed })
       res.writeHead(200, {
         'Content-Type': 'application/json',
