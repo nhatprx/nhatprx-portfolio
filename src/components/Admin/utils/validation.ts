@@ -24,55 +24,6 @@ export {
 
 import { validateField, type FieldKind } from './fieldRules'
 
-/**
- * Detects characters that are not allowed in a free-text field.
- * Kept in sync with `FORBIDDEN` in ./fieldRules.mjs.
- * @deprecated Prefer `findForbiddenChars` from ./fieldRules.
- */
-export function hasSpecialChar(val?: string | null): boolean {
-  if (!val) return false
-  return /[@$^*_={}[\]|\\<>]/.test(val)
-}
-
-/**
- * Validates email format strictly: user@domain.tld
- */
-export function isValidEmail(val?: string | null): boolean {
-  if (!val || !val.trim()) return false
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim())
-}
-
-/**
- * Validates URL format: must have valid http or https protocol
- */
-export function isValidUrl(val?: string | null, optional = false): boolean {
-  if (!val || !val.trim()) return optional
-  try {
-    const parsed = new URL(val.trim())
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
-  } catch {
-    return false
-  }
-}
-
-/**
- * Validates phone number: digits, spaces, optional leading +, max 12 non-space characters.
- */
-export function isValidPhone(val?: string | null): boolean {
-  if (!val || !val.trim()) return false
-  const clean = val.replace(/\s+/g, '')
-  if (clean.length === 0 || clean.length > 12) return false
-  return /^\+?[0-9]{3,12}$/.test(clean)
-}
-
-/**
- * Validates location: allows letters, digits, spaces, and commas.
- */
-export function isValidLocation(val?: string | null): boolean {
-  if (!val || !val.trim()) return false
-  return !/[@$^*_={}[\]|\\<>]/.test(val)
-}
-
 export type FieldValidationType = 'default' | 'email' | 'url' | 'phone' | 'location' | 'tech'
 
 /** Maps the legacy validation type onto the shared field rule kinds. */
@@ -195,6 +146,7 @@ export function mergeValidDict(current: TranslationDict, saved: TranslationDict)
     },
     about: {
       ...current.about,
+      tag: text(current.about.tag, saved.about.tag),
       title: text(current.about.title, saved.about.title),
       titleSub: text(current.about.titleSub, saved.about.titleSub),
       p1: text(current.about.p1, saved.about.p1),
@@ -211,8 +163,10 @@ export function mergeValidDict(current: TranslationDict, saved: TranslationDict)
     },
     skills: {
       ...current.skills,
+      tag: text(current.skills.tag, saved.skills.tag),
       title: text(current.skills.title, saved.skills.title),
       titleSub: text(current.skills.titleSub, saved.skills.titleSub),
+      desc: text(current.skills.desc, saved.skills.desc),
       categories: current.skills.categories.map((cat, i) => ({
         ...cat,
         title: text(cat.title, saved.skills.categories[i]?.title ?? cat.title),
@@ -221,15 +175,27 @@ export function mergeValidDict(current: TranslationDict, saved: TranslationDict)
     },
     experience: {
       ...current.experience,
+      tag: text(current.experience.tag, saved.experience.tag),
       title: text(current.experience.title, saved.experience.title),
       titleSub: text(current.experience.titleSub, saved.experience.titleSub),
+      desc: text(current.experience.desc, saved.experience.desc),
       items: current.experience.items,
     },
     projects: {
       ...current.projects,
+      tag: text(current.projects.tag, saved.projects.tag),
       title: text(current.projects.title, saved.projects.title),
       titleSub: text(current.projects.titleSub, saved.projects.titleSub),
+      desc: text(current.projects.desc, saved.projects.desc),
       items: current.projects.items,
+    },
+    blog: {
+      ...current.blog,
+      tag: text(current.blog.tag, saved.blog.tag),
+      title: text(current.blog.title, saved.blog.title),
+      titleSub: text(current.blog.titleSub, saved.blog.titleSub),
+      desc: text(current.blog.desc, saved.blog.desc),
+      posts: current.blog.posts,
     },
     identity: {
       displayName: text(current.identity.displayName, saved.identity.displayName),
@@ -240,6 +206,7 @@ export function mergeValidDict(current: TranslationDict, saved: TranslationDict)
     },
     contact: {
       ...current.contact,
+      tag: text(current.contact.tag, saved.contact.tag),
       title: text(current.contact.title, saved.contact.title),
       titleSub: text(current.contact.titleSub, saved.contact.titleSub),
       desc: text(current.contact.desc, saved.contact.desc),

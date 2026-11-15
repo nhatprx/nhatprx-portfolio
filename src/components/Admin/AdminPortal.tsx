@@ -36,7 +36,7 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
     getStoredTerminalCommands()
   )
   const [selectedLang, setSelectedLang] = useState<SupportedLang>('en')
-  const [activeTab, setActiveTab] = useState<TabType>('about')
+  const [activeTab, setActiveTab] = useState<TabType>('sections')
   const [mobilePane, setMobilePane] = useState<'editor' | 'preview'>('editor')
   const [toast, setToast] = useState<{ message: string; variant: ToastVariant } | null>(null)
   const [isAutoTranslating, setIsAutoTranslating] = useState(false)
@@ -212,7 +212,7 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
         ...translated,
       }))
       showToast(`Đã dịch và áp dụng cho ${targetLangs.join(', ').toUpperCase()}.`)
-    } catch (error) {
+    } catch {
       showToast('Không thể dịch bằng AWS Bedrock. Nội dung nguồn đã được giữ nguyên.', 'error')
     } finally {
       setIsAutoTranslating(false)

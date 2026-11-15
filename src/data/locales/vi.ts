@@ -440,12 +440,6 @@ export const vi: TranslationDict = {
       title: 'Cùng nhau',
       titleSub: 'xây dựng sản phẩm.',
       desc: 'Sẵn sàng tiếp nhận các cơ hội việc làm toàn thời gian, dự án freelance và hợp tác công nghệ. Hiện đang sinh sống và làm việc tại TP. Hồ Chí Minh, Việt Nam.',
-      emailLabel: 'EMAIL CỦA BẠN',
-      msgLabel: 'LỜI NHẮN',
-      sendBtn: 'GỬI TIN NHẮN →',
-      sendingBtn: 'ĐANG GỬI...',
-      successMsg: '✓ Đã gửi tin nhắn! Cảm ơn bạn, tôi sẽ phản hồi lại email sớm nhất.',
-      errorMsg: 'Lỗi kết nối. Vui lòng gửi email trực tiếp qua nhatprx@gmail.com.',
     },
     footer: {
       rights: 'Bảo lưu mọi quyền.',

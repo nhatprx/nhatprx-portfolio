@@ -8,20 +8,24 @@ interface IdentityClusterProps {
   updateIdentityAcrossAllLangs: (
     identity: Partial<TranslationDict['identity']>
   ) => void
+  /** Writes the role subtitle (a translated field) in the current language. */
+  updateRole: (role: string) => void
   isOpen: boolean
   onToggle: () => void
 }
 
 /**
- * Global identity - display name, email, phone, GitHub and LinkedIn.
+ * Global identity - display name, role subtitle, email, phone, GitHub and
+ * LinkedIn.
  *
- * These values are not translated: they are written once and shared by every
- * language, so a link changed here shows up in the header, the contact section
- * and the footer on all locales at once.
+ * The name and the contact channels are not translated: they are written once
+ * and shared by every language, so a link changed here shows up in the header,
+ * the contact section and the footer on all locales at once.
  */
 export default function IdentityCluster({
   currentDict,
   updateIdentityAcrossAllLangs,
+  updateRole,
   isOpen,
   onToggle,
 }: IdentityClusterProps) {
@@ -39,9 +43,9 @@ export default function IdentityCluster({
         className="w-full p-3.5 flex items-center justify-between text-left hover:bg-white/[0.02] cursor-pointer transition-colors"
       >
         <div className="flex items-center gap-3 min-w-0">
-          <span className="text-xs font-mono text-emerald-400 font-bold">02</span>
+          <span className="text-xs font-mono text-emerald-400 font-bold">01</span>
           <span className="text-xs font-bold tracking-wider text-white uppercase block truncate">
-            Global Identity &amp; Contact Channels
+            Name, Role &amp; Contact Channels
           </span>
         </div>
         <span className="text-[10px] text-white/40 tracking-wider shrink-0">
@@ -52,20 +56,30 @@ export default function IdentityCluster({
       {isOpen && (
         <div className="p-4 pt-1 border-t border-white/10 space-y-3.5 bg-white/[0.01]">
           <p className="text-[10px] text-white/40 leading-snug">
-            These values are shared by every language and shown in the header, the hero and the
-            contact section.
+            The name and contact channels are shared by every language and shown in the header,
+            the hero and the contact section. The role subtitle follows the selected language.
           </p>
 
-          <AdminField
-            label="Display Name"
-            value={identity.displayName}
-            rule={FIELD_RULES.identityName}
-            placeholder="Pham Minh Nhat"
-            className="font-mono"
-            onChange={(val) =>
-              setField({ displayName: applyFieldRule(val, FIELD_RULES.identityName) })
-            }
-          />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <AdminField
+              label="Display Name"
+              value={identity.displayName}
+              rule={FIELD_RULES.identityName}
+              placeholder="Pham Minh Nhat"
+              className="font-mono"
+              onChange={(val) =>
+                setField({ displayName: applyFieldRule(val, FIELD_RULES.identityName) })
+              }
+            />
+
+            <AdminField
+              label="Role Subtitle"
+              value={currentDict.hero.role}
+              rule={FIELD_RULES.heroRole}
+              placeholder="Software Engineer"
+              onChange={(val) => updateRole(applyFieldRule(val, FIELD_RULES.heroRole))}
+            />
+          </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <AdminField

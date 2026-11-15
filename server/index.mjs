@@ -27,18 +27,26 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { runTerminalCommand } from './terminal.mjs'
 import { translateSection } from './bedrock-translate.mjs'
 import { getSystemMetrics, getSystemInfo } from './system-metrics.mjs'
+import {
+  checkRateLimit,
+  sanitizeTerminalOutput,
+  makeTerminalToken,
+  validateTerminalRequest as verifyTerminalRequest,
+} from './terminal-security.mjs'
+import { execOnUpstream, getFromUpstream } from './upstream.mjs'
 
 const PORT = Number(process.env.PORT || 8787)
+// Local dev on Windows has no /proc and no Linux tooling, so the terminal and
+// the live metrics are relayed to the real node over an SSH tunnel. Unset in
+// production, where the API runs on the node itself.
+const TERMINAL_UPSTREAM = process.env.TERMINAL_UPSTREAM || ''
 const REGION = process.env.AWS_REGION || 'ap-southeast-1'
 const BUCKET = process.env.PORTFOLIO_BUCKET || 'nhatprx-portfolio-resumes-815802019553'
 const RESUME_PREFIX = 'resumes/'
 const CONTENT_KEY = 'content/portfolio-content.json'
-const TERMINAL_HMAC_SECRET = process.env.TERMINAL_HMAC_SECRET || 'dev-secret-key-change-in-prod'
 
 // Rate limiting state for terminal
 const terminalRateLimit = new Map()
-const RATE_LIMIT_WINDOW = 60000 // 1 minute
-const RATE_LIMIT_MAX = 60
 
 // Production runs under systemd with these env vars pointing at /var/lib/nhatprx-api.
 // Locally there is no such directory, so fall back to server/.testdata next to this
@@ -49,6 +57,9 @@ const PASSKEY_HASH_FILE =
 const TOKEN_SECRET_FILE =
   process.env.TOKEN_SECRET_FILE || resolve(LOCAL_SECRET_DIR, 'token.secret')
 const TOKEN_TTL_SECONDS = 12 * 3600
+// Terminal signing tokens are short-lived: the browser re-fetches one when it
+// expires, so a leaked token is worthless for long.
+const TERMINAL_TOKEN_TTL_SECONDS = 60 * 60
 const MAX_RESUME_BYTES = 15 * 1024 * 1024
 const MAX_CONTENT_BYTES = 1024 * 1024
 const MAX_BODY_BYTES = 2 * 1024 * 1024
@@ -63,61 +74,30 @@ const ALLOWED_CONTENT_TYPES = [
 
 const s3 = new S3Client({ region: REGION })
 
-/** Terminal security: validate signature and rate limit */
-function validateTerminalRequest(req) {
-  const signature = req.headers['x-request-signature']
-  const clientId = req.headers['x-client-id']
-  const timestamp = parseInt(req.headers['x-timestamp'], 10)
+/**
+ * Terminal security: verify the request signature and rate limit.
+ *
+ * The browser never holds the API secret. It asks /api/terminal/token for a
+ * short-lived token that is bound to its client id, signs each command with
+ * HMAC-SHA256 over `clientId|timestamp|command`, and the API verifies that
+ * signature in constant time. A token issued for one client id cannot sign
+ * requests for another one, and a command signed for one command cannot be
+ * replayed for a different command.
+ */
+async function validateTerminalRequest(req, command) {
+  const result = await verifyTerminalRequest(tokenSecret, {
+    signature: req.headers['x-request-signature'],
+    clientId: req.headers['x-client-id'],
+    token: req.headers['x-terminal-token'],
+    timestamp: parseInt(req.headers['x-timestamp'], 10),
+    command,
+  })
+  if (!result.ok) return result
+
   const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown'
-
-  if (!signature || !clientId || !timestamp) {
-    return { ok: false, error: 'Missing security headers' }
-  }
-
-  const now = Date.now()
-  if (Math.abs(now - timestamp) > 5 * 60 * 1000) {
-    return { ok: false, error: 'Request timestamp expired' }
-  }
-
-  return { ok: true, clientId, clientIp, timestamp, signature }
+  return { ok: true, clientId: result.clientId, clientIp }
 }
 
-function checkTerminalRateLimit(key) {
-  const now = Date.now()
-  let state = terminalRateLimit.get(key)
-  if (!state || now >= state.resetTime) {
-    state = { count: 1, resetTime: now + RATE_LIMIT_WINDOW }
-    terminalRateLimit.set(key, state)
-    return { allowed: true, resetIn: 0 }
-  }
-  state.count++
-  if (state.count > RATE_LIMIT_MAX) {
-    return { allowed: false, resetIn: state.resetTime - now }
-  }
-  return { allowed: true, resetIn: 0 }
-}
-
-function sanitizeTerminalOutput(output) {
-  // Mask AWS keys (AKIA prefix)
-  output = output.replace(/AKIA[0-9A-Z]{16}/g, 'AKIA****')
-  // Mask secret keys - more flexible pattern
-  output = output.replace(/aws_secret_access_key\s*[:=]\s*\S+/gi, 'aws_secret_access_key: ****')
-  output = output.replace(/secret_access_key\s*[:=]\s*\S+/gi, 'secret_access_key: ****')
-  // Mask generic credentials
-  output = output.replace(/password\s*[:=]\s*\S+/gi, 'password: ****')
-  output = output.replace(/token\s*[:=]\s*\S+/gi, 'token: ****')
-  output = output.replace(/api[_-]?key\s*[:=]\s*\S+/gi, 'api_key: ****')
-  // Mask private IPs
-  output = output.replace(/192\.168\.\d{1,3}\.\d{1,3}/g, 'x.x.x.x')
-  output = output.replace(/10\.\d{1,3}\.\d{1,3}\.\d{1,3}/g, 'x.x.x.x')
-  output = output.replace(/172\.(1[6-9]|2[0-9]|3[01])\.\d{1,3}\.\d{1,3}/g, 'x.x.x.x')
-  // Limit size
-  const MAX_OUTPUT = 100 * 1024
-  if (output.length > MAX_OUTPUT) {
-    output = output.substring(0, MAX_OUTPUT) + '\n... (output truncated)'
-  }
-  return output
-}
 async function loadOrCreateTokenSecret() {
   try {
     const raw = await readFile(TOKEN_SECRET_FILE)
@@ -232,6 +212,13 @@ async function handleGet(req, res, path) {
 
   if (path === '/api/metrics') {
     try {
+      if (TERMINAL_UPSTREAM) {
+        const body = await getFromUpstream(TERMINAL_UPSTREAM, '/api/metrics')
+        if (body?.metrics) {
+          sendJson(res, 200, body)
+          return
+        }
+      }
       const metrics = await getSystemMetrics()
       sendJson(res, 200, { ok: true, metrics })
     } catch (err) {
@@ -243,6 +230,13 @@ async function handleGet(req, res, path) {
 
   if (path === '/api/system-info') {
     try {
+      if (TERMINAL_UPSTREAM) {
+        const body = await getFromUpstream(TERMINAL_UPSTREAM, '/api/system-info')
+        if (body?.info) {
+          sendJson(res, 200, body)
+          return
+        }
+      }
       const info = await getSystemInfo()
       sendJson(res, 200, { ok: true, info })
     } catch (err) {
@@ -260,7 +254,7 @@ async function handleGet(req, res, path) {
       let parsed
       try {
         parsed = JSON.parse(body)
-      } catch (parseErr) {
+      } catch {
         sendJson(res, 500, { error: 'invalid JSON in S3 content' })
         return
       }
@@ -303,14 +297,33 @@ async function handlePost(req, res, path) {
     return
   }
 
+  /**
+   * Issues a short-lived terminal signing token.
+   *
+   * The browser needs this to sign terminal commands. The token binds the
+   * client id, so a token minted for one client cannot sign requests for
+   * another one.
+   */
+  if (path === '/api/terminal/token') {
+    const data = await readJsonBody(req)
+    const clientId = String(data.clientId || '').trim()
+    if (!clientId || !/^[A-Za-z0-9_-]{4,64}$/.test(clientId)) {
+      sendJson(res, 400, { error: 'invalid clientId' })
+      return
+    }
+    const token = makeTerminalToken(clientId, tokenSecret, TERMINAL_TOKEN_TTL_SECONDS)
+    sendJson(res, 200, { token, expiresIn: TERMINAL_TOKEN_TTL_SECONDS })
+    return
+  }
+
   // Public read-only shell for the homepage terminal. Runs on this instance,
   // so no SSH is involved - only the allowlist in terminal.mjs can execute.
   if (path === '/api/terminal/exec') {
     const data = await readJsonBody(req)
     const command = String(data.command || '')
 
-    // Security validation
-    const secCheck = validateTerminalRequest(req)
+    // Security validation: the signature must cover this exact command.
+    const secCheck = await validateTerminalRequest(req, command)
     if (!secCheck.ok) {
       sendJson(res, 400, { error: secCheck.error })
       return
@@ -318,14 +331,22 @@ async function handlePost(req, res, path) {
 
     // Rate limiting
     const rateLimitKey = `${secCheck.clientIp}|${secCheck.clientId}`
-    const { allowed, resetIn } = checkTerminalRateLimit(rateLimitKey)
+    const { allowed, resetIn } = checkRateLimit(terminalRateLimit, rateLimitKey)
     if (!allowed) {
       sendJson(res, 429, { error: 'Rate limit exceeded', rateLimitReset: resetIn })
       return
     }
 
     // Execute command
-    const result = await runTerminalCommand(command)
+    let result
+    if (TERMINAL_UPSTREAM) {
+      const upstreamResult = await execOnUpstream(TERMINAL_UPSTREAM, command)
+      result = upstreamResult.ok
+        ? { ok: true, stdout: upstreamResult.stdout }
+        : { ok: false, error: upstreamResult.error }
+    } else {
+      result = await runTerminalCommand(command)
+    }
     if (!result.ok) {
       sendJson(res, 400, { error: result.error })
       return

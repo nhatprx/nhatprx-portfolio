@@ -7,8 +7,6 @@ import {
   runRemoteCommand,
 } from './terminal/terminalEvaluator'
 import { DEFAULT_IDENTITY, type Identity } from '../data/identity'
-import { initTerminalSecurity } from '../services/terminalApi'
-import { generateClientId } from '../services/terminalSecurity'
 
 interface Ec2TerminalProps {
   /** The global identity, so `cat resume.txt` shows the same contact info as the rest of the site. */
@@ -27,12 +25,6 @@ export default function Ec2Terminal({ identity = DEFAULT_IDENTITY }: Ec2Terminal
   const [isScrollable, setIsScrollable] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
   const [serverDown, setServerDown] = useState(false)
-
-  // Initialize security context on mount
-  useEffect(() => {
-    const clientId = generateClientId()
-    initTerminalSecurity({ clientId })
-  }, [])
 
   // Load initial greeting
   useEffect(() => {

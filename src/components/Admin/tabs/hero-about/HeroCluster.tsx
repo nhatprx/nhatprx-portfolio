@@ -1,8 +1,6 @@
 import { useState, useRef } from 'react'
 import type { TranslationDict } from '../../../../data/translations'
-import AdminField from '../../AdminField'
 import { uploadResume, deleteResume } from '../../../../services/adminApi'
-import { FIELD_RULES, applyFieldRule } from '../../utils/fieldRules'
 import type { ToastVariant } from '../../Toast'
 
 interface HeroClusterProps {
@@ -105,7 +103,7 @@ export default function HeroCluster({
       const key = decodeURIComponent(activeFileUrl.split('/').slice(3).join('/'))
       try {
         await deleteResume(key)
-      } catch (err) {
+      } catch {
         // failed to delete previous resume object
       }
     }
@@ -134,9 +132,9 @@ export default function HeroCluster({
         className="w-full p-3.5 flex items-center justify-between text-left hover:bg-white/[0.02] cursor-pointer transition-colors"
       >
         <div className="flex items-center gap-3 min-w-0">
-          <span className="text-xs font-mono text-emerald-400 font-bold">01</span>
+          <span className="text-xs font-mono text-emerald-400 font-bold">03</span>
           <span className="text-xs font-bold tracking-wider text-white uppercase block truncate">
-            Hero Profile & Resume Document
+            Resume / CV Document
           </span>
         </div>
         <span className="text-[10px] text-white/40 tracking-wider">
@@ -146,20 +144,6 @@ export default function HeroCluster({
 
       {isOpen && (
         <div className="p-4 pt-2 border-t border-white/10 space-y-4 bg-white/[0.01]">
-          {/* Role Subtitle Field */}
-          <AdminField
-            label="Role Subtitle"
-            value={currentDict.hero.role}
-            rule={FIELD_RULES.heroRole}
-            placeholder="Software Engineer"
-            onChange={(val) =>
-              updateCurrentDict((d) => ({
-                ...d,
-                hero: { ...d.hero, role: applyFieldRule(val, FIELD_RULES.heroRole) },
-              }))
-            }
-          />
-
           {/* Resume Document Management Hub */}
           <div className="border border-white/10 p-3.5 bg-white/[0.015] space-y-3">
             <div className="flex items-center justify-between pb-2 border-b border-white/10">

@@ -129,7 +129,7 @@ export default function EducationCluster({
         className="w-full p-3.5 flex items-center text-left hover:bg-white/[0.02] cursor-pointer transition-colors"
       >
         <div className="flex items-center gap-3 min-w-0">
-          <span className="text-xs font-mono text-emerald-400 font-bold">03</span>
+          <span className="text-xs font-mono text-emerald-400 font-bold">02</span>
           <span className="text-xs font-bold tracking-wider text-white uppercase block truncate">
             Education Credentials
           </span>

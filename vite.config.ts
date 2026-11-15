@@ -12,7 +12,9 @@ export default defineConfig({
     proxy: {
       '/api': {
         // 127.0.0.1, not localhost: on Windows `localhost` resolves to ::1 first.
-        target: 'http://127.0.0.1:8787',
+        // The API port is configurable so local dev can keep 8787 free for the
+        // SSH tunnel to the EC2 node (see server/dev-local.md).
+        target: `http://127.0.0.1:${process.env.API_PORT || 8787}`,
         changeOrigin: true,
       },
     },

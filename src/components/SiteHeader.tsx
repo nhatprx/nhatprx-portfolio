@@ -80,10 +80,10 @@ export default function SiteHeader({
               e.preventDefault()
               if (onScrollToContact) onScrollToContact()
             }}
-            className="inline-flex items-center justify-center gap-1 px-3 sm:px-2.5 py-1.5 border border-white/20 bg-white text-black font-mono text-[10px] sm:text-[11px] font-bold tracking-wider hover:bg-white/85 hover:border-white transition-all cursor-pointer whitespace-nowrap shrink-0"
+            className="inline-flex items-center justify-center gap-1.5 h-8 px-3 border border-white/20 bg-white text-black font-mono text-xs font-bold tracking-wider hover:bg-white/85 hover:border-white transition-all cursor-pointer whitespace-nowrap shrink-0"
             title={t.hero.getInTouch}
           >
-            <MailIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-black/70 shrink-0" />
+            <MailIcon className="w-3 h-3 text-black/70 shrink-0" />
             <span className="hidden sm:inline">{t.hero.getInTouch}</span>
             <span aria-hidden="true" className="hidden sm:inline text-[10px]">
               →
@@ -95,10 +95,10 @@ export default function SiteHeader({
             href={t.hero.resumeUrl || '/%5Bnhatprx%5D%20PERSONAL%20RESUME.pdf'}
             download={t.hero.resumeFileName || '[nhatprx] PERSONAL RESUME.pdf'}
             tabIndex={scrolledHeaderActions ? 0 : -1}
-            className="inline-flex items-center justify-center gap-1 px-3 sm:px-2.5 py-1.5 border border-white/20 text-white font-mono text-[10px] sm:text-[11px] font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-all whitespace-nowrap shrink-0"
+            className="inline-flex items-center justify-center gap-1.5 h-8 px-3 border border-white/20 text-white font-mono text-xs font-semibold tracking-wider hover:border-white/50 hover:bg-white/5 transition-all whitespace-nowrap shrink-0"
             title={t.hero.resume}
           >
-            <DownloadIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white/60 shrink-0" />
+            <DownloadIcon className="w-3 h-3 text-white/60 shrink-0" />
             <span className="hidden sm:inline">{t.hero.resume}</span>
           </a>
         </div>
@@ -110,18 +110,18 @@ export default function SiteHeader({
             target="_blank"
             rel="noopener noreferrer"
             aria-label="GitHub Profile"
-            className="flex items-center justify-center px-3 sm:px-2.5 py-1.5 border border-white/15 hover:border-white/40 text-white/60 hover:text-white transition-colors bg-white/[0.02] hover:bg-white/[0.05]"
+            className="flex items-center justify-center w-8 h-8 border border-white/15 hover:border-white/40 text-white/60 hover:text-white transition-colors bg-white/[0.02] hover:bg-white/[0.05]"
           >
-            <GithubIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            <GithubIcon className="w-4 h-4" />
           </a>
           <a
             href={t.identity.linkedinUrl}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="LinkedIn Profile"
-            className="flex items-center justify-center px-3 sm:px-2.5 py-1.5 border border-white/15 hover:border-white/40 text-white/60 hover:text-white transition-colors bg-white/[0.02] hover:bg-white/[0.05]"
+            className="flex items-center justify-center w-8 h-8 border border-white/15 hover:border-white/40 text-white/60 hover:text-white transition-colors bg-white/[0.02] hover:bg-white/[0.05]"
           >
-            <LinkedinIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            <LinkedinIcon className="w-4 h-4" />
           </a>
         </div>
 
@@ -135,7 +135,7 @@ export default function SiteHeader({
             aria-expanded={langOpen}
             aria-haspopup="true"
             aria-label="Select Language"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 font-mono text-xs border border-white/15 bg-white/[0.03] text-white/80 hover:text-white hover:border-white/30 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 h-8 px-3 font-mono text-xs border border-white/15 bg-white/[0.03] text-white/80 hover:text-white hover:border-white/30 transition-colors cursor-pointer"
           >
             <span className="font-semibold uppercase text-[11px]">{lang}</span>
             <span className="text-[8px] text-white/40">{langOpen ? '▲' : '▼'}</span>

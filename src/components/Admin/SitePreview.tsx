@@ -86,30 +86,23 @@ export default function SitePreview({ dict, lang, activeSection, onLangChange }:
 
   // Auto-scroll preview when activeSection changes in Admin
   useEffect(() => {
-    if (!activeSection || activeSection === 'settings' || activeSection === 'system') return
+    if (!activeSection) return
+    if (['settings', 'system', 'terminal', 'presets', 'control'].includes(activeSection)) return
     const mapTabToId: Record<string, string> = {
-      about: '#about',
+      sections: '#about',
+      profile: '#about',
       skills: '#skills',
       experience: '#work',
       projects: '#work',
       blog: '#blog',
-      contact: '#contact',
     }
     const targetId = mapTabToId[activeSection]
     if (targetId) {
       if (lenisRef.current) {
-        if (activeSection === 'contact') {
-          lenisRef.current.scrollTo('bottom', { duration: 0.9 })
-        } else {
-          lenisRef.current.scrollTo(targetId, { duration: 0.85, offset: -80 })
-        }
+        lenisRef.current.scrollTo(targetId, { duration: 0.85, offset: -80 })
       } else if (containerRef.current) {
-        if (activeSection === 'contact') {
-          containerRef.current.scrollTo({ top: containerRef.current.scrollHeight, behavior: 'smooth' })
-        } else {
-          const el = containerRef.current.querySelector(targetId)
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        }
+        const el = containerRef.current.querySelector(targetId)
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
     }
   }, [activeSection])

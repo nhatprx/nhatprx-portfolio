@@ -142,18 +142,14 @@ export function formatPhoneWithSpaces(val) {
 
 const L = {
   about: {
-    title: 35,
-    titleSub: 35,
-    p1: 340,
-    p2: 340,
     educationTitle: 25,
     eduSchool: 32,
     eduLocation: 28,
     eduDegree: 35,
     eduMajor: 35,
   },
-  skills: { title: 35, titleSub: 35, itemSmall: 14, itemMedium: 18, itemLarge: 26, itemXLarge: 50 },
   work: { title: 48, company: 60, period: 25, summary: 200, bullet: 240, techItem: 18 },
+  section: { tag: 30, title: 35, titleSub: 35, desc: 450 },
 }
 
 // Short guidance shown while the field is focused. The long explanation of
@@ -162,11 +158,34 @@ const TEXT_HINT = 'Plain text. Avoid @ $ ^ * _ = { } [ ] | \\ < >.'
 const BODY_HINT = 'Plain prose. Avoid @ $ ^ * _ = { } [ ] | \\ < >.'
 
 export const FIELD_RULES = {
+  /* Section headings (shared by every section: tag / title / subtitle / description) */
+  sectionTag: {
+    kind: 'text',
+    max: L.section.tag,
+    label: 'Section tag',
+    hint: 'Short label above the section heading, e.g. "02 / TECHNICAL".',
+  },
+  sectionTitle: {
+    kind: 'text',
+    max: L.section.title,
+    label: 'Section heading',
+    hint: TEXT_HINT,
+  },
+  sectionTitleSub: {
+    kind: 'text',
+    max: L.section.titleSub,
+    label: 'Section subtitle',
+    hint: TEXT_HINT,
+  },
+  sectionDesc: {
+    kind: 'text',
+    max: L.section.desc,
+    label: 'Section description',
+    hint: BODY_HINT,
+  },
+
   /* Hero & About */
   heroRole: { kind: 'text', max: 40, label: 'Role subtitle', hint: TEXT_HINT },
-  aboutTitle: { kind: 'text', max: L.about.title, label: 'Section title', hint: TEXT_HINT },
-  aboutTitleSub: { kind: 'text', max: L.about.titleSub, label: 'Subtitle', hint: TEXT_HINT },
-  aboutP1: { kind: 'text', max: L.about.p1, label: 'About paragraph', hint: BODY_HINT },
   educationTitle: {
     kind: 'text',
     max: L.about.educationTitle,
@@ -184,8 +203,6 @@ export const FIELD_RULES = {
   eduMajor: { kind: 'text', max: L.about.eduMajor, label: 'Major', hint: TEXT_HINT },
 
   /* Technical */
-  skillsTitle: { kind: 'text', max: L.skills.title, label: 'Section title', hint: TEXT_HINT },
-  skillsTitleSub: { kind: 'text', max: L.skills.titleSub, label: 'Subtitle', hint: TEXT_HINT },
   skillGroupTitle: { kind: 'text', max: 30, label: 'Group title', hint: TEXT_HINT },
   skillName: {
     kind: 'tech',
@@ -208,9 +225,6 @@ export const FIELD_RULES = {
   },
 
   /* Contact */
-  contactTitle: { kind: 'text', max: 40, label: 'Section title', hint: TEXT_HINT },
-  contactTitleSub: { kind: 'text', max: 50, label: 'Subtitle', hint: TEXT_HINT },
-  contactDesc: { kind: 'text', max: 450, label: 'Description', hint: BODY_HINT },
   contactEmail: { kind: 'email', max: 120, label: 'Email', hint: 'Format: name@example.com' },
   contactPhone: {
     kind: 'phone',

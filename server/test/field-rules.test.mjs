@@ -112,14 +112,14 @@ test('the shipped default content passes validation', () => {
   // The locale defaults are what admins start from - they must be valid.
   const samples = [
     ['SOFTWARE ENGINEER', FIELD_RULES.heroRole],
-    ['Building systems', FIELD_RULES.aboutTitle],
-    ['that scale.', FIELD_RULES.aboutTitleSub],
+    ['Building systems', FIELD_RULES.sectionTitle],
+    ['that scale.', FIELD_RULES.sectionTitleSub],
     ['FPT University', FIELD_RULES.eduSchool],
     ['Ho Chi Minh City, VN', FIELD_RULES.eduLocation],
     ['BACHELOR OF ENGINEERING', FIELD_RULES.eduDegree],
     ['Computer Science', FIELD_RULES.eduMajor],
-    ['Technical', FIELD_RULES.skillsTitle],
-    ['stack.', FIELD_RULES.skillsTitleSub],
+    ['Technical', FIELD_RULES.sectionTitle],
+    ['stack.', FIELD_RULES.sectionTitleSub],
     ['Cloud Infrastructure Intern', FIELD_RULES.workTitle],
     ['AMAZON WEB SERVICES (AWS) · Ho Chi Minh City · On-site', FIELD_RULES.workCompany],
     ['JAN - AUG 2026', FIELD_RULES.workPeriod],
@@ -150,6 +150,12 @@ test('the real shipped experience bullets stay valid', () => {
     const error = validateField(bullet, FIELD_RULES.workBullet, true)
     assert.equal(error, null, `shipped bullet rejected: ${error}\n"${bullet}"`)
   }
+})
+
+test('the section tag accepts up to 30 characters', () => {
+  assert.equal(FIELD_RULES.sectionTag.max, 30)
+  assert.equal(validateField('A'.repeat(30), FIELD_RULES.sectionTag), null)
+  assert.notEqual(validateField('A'.repeat(31), FIELD_RULES.sectionTag), null)
 })
 
 test('the real shipped project bullets stay valid', () => {

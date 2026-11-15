@@ -1,14 +1,17 @@
-import type { SupportedLang, TranslationDict, CustomTerminalCommands, ContentPreset } from '../../../services/contentStorage'
+import type {
+  SupportedLang,
+  TranslationDict,
+  CustomTerminalCommands,
+  ContentPreset,
+} from '../../../services/contentStorage'
 import type { TabType } from '../types'
-import HeroAboutTab from '../tabs/HeroAboutTab'
+import SectionsTab from '../tabs/SectionsTab'
+import ProfileTab from '../tabs/ProfileTab'
 import SkillsTab from '../tabs/SkillsTab'
 import ExperienceTab from '../tabs/ExperienceTab'
 import ProjectsTab from '../tabs/ProjectsTab'
 import BlogTab from '../tabs/BlogTab'
-import ContactTab from '../tabs/ContactTab'
-import TerminalTab from '../tabs/TerminalTab'
-import SystemTab from '../tabs/SystemTab'
-import PresetsTab from '../tabs/PresetsTab'
+import ControlTab from '../tabs/ControlTab'
 import type { ToastVariant } from '../Toast'
 
 interface AdminTabContentProps {
@@ -75,14 +78,24 @@ export default function AdminTabContent({
   }
 
   switch (activeTab) {
-    case 'about':
+    case 'sections':
       return (
-        <HeroAboutTab
+        <SectionsTab
+          currentDict={currentDict}
+          selectedLang={selectedLang}
+          updateCurrentDict={updateCurrentDict}
+          showToast={showToast}
+        />
+      )
+    case 'profile':
+      return (
+        <ProfileTab
           currentDict={currentDict}
           selectedLang={selectedLang}
           updateCurrentDict={updateCurrentDict}
           showToast={showToast}
           updateResumeAcrossAllLangs={handleUpdateResumeAcrossAllLangs}
+          updateIdentityAcrossAllLangs={handleUpdateIdentityAcrossAllLangs}
         />
       )
     case 'skills':
@@ -121,42 +134,21 @@ export default function AdminTabContent({
           showToast={showToast}
         />
       )
-    case 'contact':
-      return (
-        <ContactTab
-          currentDict={currentDict}
-          selectedLang={selectedLang}
-          updateCurrentDict={updateCurrentDict}
-          updateIdentityAcrossAllLangs={handleUpdateIdentityAcrossAllLangs}
-          showToast={showToast}
-        />
-      )
+    case 'control':
     case 'terminal':
-      return (
-        <TerminalTab
-          terminalCommands={terminalCommands}
-          setTerminalCommands={setTerminalCommands}
-          showToast={showToast}
-        />
-      )
     case 'system':
     case 'settings':
-      return (
-        <SystemTab
-          translations={translations}
-          setTranslations={setTranslations}
-          onUpdateTranslations={onUpdateTranslations}
-          showToast={showToast}
-        />
-      )
     case 'presets':
       return (
-        <PresetsTab
+        <ControlTab
           translations={translations}
           currentDict={currentDict}
           selectedLang={selectedLang}
-          resumeUrl={currentDict.hero?.resumeUrl}
-          resumeFileName={currentDict.hero?.resumeFileName}
+          terminalCommands={terminalCommands}
+          setTerminalCommands={setTerminalCommands}
+          setTranslations={setTranslations}
+          updateCurrentDict={updateCurrentDict}
+          onUpdateTranslations={onUpdateTranslations}
           onLoadPreset={(preset: ContentPreset) => {
             setTranslations(preset.translations)
             onUpdateTranslations(preset.translations)
@@ -171,4 +163,3 @@ export default function AdminTabContent({
       return null
   }
 }
-

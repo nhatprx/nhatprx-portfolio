@@ -431,12 +431,6 @@ export const fr: TranslationDict = {
       title: 'Créons ensemble',
       titleSub: 'des projets durables.',
       desc: 'Disponible pour des opportunités d’ingénierie à temps plein, missions freelance et collaborations techniques. Actuellement basé à Hô Chi Minh-Ville, Vietnam.',
-      emailLabel: 'VOTRE EMAIL',
-      msgLabel: 'VOTRE MESSAGE',
-      sendBtn: 'ENVOYER LE MESSAGE →',
-      sendingBtn: 'ENVOI EN COURS...',
-      successMsg: '✓ Message envoyé avec succès ! Je vous répondrai rapidement.',
-      errorMsg: 'Erreur réseau. Veuillez me contacter par email à nhatprx@gmail.com.',
     },
     footer: {
       rights: 'Tous droits réservés.',

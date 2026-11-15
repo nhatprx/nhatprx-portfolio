@@ -1,6 +1,8 @@
 import { TRANSLATIONS, type SupportedLang, type TranslationDict, type LocalizedBlogPost, type ExperienceItem, type ProjectItem } from '../data/translations'
 import { resolveIdentity } from '../data/identity'
+import { resolveWorkTag } from '../data/workTag'
 import { fetchRemoteContent, saveRemoteContent } from './adminApi'
+import { mergeSkillCategories } from './skillCategories'
 
 const TERMINAL_COMMANDS_KEY = 'nhatprx_custom_terminal_commands'
 const PRESETS_KEY = 'nhatprx_content_presets'
@@ -33,7 +35,7 @@ export async function loadRemoteTranslations(): Promise<Record<SupportedLang, Tr
       return mergeTranslations({})
     }
     return mergeTranslations(remote)
-  } catch (err) {
+  } catch {
     // On network error, return clean defaults
     return mergeTranslations({})
   }
@@ -49,7 +51,7 @@ export async function saveRemoteTranslations(
   try {
     await saveRemoteContent(data)
     return true
-  } catch (err) {
+  } catch {
     return false
   }
 }
@@ -76,6 +78,10 @@ function mergeTranslations(
       : customHero.resumeUrl || base.hero.resumeUrl
     const safeResumeFileName = customHero.resumeFileName || base.hero.resumeFileName
 
+    // Experience and Projects render as one #work section with a single tag
+    // above it, so both tabs always read the same value.
+    const workTag = resolveWorkTag(custom, base.experience.tag)
+
     return {
       ...base,
       ...custom,
@@ -94,29 +100,21 @@ function mergeTranslations(
             ? custom.about.languages
             : base.about.languages,
         languagesTitle: custom.about?.languagesTitle || base.about.languagesTitle,
-        tag: base.about.tag,
+        tag: custom.about?.tag || base.about.tag,
       },
       skills: {
         ...base.skills,
         ...(custom.skills || {}),
-        tag: base.skills.tag,
-        categories: base.skills.categories.map((baseCat, idx) => {
-          const customCat = custom.skills?.categories?.[idx]
-          if (!customCat) return baseCat
-          return {
-            ...baseCat,
-            ...customCat,
-            title: customCat.title ?? baseCat.title,
-            skills: Array.isArray(customCat.skills) ? customCat.skills : baseCat.skills,
-            gridClass: baseCat.gridClass,
-            fullWidth: baseCat.fullWidth,
-          }
-        }),
+        tag: custom.skills?.tag || base.skills.tag,
+        // Categories are matched by title, not by index: an admin can delete or
+        // reorder a group, and matching by index would hand every later group
+        // the wrong title and skills.
+        categories: mergeSkillCategories(base.skills.categories, custom.skills?.categories),
       },
       experience: {
         ...base.experience,
         ...(custom.experience || {}),
-        tag: base.experience.tag,
+        tag: workTag,
         items: Array.isArray(custom.experience?.items)
           ? custom.experience.items
           : base.experience.items,
@@ -124,13 +122,24 @@ function mergeTranslations(
       projects: {
         ...base.projects,
         ...(custom.projects || {}),
-        tag: base.projects.tag,
+        // One section, one tag: the site swaps the heading between the two
+        // tabs but the tag above it is shared.
+        tag: workTag,
         items: Array.isArray(custom.projects?.items)
           ? custom.projects.items
           : base.projects.items,
       },
-      blog: { ...base.blog, ...customBlog, tag: base.blog.tag, posts },
-      contact: { ...base.contact, ...(custom.contact || {}), tag: base.contact.tag },
+      blog: {
+        ...base.blog,
+        ...customBlog,
+        tag: customBlog.tag || base.blog.tag,
+        posts,
+      },
+      contact: {
+        ...base.contact,
+        ...(custom.contact || {}),
+        tag: custom.contact?.tag || base.contact.tag,
+      },
     }
   }
 
@@ -147,18 +156,10 @@ export function getStoredTerminalCommands(): CustomTerminalCommands {
   try {
     const raw = localStorage.getItem(TERMINAL_COMMANDS_KEY)
     if (raw) return JSON.parse(raw)
-  } catch (err) {
+  } catch {
     // localStorage parse error
   }
   return {}
-}
-
-export function saveStoredTerminalCommands(commands: CustomTerminalCommands): void {
-  try {
-    localStorage.setItem(TERMINAL_COMMANDS_KEY, JSON.stringify(commands))
-  } catch (err) {
-    // localStorage save error
-  }
 }
 
 export function getStoredPresets(): ContentPreset[] {
@@ -166,7 +167,7 @@ export function getStoredPresets(): ContentPreset[] {
   try {
     const raw = localStorage.getItem(PRESETS_KEY)
     if (raw) return JSON.parse(raw)
-  } catch (err) {
+  } catch {
     // localStorage parse error
   }
   return []
@@ -193,7 +194,7 @@ export function savePreset(
     const presets = getStoredPresets()
     presets.push(preset)
     localStorage.setItem(PRESETS_KEY, JSON.stringify(presets))
-  } catch (err) {
+  } catch {
     // localStorage save error
   }
 
@@ -205,24 +206,8 @@ export function deletePreset(id: string): void {
     const presets = getStoredPresets()
     const filtered = presets.filter((p) => p.id !== id)
     localStorage.setItem(PRESETS_KEY, JSON.stringify(filtered))
-  } catch (err) {
+  } catch {
     // localStorage delete error
-  }
-}
-
-export function updatePreset(
-  id: string,
-  updates: Partial<Omit<ContentPreset, 'id' | 'timestamp'>>
-): void {
-  try {
-    const presets = getStoredPresets()
-    const idx = presets.findIndex((p) => p.id === id)
-    if (idx !== -1) {
-      presets[idx] = { ...presets[idx], ...updates }
-      localStorage.setItem(PRESETS_KEY, JSON.stringify(presets))
-    }
-  } catch (err) {
-    // localStorage update error
   }
 }
 

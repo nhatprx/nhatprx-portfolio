@@ -83,78 +83,17 @@ export default function SkillsTab({
       {/* Top Header Bar */}
       <div className="border border-white/10 bg-white/[0.015] p-3.5 flex items-center justify-between">
         <span className="text-xs font-bold text-white uppercase tracking-widest">
-          02 · Technical Arsenal
+          Technical Arsenal
         </span>
       </div>
 
-      {/* CLUSTER 01: SECTION HEADINGS */}
-      <div className="border border-white/10 bg-black/40 overflow-hidden transition-colors">
-        <button
-          type="button"
-          onClick={() => toggleCluster('headings')}
-          className="w-full p-3.5 flex items-center text-left hover:bg-white/[0.02] cursor-pointer transition-colors"
-        >
-          <div className="flex items-center gap-3 min-w-0">
-            <span className="text-xs font-mono text-emerald-400 font-bold">01</span>
-            <span className="text-xs font-bold tracking-wider text-white uppercase block truncate">
-              Section Headings
-            </span>
-          </div>
-        </button>
-
-        {activeCluster === 'headings' && (
-          <div className="p-4 pt-1 border-t border-white/10 space-y-3 bg-white/[0.01]">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <AdminField
-                label="Section Heading"
-                value={currentDict.skills.title}
-                rule={FIELD_RULES.skillsTitle}
-                placeholder="Technical"                onChange={(val) =>
-                  updateCurrentDict((d) => ({
-                    ...d,
-                    skills: {
-                      ...d.skills,
-                      title: applyFieldRule(val, FIELD_RULES.skillsTitle),
-                    },
-                  }))
-                }
-              />
-
-              <AdminField
-                label="Subtitle"
-                value={currentDict.skills.titleSub}
-                rule={FIELD_RULES.skillsTitleSub}
-                placeholder="stack."                onChange={(val) =>
-                  updateCurrentDict((d) => ({
-                    ...d,
-                    skills: {
-                      ...d.skills,
-                      titleSub: applyFieldRule(val, FIELD_RULES.skillsTitleSub),
-                    },
-                  }))
-                }
-                onBlur={() => {
-                  const val = (currentDict.skills.titleSub || '').trim()
-                  if (val && !val.endsWith('.') && !val.endsWith('。')) {
-                    updateCurrentDict((d) => ({
-                      ...d,
-                      skills: { ...d.skills, titleSub: `${val}.` },
-                    }))
-                  }
-                }}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* CLUSTERS 02+: SKILL GROUPS (ONE PER CATEGORY) */}
+      {/* CLUSTERS: SKILL GROUPS (ONE PER CATEGORY) */}
       {currentDict.skills.categories.map((cat, cIdx) => {
         const clusterKey = `cat-${cIdx}`
         const isOpen = activeCluster === clusterKey
         const rule = SKILL_GROUP_LIMITS[cIdx] || { maxItems: 10, maxLen: 30 }
         const isAtCapacity = cat.skills.length >= rule.maxItems
-        const groupNum = String(cIdx + 2).padStart(2, '0')
+        const groupNum = String(cIdx + 1).padStart(2, '0')
 
         return (
           <div

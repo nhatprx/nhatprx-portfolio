@@ -12,7 +12,8 @@ Live site: [nhatprx.com](https://nhatprx.com)
 
 - Live EC2 terminal in the browser. `uname -a`, `free -h`, `df -h`, `uptime`,
   `systemctl`, `nginx`, `ls -la` and `whoami` run on the real instance and
-  return live output. Everything else falls back to a local guest sandbox.
+  return live output. When the node is unreachable the command fails instead of
+  returning fake output.
 - Built-in admin portal behind a passkey, reachable at `#admin` or `/admin`
   (keyboard shortcut `Ctrl+Shift+A`). Edits to every section are persisted to
   S3 and published to the live site.
@@ -116,15 +117,56 @@ The API must be running on port 8787 for the admin, translation and upload
 features to work. It falls back to `server/.testdata` for secrets when the
 production environment variables are not set.
 
+### Local development against the real EC2 node
+
+The terminal and the live metrics are only meaningful on the EC2 instance: the
+allowlist commands (`uname`, `free`, `df`, ...) and the `/proc` metrics do not
+exist on Windows, so a local-only API returns zeros and "command not found".
+
+`npm run dev:local` starts everything wired to the real node:
+
+```bash
+npm run dev:local
+```
+
+It opens an SSH tunnel to the EC2 host, starts the local API on `:8788` with
+`TERMINAL_UPSTREAM` pointing at the tunnel, and starts Vite on `:5173`
+proxying `/api` to `:8788`.
+
+| Piece | Runs on | Why |
+| --- | --- | --- |
+| Terminal commands | EC2 node (via tunnel) | `uname`/`free`/`df` and the allowlist are Linux-only |
+| Live metrics + system info | EC2 node (via tunnel) | reads the real `/proc` of the node |
+| Admin, S3 content, resume upload | local API | uses the local AWS credentials |
+| Bedrock translation | local API | uses the local AWS credentials |
+
+Manual equivalent:
+
+```bash
+# 1. Tunnel the node's API to a local port
+ssh -i nhatprx-portfolio-key.pem -N -L 8899:127.0.0.1:8787 ubuntu@13.250.247.238
+
+# 2. Start the local API pointed at the tunnel
+cd server && PORT=8788 TERMINAL_UPSTREAM=http://127.0.0.1:8899 npm start
+
+# 3. Start Vite pointed at the local API
+API_PORT=8788 npm run dev
+```
+
+Overrides: `EC2_HOST`, `EC2_USER`, `SSH_KEY`, `TUNNEL_PORT`, `API_PORT`.
+
 ## API Reference
 
 | Method | Route | Auth | Description |
 | --- | --- | --- | --- |
 | GET | `/api/health` | No | Liveness probe |
 | GET | `/api/content` | No | Published portfolio content |
+| GET | `/api/metrics` | No | Live CPU / memory / network metrics |
+| GET | `/api/system-info` | No | Hostname, kernel and OS release |
 | POST | `/api/admin/login` | No | Exchange a passkey for a token (12h TTL) |
 | POST | `/api/admin/logout` | No | Discard the session |
-| POST | `/api/terminal/exec` | No | Run an allowlisted read-only command |
+| POST | `/api/terminal/token` | No | Issue a short-lived terminal signing token (1h TTL) |
+| POST | `/api/terminal/exec` | Signed | Run an allowlisted read-only command |
 | POST | `/api/translate` | Yes | Translate content sections via Bedrock |
 | POST | `/api/resume/presign` | Yes | Issue a presigned S3 PUT URL |
 | POST | `/api/resume/delete` | Yes | Delete a stored resume |
@@ -132,9 +174,28 @@ production environment variables are not set.
 
 ### Terminal allowlist
 
-`uname -a`, `uptime`, `free -h`, `df -h`, `whoami`, `hostname`, `ls -1 -la`,
-`systemctl is-active nhatprx-api`, `systemctl is-active nginx` and
-`systemctl status nhatprx-api`.
+`uname -a`, `uptime`, `free -h`, `df -h`, `whoami`, `hostname`, `id`, `nproc`,
+`git log`, `git branch`, `git status`, `git show`, `health`, `health-detailed`,
+`metrics`, `metrics-cpu`, `ps aux`, `api-log`, `nginx-access`, `nginx-error`,
+`ls -la`, `systemctl-nhatprx`, `nginx-status`, `proc-cpuinfo`, `proc-meminfo`,
+`proc-loadavg` and `proc-net-dev`.
+
+### Terminal request signing
+
+`POST /api/terminal/exec` requires signed requests:
+
+1. The browser asks `POST /api/terminal/token` for a token bound to its client
+   id.
+2. It signs `clientId|timestamp|command` with HMAC-SHA256 using that token and
+   sends the result in `X-Request-Signature`, together with `X-Client-Id`,
+   `X-Terminal-Token` and `X-Timestamp`.
+3. The API verifies the token, checks the timestamp is within 5 minutes, and
+   verifies the signature in constant time.
+
+The API secret never reaches the browser, a token issued for one client id
+cannot sign requests for another, and a signature for one command cannot be
+replayed for a different command. Requests are rate limited to 60 per minute
+per IP and client id.
 
 ## Admin Setup
 
@@ -155,6 +216,7 @@ Environment variables used by the API:
 | `BEDROCK_MAX_TOKENS` | `4096` | Max output tokens per translation |
 | `PASSKEY_HASH_FILE` | `/var/lib/nhatprx-api/passkey.hash` | Passkey hash location |
 | `TOKEN_SECRET_FILE` | `/var/lib/nhatprx-api/token.secret` | Token signing secret |
+| `TERMINAL_UPSTREAM` | *(unset)* | Base URL of a remote API to run terminal commands and read metrics from. Local dev only: points at an SSH tunnel to the EC2 node. Unset in production. |
 
 ## Deployment
 
@@ -189,7 +251,12 @@ bash e2e-upload.sh   # presign, upload, verify and delete a resume
 - The systemd unit runs with `NoNewPrivileges`, `ProtectSystem=strict` and a
   read-only home directory.
 - The public terminal is read-only by construction: a fixed argv allowlist,
-  no shell, a 5 second timeout and a 32 KB output cap.
+  no shell, a 5 second timeout and a 100 KB output cap.
+- Terminal requests are signed with HMAC-SHA256. The API secret stays on the
+  server; the browser holds only a per-client, 1 hour token, so a leaked token
+  cannot sign commands for another client. Signatures are verified in constant
+  time and cover the exact command, and the rate limit map is capped so a
+  client-controlled key cannot grow it without bound.
 
 ## Project Layout
 
@@ -197,11 +264,13 @@ bash e2e-upload.sh   # presign, upload, verify and delete a resume
 src/
   components/        Portfolio sections, terminal, telemetry, admin portal
   data/locales/      en, vi, fr, ja content sources
-  services/          API client, content storage, translation helpers
+  services/          API client, content storage, limits
   hooks/             Scroll handling
 server/
   index.mjs          Admin API (auth, content, uploads, translation)
   terminal.mjs       Command allowlist and runner
+  terminal-security.mjs  Rate limiting, output sanitizing, request signing
+  terminal-signing.mjs   Shared signing payload and constant-time compare
   bedrock-translate.mjs
   nginx/             HTTP and TLS vhosts
   test/              node:test suites

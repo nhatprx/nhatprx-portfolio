@@ -35,7 +35,7 @@ export default function App() {
         if (isMounted) {
           setAllTranslations(remote)
         }
-      } catch (err) {
+      } catch {
         // Fall back to defaults on error; don't use stale localStorage
       }
     }

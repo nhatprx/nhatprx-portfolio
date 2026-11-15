@@ -2,12 +2,13 @@ import type { SupportedLang, TranslationDict } from '../../services/contentStora
 import type { ToastVariant } from './Toast'
 
 export type TabType =
-  | 'about'
+  | 'sections'
+  | 'profile'
   | 'skills'
   | 'experience'
   | 'projects'
   | 'blog'
-  | 'contact'
+  | 'control'
   | 'terminal'
   | 'system'
   | 'settings'

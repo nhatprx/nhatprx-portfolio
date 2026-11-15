@@ -143,12 +143,6 @@ export interface TranslationDict {
     title: string
     titleSub: string
     desc: string
-    emailLabel: string
-    msgLabel: string
-    sendBtn: string
-    sendingBtn: string
-    successMsg: string
-    errorMsg: string
     availabilityLocation?: string
     isAvailableForRoles?: boolean
   }

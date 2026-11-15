@@ -33,7 +33,7 @@ export async function getSystemMetrics() {
     const memPercent = memTotal > 0 ? Math.round((memUsed / memTotal) * 100) : 0
 
     // Load average (5-minute average, converted to percentage of available cores)
-    const [loadAvg1, loadAvg5] = loadAvg.split(' ').map(Number)
+    const loadAvg5 = loadAvg.split(' ').map(Number)[1]
     const cpuPercent = Math.round(Math.min(100, (loadAvg5 / cpuCores) * 100))
 
     // Uptime

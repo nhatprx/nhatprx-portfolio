@@ -44,7 +44,7 @@ export default function PresetsTab({
       setPresetName('')
       setShowSaveForm(false)
       showToast(`Preset "${preset.name}" saved successfully`)
-    } catch (err) {
+    } catch {
       showToast('Failed to save preset', 'error')
     } finally {
       setIsSaving(false)

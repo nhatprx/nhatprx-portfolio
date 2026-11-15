@@ -1,5 +1,5 @@
 import CharCounter from '../CharCounter'
-import { CONTENT_LIMITS } from '../../../services/autoTranslate'
+import { CONTENT_LIMITS } from '../../../services/contentLimits'
 import type { LocalizedBlogPost } from '../../../services/contentStorage'
 import BlogSectionBlock from './BlogSectionBlock'
 import { getInputValidationClass } from '../utils/validation'

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
+import { createHmac } from 'node:crypto'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve, dirname } from 'node:path'
@@ -110,33 +111,114 @@ test('a protected request without a token is rejected', async () => {
   assert.equal(res.status, 401)
 })
 
-test('the terminal executes an allowlisted command', async () => {
-  const res = await fetch(`${baseUrl}/api/terminal/exec`, {
+/**
+ * Performs a signed terminal request, exactly like the browser does:
+ * fetch a token bound to the client id, then HMAC-sign the command.
+ */
+async function signedExec(command, { clientId = 'test_client_1', token, tamper } = {}) {
+  let terminalToken = token
+  if (!terminalToken) {
+    const tokenRes = await fetch(`${baseUrl}/api/terminal/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clientId }),
+    })
+    terminalToken = (await tokenRes.json()).token
+  }
+
+  const timestamp = Date.now()
+  const payload = `${clientId}|${timestamp}|${command}`
+  const signature = createHmac('sha256', terminalToken).update(payload).digest('hex')
+
+  return fetch(`${baseUrl}/api/terminal/exec`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ command: 'hostname' }),
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Request-Signature': tamper ? 'deadbeef'.repeat(8) : signature,
+      'X-Client-Id': clientId,
+      'X-Terminal-Token': terminalToken,
+      'X-Timestamp': String(timestamp),
+    },
+    body: JSON.stringify({ command }),
   })
+}
+
+test('the terminal executes an allowlisted command', async () => {
+  const res = await signedExec('hostname')
   assert.equal(res.status, 200)
   const body = await res.json()
   assert.ok(body.stdout, 'expected stdout in the response body')
 })
 
 test('the terminal rejects a command outside the allowlist', async () => {
-  const res = await fetch(`${baseUrl}/api/terminal/exec`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ command: 'rm -rf /' }),
-  })
+  const res = await signedExec('rm -rf /')
   assert.equal(res.status, 400)
   const body = await res.json()
   assert.ok(body.error, 'expected an error message')
 })
 
 test('the terminal does not leak command errors as 200', async () => {
+  const res = await signedExec('')
+  assert.equal(res.status, 400)
+})
+
+test('the terminal rejects an unsigned request', async () => {
   const res = await fetch(`${baseUrl}/api/terminal/exec`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ command: '' }),
+    body: JSON.stringify({ command: 'hostname' }),
   })
   assert.equal(res.status, 400)
+  const body = await res.json()
+  assert.match(body.error, /Missing security headers/)
+})
+
+test('the terminal rejects a forged signature', async () => {
+  const res = await signedExec('hostname', { tamper: true })
+  assert.equal(res.status, 400)
+  const body = await res.json()
+  assert.match(body.error, /Invalid request signature/)
+})
+
+test('the terminal rejects a token minted for another client id', async () => {
+  // A token issued for client A must not authorise client B.
+  const tokenRes = await fetch(`${baseUrl}/api/terminal/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ clientId: 'test_client_a' }),
+  })
+  const token = (await tokenRes.json()).token
+
+  const res = await signedExec('hostname', { clientId: 'test_client_b', token })
+  assert.equal(res.status, 400)
+  const body = await res.json()
+  assert.match(body.error, /Invalid or expired terminal token/)
+})
+
+test('the terminal rejects an expired timestamp', async () => {
+  const tokenRes = await fetch(`${baseUrl}/api/terminal/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ clientId: 'test_client_stale' }),
+  })
+  const token = (await tokenRes.json()).token
+
+  const staleTimestamp = Date.now() - 10 * 60 * 1000
+  const payload = `test_client_stale|${staleTimestamp}|hostname`
+  const signature = createHmac('sha256', token).update(payload).digest('hex')
+
+  const res = await fetch(`${baseUrl}/api/terminal/exec`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Request-Signature': signature,
+      'X-Client-Id': 'test_client_stale',
+      'X-Terminal-Token': token,
+      'X-Timestamp': String(staleTimestamp),
+    },
+    body: JSON.stringify({ command: 'hostname' }),
+  })
+  assert.equal(res.status, 400)
+  const body = await res.json()
+  assert.match(body.error, /timestamp expired/)
 })

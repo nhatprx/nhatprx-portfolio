@@ -20,12 +20,12 @@ export default function AdminSidebar({
   counts,
 }: AdminSidebarProps) {
   const tabs: { id: TabType; num: string; label: string; count?: number }[] = [
-    { id: 'about', num: '01', label: 'HERO & ABOUT' },
-    { id: 'skills', num: '02', label: 'TECHNICAL', count: counts.skills },
-    { id: 'experience', num: '03', label: 'EXPERIENCE', count: counts.experience },
-    { id: 'projects', num: '04', label: 'PROJECTS', count: counts.projects },
-    { id: 'blog', num: '05', label: 'BLOGS', count: counts.blog },
-    { id: 'contact', num: '06', label: 'CONTACT' },
+    { id: 'sections', num: '01', label: 'SECTION COPY' },
+    { id: 'profile', num: '02', label: 'USER INFO' },
+    { id: 'skills', num: '03', label: 'TECHNICAL', count: counts.skills },
+    { id: 'experience', num: '04', label: 'EXPERIENCE', count: counts.experience },
+    { id: 'projects', num: '05', label: 'PROJECTS', count: counts.projects },
+    { id: 'blog', num: '06', label: 'BLOGS', count: counts.blog },
   ]
 
   return (
@@ -35,7 +35,7 @@ export default function AdminSidebar({
     >
       <div className="space-y-1">
         <div className="px-3 py-2 text-[10px] font-mono tracking-widest text-white/30 uppercase border-b border-white/5 mb-1 flex items-center justify-between">
-          <span>SECTIONS</span>
+          <span>CONTENT</span>
           <span className="text-[9px] text-emerald-400 font-bold">{selectedLang.toUpperCase()}</span>
         </div>
 
@@ -63,29 +63,23 @@ export default function AdminSidebar({
         ))}
       </div>
 
-      {/* Settings at the bottom */}
-      <div className="mt-auto pt-3 border-t border-white/10 space-y-1">
+      {/* Control at the bottom */}
+      <div className="mt-auto pt-3 border-t border-white/10">
         <button
           type="button"
-          onClick={() => onSelectTab('presets')}
+          onClick={() => onSelectTab('control')}
           className={`w-full text-left px-3 py-2.5 text-xs font-mono tracking-wider flex items-center gap-2.5 transition-colors border-l-2 cursor-pointer ${
+            activeTab === 'control' ||
+            activeTab === 'terminal' ||
+            activeTab === 'system' ||
+            activeTab === 'settings' ||
             activeTab === 'presets'
               ? 'border-white text-white font-bold bg-white/10'
               : 'border-transparent text-white/50 hover:text-white hover:bg-white/[0.04]'
           }`}
         >
-          <span>PRESETS</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => onSelectTab('settings')}
-          className={`w-full text-left px-3 py-2.5 text-xs font-mono tracking-wider flex items-center gap-2.5 transition-colors border-l-2 cursor-pointer ${
-            activeTab === 'settings' || activeTab === 'system'
-              ? 'border-white text-white font-bold bg-white/10'
-              : 'border-transparent text-white/50 hover:text-white hover:bg-white/[0.04]'
-          }`}
-        >
-          <span>SETTINGS</span>
+          <span className="text-[10px] text-white/30">07</span>
+          <span>CONTROL</span>
         </button>
       </div>
     </aside>

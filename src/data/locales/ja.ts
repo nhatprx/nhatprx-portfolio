@@ -429,12 +429,6 @@ export const ja: TranslationDict = {
       title: '共に',
       titleSub: '未来を創る。',
       desc: 'フルタイムのエンジニア採用、フリーランス案件、共同開発の機会を受け付けております。現在ベトナム・ホーチミン市在住。',
-      emailLabel: 'メールアドレス',
-      msgLabel: 'メッセージ',
-      sendBtn: 'メッセージを送信 →',
-      sendingBtn: '送信中...',
-      successMsg: '✓ 送信完了しました。折り返しご連絡いたします。',
-      errorMsg: '送信エラー。直接 nhatprx@gmail.com までメールをお送りください。',
     },
     footer: {
       rights: '無断転載を禁じます。',

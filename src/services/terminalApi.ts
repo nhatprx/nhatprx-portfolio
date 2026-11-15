@@ -1,15 +1,16 @@
-// Client for the public read-only terminal endpoint with strict security.
-//
-// The API runs on the same EC2 instance that serves the site, so the terminal
-// commands are executed there and the real stdout comes back over HTTP.
+// Client for the public read-only terminal endpoint.
 //
 // SECURITY MODEL:
-// - JWT token validation on backend
-// - IP-based rate limiting (60 req/min per IP)
-// - Request signing with HMAC
-// - Audit logging for all commands
-// - Obfuscated sensitive output
-// - No fallback to local sandbox if server unavailable (real terminal behavior)
+// - The browser fetches a short-lived signing token from /api/terminal/token.
+// - Every command is signed with HMAC-SHA256 over `clientId|timestamp|command`.
+// - The API verifies the signature in constant time and rate limits per
+//   IP + client id.
+// - Commands run against a fixed argv allowlist on the server; there is no
+//   shell, so no user input can become a shell metacharacter.
+// - Output is sanitized server-side and again on the way out.
+//
+// The browser never holds the API secret: the token only authorises one
+// client id, and the per-client signing key is derived on the server.
 
 export interface TerminalExecResult {
   stdout: string
@@ -24,45 +25,71 @@ export interface TerminalInfo {
   is_ec2: boolean
 }
 
-export interface TerminalSecurityContext {
-  jwtToken?: string
-  clientId?: string
-  timestamp?: number
+interface TerminalToken {
+  token: string
+  expiresAt: number
 }
 
-let securityContext: TerminalSecurityContext = {}
+let tokenCache: TerminalToken | null = null
 
 /**
- * Initialize terminal security context (call once on app load)
+ * Fetches (and caches) the terminal signing token for this client id.
  */
-export function initTerminalSecurity(ctx: TerminalSecurityContext) {
-  securityContext = ctx
+async function getTerminalToken(clientId: string): Promise<string> {
+  if (tokenCache && tokenCache.expiresAt > Date.now() + 30_000) {
+    return tokenCache.token
+  }
+
+  const res = await fetch('/api/terminal/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ clientId }),
+  })
+  if (!res.ok) {
+    throw new Error(`Could not obtain a terminal token (${res.status})`)
+  }
+  const body = await res.json()
+  tokenCache = {
+    token: String(body.token || ''),
+    expiresAt: Date.now() + Number(body.expiresIn || 3600) * 1000,
+  }
+  return tokenCache.token
 }
 
 /**
- * Generate request signature for HMAC validation
+ * Derives the per-client signing key from the token.
+ *
+ * The server derives the same key with HMAC-SHA256(tokenSecret, "key." + clientId)
+ * and verifies against the token-derived key, so the browser only needs the
+ * token it was handed - never the API secret.
  */
-function generateRequestSignature(command: string, timestamp: number): string {
-  const data = `${command}|${timestamp}`
-  // In production, use a server-side HMAC key. For now, use timestamp-based validation.
-  return btoa(data)
+async function signCommand(clientId: string, timestamp: number, command: string): Promise<string> {
+  const token = await getTerminalToken(clientId)
+  const payload = `${clientId}|${timestamp}|${command}`
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(token),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  )
+  const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload))
+  return Array.from(new Uint8Array(signature))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
 }
 
 /**
  * Runs a read-only command on the server node.
- * Throws ApiError(400) when the command is not on the allowlist.
- * 
- * SECURITY CHECKS:
- * - Command validation against allowlist
- * - Rate limiting (60 requests per minute per IP)
- * - Request signature verification
- * - Audit logging
- * - Output sanitization (passwords, keys removed)
+ * Throws when the command is not on the allowlist or the signature is rejected.
  */
 export async function execTerminalCommand(command: string): Promise<TerminalExecResult> {
   const timestamp = Date.now()
-  const signature = generateRequestSignature(command, timestamp)
-  const clientId = securityContext.clientId || 'anonymous'
+  const clientId = getClientId()
+  const [token, signature] = await Promise.all([
+    getTerminalToken(clientId),
+    signCommand(clientId, timestamp, command),
+  ])
 
   const res = await fetch('/api/terminal/exec', {
     method: 'POST',
@@ -70,12 +97,10 @@ export async function execTerminalCommand(command: string): Promise<TerminalExec
       'Content-Type': 'application/json',
       'X-Request-Signature': signature,
       'X-Client-Id': clientId,
+      'X-Terminal-Token': token,
       'X-Timestamp': String(timestamp),
-      ...(securityContext.jwtToken && { 'Authorization': `Bearer ${securityContext.jwtToken}` }),
     },
-    body: JSON.stringify({ 
-      command,
-    }),
+    body: JSON.stringify({ command }),
   })
 
   if (!res.ok) {
@@ -93,7 +118,7 @@ export async function execTerminalCommand(command: string): Promise<TerminalExec
   }
 
   const body = await res.json()
-  return { 
+  return {
     stdout: sanitizeTerminalOutput(String(body?.stdout ?? '')),
     executedAt: body?.executedAt,
     requestId: body?.requestId,
@@ -107,31 +132,45 @@ export async function execTerminalCommand(command: string): Promise<TerminalExec
 export async function fetchTerminalInfo(): Promise<TerminalInfo> {
   const res = await fetch('/api/system-info')
   if (!res.ok) {
-    throw new Error(`Server unreachable - terminal requires backend`)
+    throw new Error('Server unreachable - terminal requires backend')
   }
   const body = await res.json()
   return body.info
 }
 
 /**
- * Sanitizes terminal output to remove sensitive information
- * - Masks AWS access keys (AKIA...)
- * - Masks passwords, tokens, secrets
- * - Masks private IPs in certain contexts
+ * Sanitizes terminal output to remove sensitive information.
+ * The server already does this; repeating it here keeps the browser safe even
+ * if the API is replaced by a proxy that does not sanitize.
  */
 export function sanitizeTerminalOutput(output: string): string {
-  // Remove AWS access keys
   output = output.replace(/AKIA[0-9A-Z]{16}/g, 'AKIA****')
-  // Remove AWS secret keys (typical format)
   output = output.replace(/aws_secret_access_key\s*[:=]\s*\S+/gi, 'aws_secret_access_key: ****')
   output = output.replace(/secret_access_key\s*[:=]\s*\S+/gi, 'secret_access_key: ****')
-  // Remove common password/token patterns
   output = output.replace(/password\s*[:=]\s*\S+/gi, 'password: ****')
   output = output.replace(/token\s*[:=]\s*\S+/gi, 'token: ****')
   output = output.replace(/api[_-]?key\s*[:=]\s*\S+/gi, 'api_key: ****')
-  // Remove private IP addresses
   output = output.replace(/192\.168\.\d{1,3}\.\d{1,3}/g, 'x.x.x.x')
   output = output.replace(/10\.\d{1,3}\.\d{1,3}\.\d{1,3}/g, 'x.x.x.x')
   output = output.replace(/172\.(1[6-9]|2[0-9]|3[01])\.\d{1,3}\.\d{1,3}/g, 'x.x.x.x')
   return output
+}
+
+/**
+ * Stable per-browser client id.
+ *
+ * Persisted so the server's rate limit window survives a page reload.
+ */
+function getClientId(): string {
+  const STORAGE_KEY = 'nhatprx_terminal_client_id'
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved && /^[A-Za-z0-9_-]{4,64}$/.test(saved)) return saved
+    const generated = `c_${crypto.randomUUID().replace(/-/g, '').slice(0, 24)}`
+    localStorage.setItem(STORAGE_KEY, generated)
+    return generated
+  } catch {
+    // localStorage unavailable (private mode) - fall back to a per-session id.
+    return `c_${Math.random().toString(36).slice(2, 14)}`
+  }
 }
