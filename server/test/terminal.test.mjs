@@ -61,17 +61,27 @@ test('Terminal - Command Execution', async t => {
     assert.strictEqual(result.error_type, 'not_allowed')
   })
 
-  await t.test('executes git commands if repo exists', async () => {
-    const result = await runTerminalCommand('git log')
-    // May fail if .git doesn't exist, but should have proper error handling
-    assert(typeof result.stdout === 'string' || typeof result.error === 'string')
+  await t.test('the git commands read the deployment metadata, not git', () => {
+    // The node has no .git directory: CI writes a VERSION file with the
+    // deployed commit details instead. These commands must not shell out to
+    // git, which would fail with "not a git repository".
+    for (const form of ['log', 'status', 'branch', 'show']) {
+      const spec = ALLOWED_COMMANDS.git
+      assert(spec, 'git should be in the allowlist')
+      const argv = spec.forms[form]
+      assert(argv, `git ${form} should be allowed`)
+      assert.strictEqual(argv[0], 'cat', `git ${form} should read a file, not run git`)
+      assert(argv[1].endsWith('VERSION'), `git ${form} should read the VERSION file`)
+    }
   })
 
-  await t.test('includes error message on failure', async () => {
-    const result = await runTerminalCommand('git status')
-    if (!result.ok) {
-      assert(result.error || result.reason, 'error response should have error message')
-    }
+  await t.test('the api-log command reads the journal, not a missing file', () => {
+    const argv = ALLOWED_COMMANDS['api-log'].exec
+    assert.strictEqual(argv[0], 'journalctl', 'api-log should read the systemd journal')
+    assert(argv.includes('nhatprx-api'), 'api-log should be scoped to the API unit')
+    // The old command tailed server/api.log and always failed with
+    // "cannot open" because nothing writes that file.
+    assert(!argv.some((a) => a.includes('api.log')), 'api-log must not tail a log file')
   })
 })
 

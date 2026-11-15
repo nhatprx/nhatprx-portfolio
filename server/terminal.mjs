@@ -21,9 +21,12 @@ const MAX_OUTPUT_BYTES = 100 * 1024
 const API_ROOT = existsSync('/home/ubuntu/nhatprx-api')
   ? '/home/ubuntu/nhatprx-api'
   : process.cwd()
-const API_LOG = existsSync('/home/ubuntu/nhatprx-api/api.log')
-  ? '/home/ubuntu/nhatprx-api/api.log'
-  : 'server/api.log'
+// The API logs to journald under systemd, so `api-log` reads the journal
+// rather than a file. There is no api.log on the node.
+// CI writes a VERSION file with the deployed commit metadata. The node has no
+// .git directory, so the git commands read this file instead of running git.
+// `cat` on a missing file just prints an error, so the path is fixed.
+const VERSION_FILE = `${API_ROOT}/VERSION`
 
 /**
  * The public allowlist. Each entry is the exact argv tail that gets executed,
@@ -70,13 +73,14 @@ export const ALLOWED_COMMANDS = {
     exec: ['nproc'],
   },
   
-  // Git - portfolio deployment history
+  // Deployment metadata - the node has no .git, so CI writes a VERSION file
+  // with the deployed commit details and these commands read it.
   git: {
     forms: {
-      log: ['git', '-C', API_ROOT, 'log', '--oneline', '-10'],
-      branch: ['git', '-C', API_ROOT, 'branch', '-a'],
-      status: ['git', '-C', API_ROOT, 'status', '--short', '--branch'],
-      show: ['git', '-C', API_ROOT, 'show', '-s', '--format=%ci %an: %s', 'HEAD'],
+      log: ['cat', VERSION_FILE],
+      branch: ['cat', VERSION_FILE],
+      status: ['cat', VERSION_FILE],
+      show: ['cat', VERSION_FILE],
     },
   },
 
@@ -91,25 +95,31 @@ export const ALLOWED_COMMANDS = {
   },
   metrics: {
     args: [],
-    exec: ['ps', 'aux'],
+    // `ps -eo pid,comm,rss` instead of `ps aux`: the full listing exposes
+    // every process command line, which can carry secrets in argv. The
+    // column set is kept to what procps and BusyBox both accept - `%cpu`
+    // and `%mem` are not portable.
+    exec: ['ps', '-eo', 'pid,comm,rss'],
   },
   'metrics-cpu': {
     args: [],
-    exec: ['top', '-b', '-n', '1'],
+    // `top -bn1` is the portable form; `-b -n 1 -o ...` is not supported by
+    // every `top` build and also prints command lines.
+    exec: ['top', '-bn1'],
   },
 
   // Process & Services
   ps: {
-    args: ['aux'],
-    exec: ['ps', 'aux'],
+    args: [],
+    exec: ['ps', '-eo', 'pid,comm,rss'],
   },
   
   // Logs
   'api-log': {
     args: [],
-    exec: ['tail', '-n', '30', API_LOG],
-  },
-  'nginx-access': {
+    // The API runs under systemd, so its output is in the journal.
+    exec: ['journalctl', '-u', 'nhatprx-api', '-n', '30', '--no-pager'],
+  },  'nginx-access': {
     args: [],
     exec: ['tail', '-n', '30', '/var/log/nginx/access.log'],
   },
@@ -122,8 +132,11 @@ export const ALLOWED_COMMANDS = {
   ls: {
     // Only the project directory, not the whole home dir: the home folder
     // holds .ssh and other paths that should never be listed publicly.
+    //
+    // The listing is capped and excludes node_modules: the full listing
+    // exposes the API source and takes a long time on a large tree.
     args: ['-la'],
-    exec: ['ls', '-la', API_ROOT],
+    exec: ['ls', '-la', '--ignore=node_modules', API_ROOT],
   },
 
   // Services status

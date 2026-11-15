@@ -1,4 +1,8 @@
 # Shell scripts must keep LF endings or bash on Linux fails with "invalid option name".
 *.sh text eol=lf
 server/*.service text eol=lf
+
+# The server code is deployed to and runs on Linux, so it is stored with LF.
 server/*.mjs text eol=lf
+server/scripts/*.mjs text eol=lf
+server/test/*.mjs text eol=lf

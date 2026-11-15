@@ -32,9 +32,11 @@ hmac_sha256() {
 # exec_signed <command> -> raw JSON response
 exec_signed() {
   local cmd="$1"
-  local ts payload sig
+  local ts payload sig nonce
   ts=$(date +%s%3N)
-  payload="$CLIENT_ID|$ts|$cmd"
+  # A fresh nonce per request: the API rejects a nonce it has already seen.
+  nonce=$(node -e "console.log(require('node:crypto').randomBytes(12).toString('hex'))")
+  payload="$CLIENT_ID|$ts|$nonce|$cmd"
   sig=$(hmac_sha256 "$TOKEN" "$payload")
 
   curl -s -X POST "$BASE_URL/api/terminal/exec" \
@@ -43,6 +45,7 @@ exec_signed() {
     -H "X-Client-Id: $CLIENT_ID" \
     -H "X-Terminal-Token: $TOKEN" \
     -H "X-Timestamp: $ts" \
+    -H "X-Request-Nonce: $nonce" \
     -d "{\"command\": \"$cmd\"}"
 }
 

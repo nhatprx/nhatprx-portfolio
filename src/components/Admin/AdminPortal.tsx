@@ -8,7 +8,7 @@ import {
   type CustomTerminalCommands,
 } from '../../services/contentStorage'
 import { TRANSLATIONS } from '../../data/translations'
-import { login as apiLogin, logout as apiLogout, isLoggedIn, translatePortfolio } from '../../services/adminApi'
+import { login as apiLogin, logout as apiLogout, isLoggedIn } from '../../services/adminApi'
 import SitePreview from './SitePreview'
 import AdminHeader from './components/AdminHeader'
 import type { SyncStatus } from './components/AdminHeader'
@@ -39,7 +39,6 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
   const [activeTab, setActiveTab] = useState<TabType>('sections')
   const [mobilePane, setMobilePane] = useState<'editor' | 'preview'>('editor')
   const [toast, setToast] = useState<{ message: string; variant: ToastVariant } | null>(null)
-  const [isAutoTranslating, setIsAutoTranslating] = useState(false)
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle')
 
   // Auto-Save Engine (syncs automatically to localStorage, S3 and the live site on every change)
@@ -176,49 +175,6 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
     setIsAuthenticated(false)
   }
 
-  const handleAutoTranslate = async () => {
-    if (isAutoTranslating) return
-
-    const targetLangs = (['vi', 'fr', 'ja'] as const).filter((lang) => lang !== selectedLang)
-    if (targetLangs.length === 0) return
-
-    if (
-      !confirm(
-        `Dịch toàn bộ nội dung từ ${selectedLang.toUpperCase()} sang ${targetLangs
-          .map((lang) => lang.toUpperCase())
-          .join(', ')}? Nội dung hiện tại của các ngôn ngữ đích sẽ được thay thế.`
-      )
-    ) {
-      return
-    }
-
-    setIsAutoTranslating(true)
-    try {
-      const source = translations[selectedLang]
-      const translated: Partial<Record<SupportedLang, TranslationDict>> = {}
-
-      for (const lang of targetLangs) {
-        const result = await translatePortfolio({
-          source: source as unknown as Record<string, unknown>,
-          sourceLang: selectedLang,
-          targetLang: lang,
-          onProgress: (message) => showToast(message, 'info'),
-        })
-        translated[lang] = result as unknown as TranslationDict
-      }
-
-      setTranslations((prev) => ({
-        ...prev,
-        ...translated,
-      }))
-      showToast(`Đã dịch và áp dụng cho ${targetLangs.join(', ').toUpperCase()}.`)
-    } catch {
-      showToast('Không thể dịch bằng AWS Bedrock. Nội dung nguồn đã được giữ nguyên.', 'error')
-    } finally {
-      setIsAutoTranslating(false)
-    }
-  }
-
   const currentDict = translations[selectedLang]
 
   const updateCurrentDict = (updater: (prev: TranslationDict) => TranslationDict) => {
@@ -284,8 +240,6 @@ export default function AdminPortal({ onClose, onUpdateTranslations }: AdminPort
             onToggleMobilePane={setMobilePane}
             onCloseAndSync={handleCloseAndSync}
             onLogout={handleLogout}
-            onAutoTranslate={handleAutoTranslate}
-            isAutoTranslating={isAutoTranslating}
             syncStatus={syncStatus}
           />
 

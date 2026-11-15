@@ -8,7 +8,7 @@
  * the local API at it.
  *
  *   Terminal + metrics : the EC2 node (via the tunnel)
- *   Admin / S3 / Bedrock: the local API, using the local AWS credentials
+ *   Admin / S3: the local API, using the local AWS credentials
  *
  * Usage:
  *   npm run dev:local
@@ -90,11 +90,17 @@ async function waitForTunnel() {
 }
 
 console.log(`==> Opening SSH tunnel ${EC2_USER}@${EC2_HOST}:${TUNNEL_PORT} -> 127.0.0.1:8787`)
+// The host key is pinned when EC2_SSH_HOST_KEY is set. Without it the tunnel
+// still works, but the host is not verified: a machine that can intercept the
+// connection could present its own key and receive the deploy key.
+const sshOptions = ['-i', SSH_KEY, '-o', 'ExitOnForwardFailure=yes', '-o', 'ServerAliveInterval=30']
+if (process.env.EC2_SSH_HOST_KEY) {
+  sshOptions.push('-o', 'StrictHostKeyChecking=yes')
+} else {
+  console.warn('    ! EC2_SSH_HOST_KEY not set - the SSH host key is not being verified')
+}
 run('ssh', [
-  '-i', SSH_KEY,
-  '-o', 'StrictHostKeyChecking=no',
-  '-o', 'ExitOnForwardFailure=yes',
-  '-o', 'ServerAliveInterval=30',
+  ...sshOptions,
   '-N',
   '-L', `${TUNNEL_PORT}:127.0.0.1:8787`,
   `${EC2_USER}@${EC2_HOST}`,

@@ -12,11 +12,13 @@ curl -s -o /dev/null -w '%{http_code}\n' -X POST "$BASE/api/admin/login" \
   -H 'Content-Type: application/json' -d '{"passkey":"definitely-wrong"}'
 
 echo "--- login with correct passkey ---"
-TOKEN=$(curl -s -X POST "$BASE/api/admin/login" \
+LOGIN_BODY=$(curl -s -X POST "$BASE/api/admin/login" \
   -H 'Content-Type: application/json' \
-  -d "{\"passkey\":\"$PASSKEY\"}" | sed -E 's/.*"token":"([^"]+)".*/\1/')
-if [ -z "$TOKEN" ] || [ "$TOKEN" = "$PASSKEY" ]; then
-  echo "FAIL: could not obtain a token"
+  -d "{\"passkey\":\"$PASSKEY\"}")
+TOKEN=$(echo "$LOGIN_BODY" | sed -E 's/.*"token":"([^"]+)".*/\1/')
+if [ -z "$TOKEN" ] || [ "$TOKEN" = "$LOGIN_BODY" ]; then
+  echo "FAIL: login did not return a token: $LOGIN_BODY"
+  echo "      pass the real passkey as the second argument"
   exit 1
 fi
 echo "token acquired (${#TOKEN} chars)"

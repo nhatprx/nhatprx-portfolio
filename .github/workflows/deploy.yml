@@ -37,6 +37,7 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_SSH_HOST_KEY: ${{ secrets.EC2_SSH_HOST_KEY }}
         run: |
           EC2_HOST="${EC2_HOST:-13.250.247.238}"
           EC2_USER="${EC2_USER:-ubuntu}"
@@ -49,6 +50,21 @@ jobs:
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+
+          # Pin the host key. `ssh-keyscan` does not verify anything, so
+          # trusting its output lets anyone who can intercept the connection
+          # present their own key and take the deploy key. Instead the pinned
+          # fingerprint from the secret must match what the host presents.
+          if [ -z "$EC2_SSH_HOST_KEY" ]; then
+            echo "::error::EC2_SSH_HOST_KEY secret is not set"
+            exit 1
+          fi
+          EXPECTED_FINGERPRINT=$(printf '%s' "$EC2_SSH_HOST_KEY" | awk '{print $2}')
+          ACTUAL_FINGERPRINT=$(ssh-keyscan -H "$EC2_HOST" 2>/dev/null | ssh-keygen -lf - | awk '{print $2}')
+          if [ -z "$ACTUAL_FINGERPRINT" ] || [ "$ACTUAL_FINGERPRINT" != "$EXPECTED_FINGERPRINT" ]; then
+            echo "::error::SSH host key mismatch for $EC2_HOST (expected $EXPECTED_FINGERPRINT, got $ACTUAL_FINGERPRINT)"
+            exit 1
+          fi
           ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
 
           # Deploy frontend
@@ -58,16 +74,23 @@ jobs:
           rsync -avz --delete \
             --exclude node_modules \
             --exclude .testdata \
-            --exclude nginx \
             server/ "$EC2_USER@$EC2_HOST:/home/ubuntu/nhatprx-api/"
 
           # Install production dependencies
           ssh "$EC2_USER@$EC2_HOST" \
             "cd /home/ubuntu/nhatprx-api && npm ci --omit=dev"
 
-          # Restart services
+          # Install the nginx vhost so the security headers in the repo are
+          # the ones that run in production. The HTTPS vhost is validated
+          # before it replaces the live one, and the previous file is kept
+          # so a broken config can be rolled back by hand.
+          scp server/nginx/nhatprx.com.ssl.conf "$EC2_USER@$EC2_HOST:/tmp/nhatprx.com.ssl.conf.new"
           ssh "$EC2_USER@$EC2_HOST" \
-            "sudo chmod -R 755 /var/www/html && sudo systemctl restart nhatprx-api && sudo systemctl reload nginx"
+            "sudo cp /etc/nginx/sites-available/nhatprx.com.ssl.conf /etc/nginx/sites-available/nhatprx.com.ssl.conf.bak && sudo cp /tmp/nhatprx.com.ssl.conf.new /etc/nginx/sites-available/nhatprx.com.ssl.conf && sudo nginx -t && sudo systemctl reload nginx"
+
+          # Restart the API
+          ssh "$EC2_USER@$EC2_HOST" \
+            "sudo chmod -R 755 /var/www/html && sudo systemctl restart nhatprx-api"
 
           # Generate deployment metadata
           DEPLOYED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"

@@ -21,8 +21,14 @@ const s3 = new S3Client({ region: REGION })
 
 const rule = {
   AllowedMethods: ['GET', 'HEAD', 'PUT'],
-  AllowedOrigins: ['*'],
-  AllowedHeaders: ['*'],
+  // The dashboard is served from the site's own domain, so the origin is
+  // pinned to it. A wildcard would let any site on the internet PUT into
+  // this bucket with a leaked presigned URL.
+  AllowedOrigins: [
+    'https://nhatprx.com',
+    'https://www.nhatprx.com',
+  ],
+  AllowedHeaders: ['content-type', 'content-disposition', 'x-amz-*'],
   ExposeHeaders: ['ETag', 'Content-Disposition'],
   MaxAgeSeconds: 3600,
 }

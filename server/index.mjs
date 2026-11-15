@@ -10,7 +10,6 @@
  *   POST /api/admin/logout                            -> { ok }
  *   POST /api/resume/presign  { fileName, contentType, size } -> { uploadUrl, key, publicUrl, fileName, expiresIn }
  *   POST /api/resume/delete   { key }                  -> { ok }
- *   POST /api/translate       { source, sourceLang, targetLang } -> { content }
  *   GET  /api/content                                 -> { content } | raw JSON
  *   PUT  /api/content         { content }              -> { ok }
  *   POST /api/terminal/exec   { command }              -> { ok, stdout } | { error }
@@ -25,15 +24,16 @@ import { fileURLToPath } from 'node:url'
 import { S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { runTerminalCommand } from './terminal.mjs'
-import { translateSection } from './bedrock-translate.mjs'
 import { getSystemMetrics, getSystemInfo } from './system-metrics.mjs'
+import { resolveClientIp, checkRateLimit, clearRateLimit } from './rate-limit.mjs'
+import { NonceCache } from './terminal-signing.mjs'
 import {
-  checkRateLimit,
   sanitizeTerminalOutput,
   makeTerminalToken,
   validateTerminalRequest as verifyTerminalRequest,
 } from './terminal-security.mjs'
 import { execOnUpstream, getFromUpstream } from './upstream.mjs'
+import { safeResumeName, resumeContentDisposition } from './resume.mjs'
 
 const PORT = Number(process.env.PORT || 8787)
 // Local dev on Windows has no /proc and no Linux tooling, so the terminal and
@@ -47,6 +47,32 @@ const CONTENT_KEY = 'content/portfolio-content.json'
 
 // Rate limiting state for terminal
 const terminalRateLimit = new Map()
+// Token issuance is limited separately from execution: minting a token is
+// cheap for the client but each token unlocks the exec budget, so the two
+// budgets must not share a bucket.
+const terminalTokenRateLimit = new Map()
+// Login attempts are limited per IP so the passkey cannot be brute forced.
+const loginRateLimit = new Map()
+// Revoked admin tokens, so logout actually invalidates a stolen token.
+const revokedTokens = new Set()
+// Nonces that have already been used, so a captured signed request cannot be
+// replayed.
+const usedNonces = new NonceCache()
+
+/**
+ * Rate limit policies.
+ *
+ * Terminal exec: 60 commands per minute per IP.
+ * Terminal token: 30 tokens per minute per IP. A browser needs one token per
+ * hour, so this leaves plenty of headroom while stopping a mint flood.
+ * Login: 5 attempts per 15 minutes per IP.
+ */
+const TERMINAL_EXEC_POLICY = { windowMs: 60_000, max: 60 }
+const TERMINAL_TOKEN_POLICY = { windowMs: 60_000, max: 30 }
+const LOGIN_POLICY = { windowMs: 15 * 60_000, max: 5 }
+/** A constant delay on a failed login, so a wrong passkey costs the attacker
+ * the same wall-clock time as a right one. */
+const LOGIN_FAIL_DELAY_MS = 500
 
 // Production runs under systemd with these env vars pointing at /var/lib/nhatprx-api.
 // Locally there is no such directory, so fall back to server/.testdata next to this
@@ -56,15 +82,15 @@ const PASSKEY_HASH_FILE =
   process.env.PASSKEY_HASH_FILE || resolve(LOCAL_SECRET_DIR, 'passkey.hash')
 const TOKEN_SECRET_FILE =
   process.env.TOKEN_SECRET_FILE || resolve(LOCAL_SECRET_DIR, 'token.secret')
-const TOKEN_TTL_SECONDS = 12 * 3600
+// Admin tokens are short-lived: a leaked token should be useless quickly.
+// The dashboard re-authenticates when it expires.
+const TOKEN_TTL_SECONDS = 2 * 3600
 // Terminal signing tokens are short-lived: the browser re-fetches one when it
 // expires, so a leaked token is worthless for long.
 const TERMINAL_TOKEN_TTL_SECONDS = 60 * 60
 const MAX_RESUME_BYTES = 15 * 1024 * 1024
 const MAX_CONTENT_BYTES = 1024 * 1024
 const MAX_BODY_BYTES = 2 * 1024 * 1024
-const MAX_TRANSLATION_INPUT_BYTES = 512 * 1024
-const TRANSLATION_SECTIONS = ['about', 'skills', 'experience', 'projects', 'blog']
 const ALLOWED_EXTENSIONS = ['.pdf', '.doc', '.docx']
 const ALLOWED_CONTENT_TYPES = [
   'application/pdf',
@@ -79,22 +105,27 @@ const s3 = new S3Client({ region: REGION })
  *
  * The browser never holds the API secret. It asks /api/terminal/token for a
  * short-lived token that is bound to its client id, signs each command with
- * HMAC-SHA256 over `clientId|timestamp|command`, and the API verifies that
- * signature in constant time. A token issued for one client id cannot sign
- * requests for another one, and a command signed for one command cannot be
- * replayed for a different command.
+ * HMAC-SHA256 over `clientId|timestamp|nonce|command`, and the API verifies
+ * that signature in constant time. A token issued for one client id cannot
+ * sign requests for another one, and a command signed for one command cannot
+ * be replayed for a different command.
  */
 async function validateTerminalRequest(req, command) {
+  const nonce = String(req.headers['x-request-nonce'] || '')
   const result = await verifyTerminalRequest(tokenSecret, {
     signature: req.headers['x-request-signature'],
     clientId: req.headers['x-client-id'],
     token: req.headers['x-terminal-token'],
     timestamp: parseInt(req.headers['x-timestamp'], 10),
+    nonce,
     command,
   })
   if (!result.ok) return result
 
-  const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown'
+  // The rate-limit key must be the real client IP, not anything the client
+  // chose. `X-Forwarded-For` is attacker-controlled (nginx appends to it), so
+  // only `X-Real-IP` (which nginx overwrites with $remote_addr) is trusted.
+  const clientIp = resolveClientIp(req)
   return { ok: true, clientId: result.clientId, clientIp }
 }
 
@@ -134,9 +165,17 @@ async function verifyPasskey(passkey) {
   return expected.length === actual.length && timingSafeEqual(expected, actual)
 }
 
+/**
+ * Mints an admin token.
+ *
+ * The token carries a random id so it can be revoked individually: logout
+ * puts that id in the revocation set and the token stops working even
+ * though it has not expired yet.
+ */
 function makeToken() {
   const expiry = Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS
-  const payload = `admin.${expiry}`
+  const id = randomBytes(12).toString('hex')
+  const payload = `admin.${expiry}.${id}`
   const sig = createHmac('sha256', tokenSecret).update(payload).digest('hex')
   return `${payload}.${sig}`
 }
@@ -144,15 +183,25 @@ function makeToken() {
 function checkToken(token) {
   if (typeof token !== 'string') return false
   const parts = token.split('.')
-  if (parts.length !== 3) return false
-  const [prefix, expiryRaw, sig] = parts
+  if (parts.length !== 4) return false
+  const [prefix, expiryRaw, id, sig] = parts
   if (prefix !== 'admin') return false
+  if (revokedTokens.has(id)) return false
   const expiry = Number(expiryRaw)
   if (!Number.isFinite(expiry) || expiry < Math.floor(Date.now() / 1000)) return false
-  const expected = createHmac('sha256', tokenSecret).update(`admin.${expiryRaw}`).digest('hex')
+  const expected = createHmac('sha256', tokenSecret)
+    .update(`admin.${expiryRaw}.${id}`)
+    .digest('hex')
   const a = Buffer.from(expected)
   const b = Buffer.from(sig)
   return a.length === b.length && timingSafeEqual(a, b)
+}
+
+/** Extracts the token id, used to revoke a token on logout. */
+function tokenIdOf(token) {
+  if (typeof token !== 'string') return null
+  const parts = token.split('.')
+  return parts.length === 4 ? parts[2] : null
 }
 
 function publicUrlFor(key) {
@@ -282,17 +331,39 @@ async function handleGet(req, res, path) {
 
 async function handlePost(req, res, path) {
   if (path === '/api/admin/login') {
+    // Brute-force protection: the budget is keyed by the real client IP, so
+    // rotating client ids or forging X-Forwarded-For does not help.
+    const ip = resolveClientIp(req)
+    const limit = checkRateLimit(loginRateLimit, ip, LOGIN_POLICY)
+    if (!limit.allowed) {
+      sendJson(res, 429, { error: 'Too many login attempts', retryAfter: Math.ceil(limit.resetIn / 1000) })
+      return
+    }
+
     const data = await readJsonBody(req)
     const passkey = String(data.passkey || '')
     if (!passkey || !(await verifyPasskey(passkey))) {
+      // A constant delay makes a wrong passkey cost the attacker the same
+      // wall-clock time as a right one.
+      await new Promise((resolve) => setTimeout(resolve, LOGIN_FAIL_DELAY_MS))
       sendJson(res, 401, { error: 'invalid passkey' })
       return
     }
+    // A correct passkey clears the budget, so a real admin is never locked out
+    // by earlier typos.
+    clearRateLimit(loginRateLimit, ip)
     sendJson(res, 200, { token: makeToken() })
     return
   }
 
   if (path === '/api/admin/logout') {
+    // Revoke the token so a stolen token stops working immediately instead of
+    // staying valid until it expires.
+    const header = req.headers.authorization || ''
+    if (header.startsWith('Bearer ')) {
+      const id = tokenIdOf(header.slice(7).trim())
+      if (id) revokedTokens.add(id)
+    }
     sendJson(res, 200, { ok: true })
     return
   }
@@ -305,6 +376,16 @@ async function handlePost(req, res, path) {
    * another one.
    */
   if (path === '/api/terminal/token') {
+    // Token issuance has its own budget, keyed by the real client IP. Without
+    // it an attacker can mint unlimited tokens (one per client id) and each
+    // token unlocks the exec budget.
+    const ip = resolveClientIp(req)
+    const limit = checkRateLimit(terminalTokenRateLimit, ip, TERMINAL_TOKEN_POLICY)
+    if (!limit.allowed) {
+      sendJson(res, 429, { error: 'Rate limit exceeded', rateLimitReset: limit.resetIn })
+      return
+    }
+
     const data = await readJsonBody(req)
     const clientId = String(data.clientId || '').trim()
     if (!clientId || !/^[A-Za-z0-9_-]{4,64}$/.test(clientId)) {
@@ -329,9 +410,18 @@ async function handlePost(req, res, path) {
       return
     }
 
-    // Rate limiting
-    const rateLimitKey = `${secCheck.clientIp}|${secCheck.clientId}`
-    const { allowed, resetIn } = checkRateLimit(terminalRateLimit, rateLimitKey)
+    // A nonce may be used only once, so a captured request cannot be replayed
+    // inside the signature window.
+    const nonce = String(req.headers['x-request-nonce'] || '')
+    if (!usedNonces.claim(nonce)) {
+      sendJson(res, 400, { error: 'Request nonce already used' })
+      return
+    }
+
+    // Rate limiting, keyed by the real client IP only. The client id is
+    // attacker-controlled, so including it in the key would let one IP spread
+    // its budget over thousands of client ids.
+    const { allowed, resetIn } = checkRateLimit(terminalRateLimit, secCheck.clientIp, TERMINAL_EXEC_POLICY)
     if (!allowed) {
       sendJson(res, 429, { error: 'Rate limit exceeded', rateLimitReset: resetIn })
       return
@@ -354,42 +444,6 @@ async function handlePost(req, res, path) {
 
     const output = sanitizeTerminalOutput(result.stdout)
     sendJson(res, 200, { ok: true, stdout: output, executedAt: new Date().toISOString() })
-    return
-  }
-
-  if (path === '/api/translate') {
-    if (!requireAuth(req, res)) return
-    const data = await readJsonBody(req)
-    const sourceLang = String(data.sourceLang || '')
-    const targetLang = String(data.targetLang || '')
-    const source = data.source
-
-    if (!sourceLang || !targetLang || sourceLang === targetLang) {
-      sendJson(res, 400, { error: 'valid sourceLang and targetLang are required' })
-      return
-    }
-    if (!source || typeof source !== 'object' || Array.isArray(source)) {
-      sendJson(res, 400, { error: 'source content is required' })
-      return
-    }
-    if (Buffer.byteLength(JSON.stringify(source)) > MAX_TRANSLATION_INPUT_BYTES) {
-      sendJson(res, 413, { error: 'translation content too large' })
-      return
-    }
-
-    const translated = { ...source }
-  for (const sectionName of TRANSLATION_SECTIONS) {
-    const section = source[sectionName]
-    if (!section || typeof section !== 'object' || Array.isArray(section)) continue
-    translated[sectionName] = await translateSection({
-      section,
-      sourceLang,
-      targetLang,
-      context: source,
-    })
-  }
-
-    sendJson(res, 200, { content: translated })
     return
   }
 
@@ -419,20 +473,30 @@ async function handlePost(req, res, path) {
     }
 
     const stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)
-    const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '-')
+    const safeName = safeResumeName(fileName)
     const key = `${RESUME_PREFIX}${stamp}-${safeName}`
 
-    // Only sign the headers the browser actually sends. ContentDisposition is
-    // applied later via the bucket's Content-Disposition metadata rule so the
-    // signature stays valid.
+    // The resume must download rather than render in the browser: without
+    // Content-Disposition a PDF would be displayed inline on the S3 domain,
+    // which turns the bucket into a page that can host arbitrary content.
+    // The header is signed, so the browser has to send exactly this value.
+    const contentDisposition = resumeContentDisposition(safeName)
+    //
+    // ContentLengthRange makes S3 enforce the size limit itself: the size the
+    // client declared above is untrusted, so the range is what actually stops
+    // an oversized upload.
     const uploadUrl = await getSignedUrl(
       s3,
       new PutObjectCommand({
         Bucket: BUCKET,
         Key: key,
         ContentType: contentType,
+        ContentDisposition: contentDisposition,
       }),
-      { expiresIn: 300 }
+      {
+        expiresIn: 300,
+        ContentLengthRange: [1, MAX_RESUME_BYTES],
+      }
     )
 
     sendJson(res, 200, {
@@ -440,6 +504,7 @@ async function handlePost(req, res, path) {
       key,
       publicUrl: publicUrlFor(key),
       fileName,
+      contentDisposition,
       expiresIn: 300,
     })
     return

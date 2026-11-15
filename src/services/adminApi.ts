@@ -73,6 +73,7 @@ export interface PresignedUpload {
   key: string
   publicUrl: string
   fileName: string
+  contentDisposition: string
   expiresIn: number
 }
 
@@ -89,7 +90,13 @@ export async function uploadResume(file: File): Promise<PresignedUpload> {
 
   const putRes = await fetch(presigned.uploadUrl, {
     method: 'PUT',
-    headers: { 'Content-Type': file.type || 'application/pdf' },
+    headers: {
+      'Content-Type': file.type || 'application/pdf',
+      // The API signed this header, so the upload only succeeds when the
+      // browser sends exactly the same value. It makes the file download
+      // instead of rendering inline.
+      'Content-Disposition': presigned.contentDisposition,
+    },
     body: file,
   })
   if (!putRes.ok) {
@@ -111,41 +118,6 @@ export async function fetchRemoteContent<T>(): Promise<T | null> {
   if (!res.ok) throw new ApiError(res.status, `Failed to load content (${res.status})`)
   const body = await res.json()
   return (body?.content ?? null) as T | null
-}
-
-/** Translates portfolio sections through the authenticated server-side Bedrock API. */
-export async function translatePortfolio({
-  source,
-  sourceLang,
-  targetLang,
-  onProgress,
-}: {
-  source: Record<string, unknown>
-  sourceLang: string
-  targetLang: string
-  onProgress?: (message: string) => void
-}): Promise<Record<string, unknown>> {
-  const sections = ['about', 'skills', 'experience', 'projects', 'blog']
-  const translated: Record<string, unknown> = { ...source }
-
-  for (const sectionName of sections) {
-    const section = source[sectionName]
-    if (!section || typeof section !== 'object' || Array.isArray(section)) continue
-
-    onProgress?.(`Đang dịch ${sectionName} bằng AWS Bedrock...`)
-    const response = await request<{ content?: Record<string, unknown> }>('/api/translate', {
-      method: 'POST',
-      body: JSON.stringify({ source, sourceLang, targetLang }),
-    })
-
-    const translatedSection = response.content?.[sectionName]
-    if (!translatedSection || typeof translatedSection !== 'object') {
-      throw new Error(`Bedrock did not return the ${sectionName} section`)
-    }
-    translated[sectionName] = translatedSection
-  }
-
-  return translated
 }
 
 /** Persists the portfolio content JSON to S3. */

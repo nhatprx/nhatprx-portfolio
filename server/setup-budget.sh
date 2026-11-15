@@ -53,8 +53,7 @@ cat > "$BUDGET_JSON" <<JSON
   "CostFilters": {
     "Service": [
       "Amazon EC2",
-      "Amazon S3",
-      "Amazon Bedrock"
+      "Amazon S3"
     ]
   }
 }
@@ -95,7 +94,7 @@ Caller: $CALLER
 Budget: $BUDGET_NAME
 Monthly limit: $$MONTHLY_LIMIT USD
 Annual target: $$(awk "BEGIN { printf \"%.2f\", $MONTHLY_LIMIT * 12 }") USD
-Services: EC2, S3, Bedrock
+Services: EC2, S3
 Alert: $ALERT_THRESHOLD% of monthly limit
 Alert email: $ALERT_EMAIL
 

@@ -75,7 +75,7 @@ const REMOTE_COMMANDS: Record<string, string> = {
   'health-detailed': 'health-detailed',
   metrics: 'metrics',
   'metrics-cpu': 'metrics-cpu',
-  ps: 'ps aux',
+  ps: 'ps',
   'api-log': 'api-log',
   'nginx-access': 'nginx-access',
   'nginx-error': 'nginx-error',
@@ -144,10 +144,10 @@ SYSTEM:
   proc-net-dev         Network interface counters
 
 DEPLOYMENT:
-  git log              Last 10 commits
-  git branch           Branches
-  git status           Working tree
-  git show             HEAD commit
+  git log              Deployed commit metadata
+  git branch           Deployed commit metadata
+  git status           Deployed commit metadata
+  git show             Deployed commit metadata
   ls -la               API directory
 
 HEALTH:
@@ -157,10 +157,10 @@ HEALTH:
   nginx-status         nginx service state
   metrics              Process list
   metrics-cpu          One CPU snapshot
-  ps aux               Process list
+  ps                   Process list
 
 LOGS:
-  api-log              Last 30 API log lines
+  api-log              Last 30 API journal entries
   nginx-access         Last 30 nginx access lines
   nginx-error          Last 30 nginx error lines
 

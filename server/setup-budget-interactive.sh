@@ -6,7 +6,7 @@ set -e
 
 echo "╔════════════════════════════════════════════════════════╗"
 echo "║    AWS Budget Setup for nhatprx-portfolio              ║"
-echo "║    Tracks EC2, S3, and Bedrock spending                ║"
+echo "║    Tracks EC2 and S3 spending                       ║"
 echo "╚════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -44,7 +44,7 @@ echo ""
 echo "Budget Configuration:"
 echo "  - Monthly limit: \$$MONTHLY_LIMIT"
 echo "  - Annual target: \$(awk "BEGIN { printf \"%.2f\", $MONTHLY_LIMIT * 12 }" ) "
-echo "  - Services: EC2, S3, Bedrock"
+echo "  - Services: EC2, S3"
 echo "  - Alert email: $ALERT_EMAIL"
 echo ""
 

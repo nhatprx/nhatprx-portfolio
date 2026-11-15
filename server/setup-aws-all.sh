@@ -7,7 +7,6 @@ set -e
 echo "╔════════════════════════════════════════════════════════╗"
 echo "║    AWS Setup for nhatprx-portfolio                     ║"
 echo "║    • Budget monitoring                                 ║"
-echo "║    • Bedrock permissions                               ║"
 echo "║    • S3 CORS (for resume uploads)                      ║"
 echo "╚════════════════════════════════════════════════════════╝"
 echo ""
@@ -44,33 +43,9 @@ else
   echo ""
 fi
 
-# 2. Setup Bedrock permissions (if running on EC2)
+# 2. Setup Budget monitoring
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Step 2: Setup Bedrock permissions"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-
-# Check if running on EC2 by looking for instance profile
-INSTANCE_PROFILE=$(curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ 2>/dev/null || echo "")
-
-if [ -z "$INSTANCE_PROFILE" ]; then
-  echo "⊘ Not running on EC2. Bedrock permissions must be set up on the instance."
-  echo "   When deployed to EC2, run:"
-  echo "   bash server/setup-bedrock-iam.sh <instance-profile-name>"
-  echo ""
-else
-  read -p "Setup Bedrock permissions for instance? (y/n): " SETUP_BEDROCK
-  if [ "$SETUP_BEDROCK" = "y" ] || [ "$SETUP_BEDROCK" = "Y" ]; then
-    if [ -f "$SCRIPT_DIR/setup-bedrock-iam.sh" ]; then
-      bash "$SCRIPT_DIR/setup-bedrock-iam.sh" "$INSTANCE_PROFILE"
-      echo ""
-    fi
-  fi
-fi
-
-# 3. Setup Budget monitoring
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Step 3: Setup Budget monitoring"
+echo "Step 2: Setup Budget monitoring"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
@@ -91,19 +66,13 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 echo "What's been configured:"
 echo "  ✓ S3 CORS: Browser can upload resumes directly to S3"
-echo "  ✓ Bedrock: Admin dashboard can translate content"
 echo "  ✓ Budget: Monthly spending alerts"
 echo ""
 echo "Next steps:"
 echo "  1. If running on EC2:"
-echo "     • Verify Bedrock model access in AWS Console > Bedrock > Model Access"
-echo "     • Check that claude-3-5-haiku is enabled"
+echo "     • The API reads and writes portfolio content in S3 via the instance profile"
 echo ""
-echo "  2. If using Bedrock for translations:"
-echo "     • In admin dashboard, click 'Auto Translate'"
-echo "     • Select target languages"
-echo ""
-echo "  3. Monitor spending:"
+echo "  2. Monitor spending:"
 echo "     echo "Check AWS Console > Budgets"
 echo "     • Confirm email subscription for budget alerts"
 echo ""

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Live metrics dashboard for nhatprx-portfolio AWS resources
-# Shows real-time EC2, S3, and Bedrock usage
+# Shows real-time EC2, S3, and budget usage
 
 set -e
 
@@ -66,19 +66,6 @@ get_budget_metrics() {
     --output table || echo "No budgets found"
 }
 
-get_bedrock_metrics() {
-  echo ""
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "BEDROCK MODEL ACCESS"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  
-  aws bedrock list-foundation-models \
-    --region "$REGION" \
-    --by-provider "Anthropic" \
-    --query 'modelSummaries[].[modelId,modelName,modelStatus]' \
-    --output table || echo "Bedrock not available in this region"
-}
-
 get_cloudwatch_metrics() {
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -133,7 +120,6 @@ main() {
   get_ec2_metrics
   get_s3_metrics
   get_budget_metrics
-  get_bedrock_metrics
   get_cloudwatch_metrics
   get_cost_summary
   

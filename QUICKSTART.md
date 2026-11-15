@@ -70,7 +70,6 @@ bash server/setup-aws-all.sh
 
 # Or individual steps
 bash server/setup-budget-interactive.sh
-bash server/setup-bedrock-iam.sh <instance-profile>
 ```
 
 ### Monitor AWS Resources
@@ -86,12 +85,10 @@ bash server/metrics-dashboard.sh
 - [ ] Admin: Edit content → see "✓ Synced" in header
 - [ ] Admin: Changes persist across devices
 - [ ] AWS: Budget alerts configured
-- [ ] AWS: Bedrock translation works
 - [ ] Tests: `cd server && npm run check` passes
 
 ## 📚 Documentation
 
-- **TROUBLESHOOTING.md** - Detailed issue documentation and solutions
 - **README.md** - Project overview and architecture
 - **server/metrics-dashboard.sh** - Live AWS metrics
 
@@ -103,26 +100,28 @@ bash server/metrics-dashboard.sh
 | GET | `/api/content` | No | Get content |
 | POST | `/api/admin/login` | No | Login |
 | PUT | `/api/content` | ✓ | Save content |
-| POST | `/api/translate` | ✓ | Translate |
-| POST | `/api/terminal/exec` | No | Run command |
+| POST | `/api/terminal/token` | No | Issue terminal signing token |
+| POST | `/api/terminal/exec` | Signed | Run command |
 
 ## ⚠️ Known Limitations
 
 1. Terminal only runs allowlisted commands (security)
 2. Admin requires authentication to sync to S3
-3. Bedrock requires model access enabled in AWS Console
+3. Each locale is translated by hand in the admin portal
 4. Budget alerts don't auto-stop resources
 
 ## 🎉 What's Working
 
 ✅ Live EC2 terminal with real command execution  
 ✅ Admin dashboard with S3 persistence  
-✅ Bedrock translation (en → vi, fr, ja)  
 ✅ Budget monitoring with SNS alerts  
 ✅ Resume upload via presigned S3 URLs  
 ✅ Multi-language support (4 locales)  
-✅ Comprehensive test suite (47 tests passing)  
+✅ Rate-limited admin login and terminal, signed requests, replay protection  
+✅ Comprehensive test suite (133 tests passing)  
 
 ## 📞 Support
 
-See TROUBLESHOOTING.md for detailed debugging steps.
+Run `cd server && npm run check` for the test suite and
+`node server/scripts/verify-terminal-allowlist.mjs` to list every terminal
+command the node can run.

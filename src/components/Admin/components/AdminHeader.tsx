@@ -9,8 +9,6 @@ interface AdminHeaderProps {
   onToggleMobilePane: (pane: 'editor' | 'preview') => void
   onCloseAndSync: () => void
   onLogout: () => void
-  onAutoTranslate: () => void
-  isAutoTranslating: boolean
   syncStatus: SyncStatus
 }
 
@@ -28,8 +26,6 @@ export default function AdminHeader({
   onToggleMobilePane,
   onCloseAndSync,
   onLogout,
-  onAutoTranslate,
-  isAutoTranslating,
   syncStatus,
 }: AdminHeaderProps) {
   return (
@@ -87,16 +83,6 @@ export default function AdminHeader({
             PREVIEW
           </button>
         </div>
-
-        <button
-          type="button"
-          onClick={onAutoTranslate}
-          disabled={isAutoTranslating}
-          className="px-2.5 py-1 border border-emerald-500/30 text-emerald-300 hover:border-emerald-400 hover:text-emerald-200 disabled:opacity-50 disabled:cursor-wait text-xs transition-colors cursor-pointer"
-          title={`Dịch nội dung ${selectedLang.toUpperCase()} sang các ngôn ngữ còn lại`}
-        >
-          {isAutoTranslating ? 'TRANSLATING...' : 'AUTO-TRANSLATE'}
-        </button>
 
         {/* Logout */}
         <button

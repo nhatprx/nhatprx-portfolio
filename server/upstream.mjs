@@ -22,7 +22,7 @@
  * The scheme is detected once per upstream and cached.
  */
 
-import { createHmac } from 'node:crypto'
+import { createHmac, randomBytes } from 'node:crypto'
 import { signingPayload } from './terminal-signing.mjs'
 
 const DEFAULT_TIMEOUT_MS = 8_000
@@ -34,15 +34,16 @@ const schemeCache = new Map()
 
 /**
  * Signs a command the way the token scheme expects: HMAC-SHA256 over
- * `clientId|timestamp|command`, keyed by the upstream's terminal token.
+ * `clientId|timestamp|nonce|command`, keyed by the upstream's terminal token.
  *
  * @param {string} token The terminal token issued by the upstream.
  * @param {number} timestamp
  * @param {string} command
+ * @param {string} nonce A one-time value; the upstream rejects a reused one.
  */
-function signCommand(token, timestamp, command) {
+function signCommand(token, timestamp, command, nonce) {
   return createHmac('sha256', token)
-    .update(signingPayload(UPSTREAM_CLIENT_ID, timestamp, command))
+    .update(signingPayload(UPSTREAM_CLIENT_ID, timestamp, command, nonce))
     .digest('hex')
 }
 
@@ -96,6 +97,8 @@ export async function execOnUpstream(upstream, command, timeoutMs = DEFAULT_TIME
   try {
     const scheme = await detectScheme(upstream)
     const timestamp = Date.now()
+    // A fresh nonce per call, so the upstream rejects a replayed request.
+    const nonce = randomBytes(12).toString('hex')
 
     const headers = {
       'Content-Type': 'application/json',
@@ -116,7 +119,8 @@ export async function execOnUpstream(upstream, command, timeoutMs = DEFAULT_TIME
       const { token } = await tokenRes.json()
       if (!token) return { ok: false, error: 'upstream did not issue a terminal token' }
       headers['X-Terminal-Token'] = token
-      headers['X-Request-Signature'] = signCommand(token, timestamp, command)
+      headers['X-Request-Signature'] = signCommand(token, timestamp, command, nonce)
+      headers['X-Request-Nonce'] = nonce
     } else {
       headers['X-Request-Signature'] = legacySignature(command, timestamp)
     }

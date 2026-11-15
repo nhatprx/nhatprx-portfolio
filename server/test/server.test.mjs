@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
-import { createHmac } from 'node:crypto'
+import { createHmac, randomBytes } from 'node:crypto'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve, dirname } from 'node:path'
@@ -127,7 +127,9 @@ async function signedExec(command, { clientId = 'test_client_1', token, tamper }
   }
 
   const timestamp = Date.now()
-  const payload = `${clientId}|${timestamp}|${command}`
+  // A fresh nonce per request: the API rejects a nonce it has already seen.
+  const nonce = randomBytes(12).toString('hex')
+  const payload = `${clientId}|${timestamp}|${nonce}|${command}`
   const signature = createHmac('sha256', terminalToken).update(payload).digest('hex')
 
   return fetch(`${baseUrl}/api/terminal/exec`, {
@@ -138,6 +140,7 @@ async function signedExec(command, { clientId = 'test_client_1', token, tamper }
       'X-Client-Id': clientId,
       'X-Terminal-Token': terminalToken,
       'X-Timestamp': String(timestamp),
+      'X-Request-Nonce': nonce,
     },
     body: JSON.stringify({ command }),
   })
@@ -204,7 +207,8 @@ test('the terminal rejects an expired timestamp', async () => {
   const token = (await tokenRes.json()).token
 
   const staleTimestamp = Date.now() - 10 * 60 * 1000
-  const payload = `test_client_stale|${staleTimestamp}|hostname`
+  const nonce = randomBytes(12).toString('hex')
+  const payload = `test_client_stale|${staleTimestamp}|${nonce}|hostname`
   const signature = createHmac('sha256', token).update(payload).digest('hex')
 
   const res = await fetch(`${baseUrl}/api/terminal/exec`, {
@@ -215,6 +219,7 @@ test('the terminal rejects an expired timestamp', async () => {
       'X-Client-Id': 'test_client_stale',
       'X-Terminal-Token': token,
       'X-Timestamp': String(staleTimestamp),
+      'X-Request-Nonce': nonce,
     },
     body: JSON.stringify({ command: 'hostname' }),
   })

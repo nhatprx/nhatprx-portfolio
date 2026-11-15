@@ -25,11 +25,16 @@ PRESIGN=$(curl -s -X POST "$BASE/api/resume/presign" \
 UPLOAD_URL=$(echo "$PRESIGN" | sed -E 's/.*"uploadUrl":"([^"]+)".*/\1/')
 KEY=$(echo "$PRESIGN" | sed -E 's/.*"key":"([^"]+)".*/\1/')
 PUBLIC_URL=$(echo "$PRESIGN" | sed -E 's/.*"publicUrl":"([^"]+)".*/\1/')
+# The API signs the Content-Disposition header, so the upload only succeeds
+# when the client sends exactly the same value.
+CONTENT_DISPOSITION=$(echo "$PRESIGN" | sed -E 's/.*"contentDisposition":"([^"]+)".*/\1/')
 echo "key: $KEY"
 
 echo "--- PUT file to S3 ---"
 HTTP=$(curl -s -o /tmp/e2e-put-body.txt -w '%{http_code}' -X PUT "$UPLOAD_URL" \
-  -H 'Content-Type: application/pdf' --data-binary "@$FILE")
+  -H 'Content-Type: application/pdf' \
+  -H "Content-Disposition: $CONTENT_DISPOSITION" \
+  --data-binary "@$FILE")
 echo "PUT status: $HTTP"
 if [ "$HTTP" != "200" ]; then
   echo "S3 error body:"

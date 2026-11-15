@@ -135,10 +135,13 @@ test('API Security - Terminal Tokens', async t => {
 
 test('API Security - Request Validation', async t => {
   const CLIENT_ID = 'test_client'
+  const NONCE = 'test-nonce-1'
 
-  const sign = (token, command, timestamp) =>
+  // The signed payload includes the nonce, so a captured signature cannot be
+  // replayed for a second request.
+  const sign = (token, command, timestamp, nonce = NONCE) =>
     createHmac('sha256', token)
-      .update(`${CLIENT_ID}|${timestamp}|${command}`)
+      .update(`${CLIENT_ID}|${timestamp}|${nonce}|${command}`)
       .digest('hex')
 
   await t.test('rejects missing signature header', async () => {
@@ -147,10 +150,25 @@ test('API Security - Request Validation', async t => {
       clientId: CLIENT_ID,
       token,
       timestamp: Date.now(),
+      nonce: NONCE,
       command: 'hostname',
     })
     assert.strictEqual(result.ok, false)
     assert.match(result.error, /Missing security headers/)
+  })
+
+  await t.test('rejects a missing nonce', async () => {
+    const token = makeTerminalToken(CLIENT_ID, SECRET, 3600)
+    const timestamp = Date.now()
+    const result = await validateTerminalRequest(SECRET, {
+      signature: sign(token, 'hostname', timestamp),
+      clientId: CLIENT_ID,
+      token,
+      timestamp,
+      command: 'hostname',
+    })
+    assert.strictEqual(result.ok, false)
+    assert.match(result.error, /Missing request nonce/)
   })
 
   await t.test('rejects missing client id header', async () => {
@@ -160,6 +178,7 @@ test('API Security - Request Validation', async t => {
       signature: sign(token, 'hostname', timestamp),
       token,
       timestamp,
+      nonce: NONCE,
       command: 'hostname',
     })
     assert.strictEqual(result.ok, false)
@@ -173,6 +192,7 @@ test('API Security - Request Validation', async t => {
       clientId: CLIENT_ID,
       token,
       timestamp,
+      nonce: NONCE,
       command: 'hostname',
     })
     assert.strictEqual(result.ok, false)
@@ -187,6 +207,7 @@ test('API Security - Request Validation', async t => {
       clientId: CLIENT_ID,
       token,
       timestamp,
+      nonce: NONCE,
       command: 'hostname',
     })
     assert.strictEqual(result.ok, true)
@@ -196,10 +217,11 @@ test('API Security - Request Validation', async t => {
     const token = makeTerminalToken(CLIENT_ID, SECRET, 3600)
     const timestamp = Date.now()
     const result = await validateTerminalRequest(SECRET, {
-      signature: createHmac('sha256', 'wrong-key').update(`${CLIENT_ID}|${timestamp}|hostname`).digest('hex'),
+      signature: createHmac('sha256', 'wrong-key').update(`${CLIENT_ID}|${timestamp}|${NONCE}|hostname`).digest('hex'),
       clientId: CLIENT_ID,
       token,
       timestamp,
+      nonce: NONCE,
       command: 'hostname',
     })
     assert.strictEqual(result.ok, false)
@@ -215,7 +237,24 @@ test('API Security - Request Validation', async t => {
       clientId: CLIENT_ID,
       token,
       timestamp,
+      nonce: NONCE,
       command: 'uptime',
+    })
+    assert.strictEqual(result.ok, false)
+    assert.match(result.error, /Invalid request signature/)
+  })
+
+  await t.test('rejects a signature made with a different nonce', async () => {
+    const token = makeTerminalToken(CLIENT_ID, SECRET, 3600)
+    const timestamp = Date.now()
+    // Signed with one nonce but sent with another.
+    const result = await validateTerminalRequest(SECRET, {
+      signature: sign(token, 'hostname', timestamp, 'nonce-a'),
+      clientId: CLIENT_ID,
+      token,
+      timestamp,
+      nonce: 'nonce-b',
+      command: 'hostname',
     })
     assert.strictEqual(result.ok, false)
     assert.match(result.error, /Invalid request signature/)

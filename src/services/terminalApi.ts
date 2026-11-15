@@ -2,9 +2,10 @@
 //
 // SECURITY MODEL:
 // - The browser fetches a short-lived signing token from /api/terminal/token.
-// - Every command is signed with HMAC-SHA256 over `clientId|timestamp|command`.
-// - The API verifies the signature in constant time and rate limits per
-//   IP + client id.
+// - Every command is signed with HMAC-SHA256 over
+//   `clientId|timestamp|nonce|command`.
+// - The API verifies the signature in constant time, rejects a nonce it has
+//   already seen, and rate limits per client IP.
 // - Commands run against a fixed argv allowlist on the server; there is no
 //   shell, so no user input can become a shell metacharacter.
 // - Output is sanitized server-side and again on the way out.
@@ -31,6 +32,18 @@ interface TerminalToken {
 }
 
 let tokenCache: TerminalToken | null = null
+
+/**
+ * Generates a one-time nonce for a signed request.
+ *
+ * `crypto.randomUUID` needs a secure context, so it is not available on a
+ * plain-HTTP origin. The fallback uses the random source that always is.
+ */
+function createNonce(): string {
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID()
+  const bytes = crypto.getRandomValues(new Uint8Array(16))
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
+}
 
 /**
  * Fetches (and caches) the terminal signing token for this client id.
@@ -63,9 +76,14 @@ async function getTerminalToken(clientId: string): Promise<string> {
  * and verifies against the token-derived key, so the browser only needs the
  * token it was handed - never the API secret.
  */
-async function signCommand(clientId: string, timestamp: number, command: string): Promise<string> {
+async function signCommand(
+  clientId: string,
+  timestamp: number,
+  command: string,
+  nonce: string
+): Promise<string> {
   const token = await getTerminalToken(clientId)
-  const payload = `${clientId}|${timestamp}|${command}`
+  const payload = `${clientId}|${timestamp}|${nonce}|${command}`
   const key = await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(token),
@@ -86,9 +104,12 @@ async function signCommand(clientId: string, timestamp: number, command: string)
 export async function execTerminalCommand(command: string): Promise<TerminalExecResult> {
   const timestamp = Date.now()
   const clientId = getClientId()
+  // A fresh nonce per request makes every signature unique, so a captured
+  // request cannot be replayed by the server.
+  const nonce = createNonce()
   const [token, signature] = await Promise.all([
     getTerminalToken(clientId),
-    signCommand(clientId, timestamp, command),
+    signCommand(clientId, timestamp, command, nonce),
   ])
 
   const res = await fetch('/api/terminal/exec', {
@@ -99,6 +120,7 @@ export async function execTerminalCommand(command: string): Promise<TerminalExec
       'X-Client-Id': clientId,
       'X-Terminal-Token': token,
       'X-Timestamp': String(timestamp),
+      'X-Request-Nonce': nonce,
     },
     body: JSON.stringify({ command }),
   })

@@ -28,9 +28,11 @@ hmac_sha256() {
 
 run() {
   local cmd="$1"
-  local ts payload sig
+  local ts payload sig nonce
   ts=$(date +%s%3N)
-  payload="$CLIENT_ID|$ts|$cmd"
+  # A fresh nonce per request: the API rejects a nonce it has already seen.
+  nonce=$(node -e "console.log(require('node:crypto').randomBytes(12).toString('hex'))")
+  payload="$CLIENT_ID|$ts|$nonce|$cmd"
   sig=$(hmac_sha256 "$TOKEN" "$payload")
 
   printf '%s -> ' "$cmd"
@@ -40,6 +42,7 @@ run() {
     -H "X-Client-Id: $CLIENT_ID" \
     -H "X-Terminal-Token: $TOKEN" \
     -H "X-Timestamp: $ts" \
+    -H "X-Request-Nonce: $nonce" \
     -d "{\"command\":\"$cmd\"}"
   printf '\n'
 }
