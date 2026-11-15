@@ -4,6 +4,8 @@ Developer portfolio built around a live server console: the terminal on the
 right half of the page runs allowlisted, read-only commands on the AWS EC2
 instance that serves the site and streams back the real output.
 
+**Status**: released and running in production at <https://nhatprx.com>.
+
 ## Features
 
 - **Live EC2 terminal**: `uname`, `free`, `df`, `uptime`, `systemctl`, `nginx`
