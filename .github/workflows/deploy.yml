@@ -67,13 +67,18 @@ jobs:
           fi
           ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
 
-          # Deploy frontend
-          rsync -avz --delete dist/ "$EC2_USER@$EC2_HOST:/var/www/html/"
+          # Deploy frontend. /var/www/html is owned by root, so the copy runs
+          # through sudo on the remote side.
+          rsync -avz --delete --rsync-path="sudo rsync" \
+            dist/ "$EC2_USER@$EC2_HOST:/var/www/html/"
 
-          # Deploy API
+          # Deploy API. The filter protects node_modules from --delete:
+          # --exclude only skips the transfer, it does not stop the deletion
+          # of a directory that is not in the source.
           rsync -avz --delete \
             --exclude node_modules \
             --exclude .testdata \
+            --filter='P node_modules' \
             server/ "$EC2_USER@$EC2_HOST:/home/ubuntu/nhatprx-api/"
 
           # Install production dependencies
@@ -90,7 +95,7 @@ jobs:
 
           # Restart the API
           ssh "$EC2_USER@$EC2_HOST" \
-            "sudo chmod -R 755 /var/www/html && sudo systemctl restart nhatprx-api"
+            "sudo systemctl restart nhatprx-api"
 
           # Generate deployment metadata
           DEPLOYED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
